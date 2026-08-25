@@ -1,7 +1,7 @@
 import { db } from "@/lib/db"
 import type { Prisma } from "@prisma/client"
 import Link from "next/link"
-import { Plus, FileText } from "lucide-react"
+import { Plus, FileText, Pin } from "lucide-react"
 import { requireRole } from "@/lib/rbac"
 import { togglePublish, deleteArticle, pinArticle } from "@/lib/actions/articles"
 import { StatusToggle } from "@/components/ui/status-toggle"
@@ -135,14 +135,19 @@ export default async function ArticlesPage({ searchParams }: Props) {
               {articles.map((article) => (
                 <tr key={article.id} className="group transition-colors hover:bg-gray-50/70">
                   <td className="px-5 py-3">
-                    <Link
-                      href={`/admin/articles/${article.id}/edit`}
-                      className="block truncate text-sm font-medium text-gray-900 transition-colors
-                        hover:text-brand"
-                      title={article.title}
-                    >
-                      {article.title}
-                    </Link>
+                    <div className="flex items-center gap-1.5">
+                      <Link
+                        href={`/admin/articles/${article.id}/edit`}
+                        className="truncate text-sm font-medium text-gray-900 transition-colors
+                          hover:text-brand"
+                        title={article.title}
+                      >
+                        {article.title}
+                      </Link>
+                      {article.pinned && (
+                        <Pin className="size-3 shrink-0 fill-brand/20 text-brand" aria-label="Pinned" />
+                      )}
+                    </div>
                     {article.excerpt && (
                       <p className="mt-0.5 truncate text-xs text-gray-400">{article.excerpt}</p>
                     )}

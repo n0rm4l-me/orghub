@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Pin, Loader2 } from "lucide-react"
 import { useAction } from "@/lib/use-action"
 import type { ActionResult } from "@/lib/actions/types"
@@ -12,8 +13,12 @@ interface Props {
 
 export function PinButton({ initialPinned, onPin }: Props) {
   const [pinned, setPinned] = useState(initialPinned)
+  const router = useRouter()
   const { run, pending } = useAction(onPin, {
-    onSuccess: () => setPinned((v) => !v),
+    onSuccess: () => {
+      setPinned((v) => !v)
+      router.refresh()
+    },
   })
 
   return (
