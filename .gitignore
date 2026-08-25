@@ -47,4 +47,8 @@ next-env.d.ts
 .agents/
 .windsurf/
 skills-lock.json
-prisma.config.ts
+
+# AI assistant config files
+CLAUDE.md
+AGENTS.md
+.claude/
