@@ -18,6 +18,8 @@ model User {
   email          String    @unique
   name           String?
   avatarUrl      String?
+  /// bcrypt hash. Null for accounts that sign in only through an identity provider.
+  passwordHash   String?
   role           Role      @default(VIEWER)
   department     String?
   externalId     String?
@@ -95,10 +97,25 @@ model Page {
   slug           String   @unique
   body           Json
   published      Boolean  @default(false)
+  /// Published pages are linked from the main menu unless this is turned off.
+  showInNav      Boolean  @default(true)
   order          Int      @default(0)
   organizationId String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  @@index([published, order])
+}
+
+/// Sidebar shortcuts on the feed: payroll, VPN, service desk, and the like.
+model QuickLink {
+  id        String   @id @default(cuid())
+  label     String
+  url       String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([order])
 }
 
 model Category {
@@ -125,6 +142,19 @@ model Media {
   size         Int
   uploadedById String
   createdAt    DateTime @default(now())
+}
+
+model SiteSettings {
+  id       String  @id @default("singleton")
+  siteName String  @default("OrgHub")
+  /// Logo for the brand-coloured header and the admin rail. Usually a white or
+  /// knocked-out asset, which is why it must not be reused on white surfaces.
+  logoUrl  String?
+  /// Logo for white surfaces: the sign-in screen. Optional; when it is absent the
+  /// lettermark is used, because falling back to `logoUrl` tends to render a white
+  /// logo on a white card.
+  logoOnLightUrl String?
+  primaryColor   String @default("#2563eb")
 }
 
 model AuditLog {

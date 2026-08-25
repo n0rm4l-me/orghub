@@ -1,19 +1,27 @@
 import { PrismaClient } from "@prisma/client"
 import { PrismaPg } from "@prisma/adapter-pg"
+import bcrypt from "bcryptjs"
 import "dotenv/config"
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
 const db = new PrismaClient({ adapter })
 
+const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL ?? "admin@orghub.dev"
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? "admin"
+
 async function main() {
+  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10)
+
   const admin = await db.user.upsert({
-    where: { email: "admin@orghub.dev" },
-    update: {},
+    where: { email: ADMIN_EMAIL },
+    // The hash is refreshed on re-seed so rotating SEED_ADMIN_PASSWORD takes effect.
+    update: { passwordHash },
     create: {
-      email: "admin@orghub.dev",
+      email: ADMIN_EMAIL,
       name: "Admin User",
       role: "ADMIN",
       provider: "local",
+      passwordHash,
     },
   })
 
@@ -156,7 +164,7 @@ async function main() {
     })
   }
 
-  console.log("Seeded database with sample articles")
+  console.log(`Seeded database. Admin: ${ADMIN_EMAIL}`)
 }
 
 main()
