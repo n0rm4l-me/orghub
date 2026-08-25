@@ -42,6 +42,7 @@ export default async function FeedPage({ searchParams }: Props) {
 
   const where: Prisma.ArticleWhereInput = {
     published: true,
+    eventDate: null,
     ...(categorySlug ? { categories: { some: { category: { slug: categorySlug } } } } : {}),
     ...(query
       ? {
@@ -236,20 +237,10 @@ export default async function FeedPage({ searchParams }: Props) {
                       className="mt-0.5 w-1 shrink-0 self-stretch rounded-full bg-brand/40"
                     />
                     <div className="min-w-0 flex-1">
-                      {(article.category || article.eventDate) && (
-                        <div className="mb-1 flex items-center gap-1.5">
-                          {article.eventDate && (
-                            <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
-                              <CalendarDays className="size-2.5" aria-hidden />
-                              Event
-                            </span>
-                          )}
-                          {article.category && (
-                            <p className="text-[11px] font-semibold tracking-wide text-gray-500 uppercase">
-                              {article.category.name}
-                            </p>
-                          )}
-                        </div>
+                      {article.category && (
+                        <p className="mb-1 text-[11px] font-semibold tracking-wide text-gray-500 uppercase">
+                          {article.category.name}
+                        </p>
                       )}
                       <h3
                         className="mb-1 line-clamp-2 text-sm leading-snug font-semibold text-gray-900
@@ -262,13 +253,7 @@ export default async function FeedPage({ searchParams }: Props) {
                       )}
                     </div>
                     <div className="shrink-0 space-y-1 pt-0.5 text-right text-xs text-gray-400">
-                      {article.eventDate ? (
-                        <p className="whitespace-nowrap font-medium text-emerald-600">
-                          {new Date(article.eventDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                        </p>
-                      ) : (
-                        <p className="whitespace-nowrap">{article.date}</p>
-                      )}
+                      <p className="whitespace-nowrap">{article.date}</p>
                       <p className="whitespace-nowrap">{article.readTime}</p>
                     </div>
                   </article>
