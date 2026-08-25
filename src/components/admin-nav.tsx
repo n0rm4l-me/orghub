@@ -14,6 +14,7 @@ import {
   ScrollText,
   Compass,
   CalendarDays,
+  LayoutGrid,
   type LucideIcon,
 } from "lucide-react"
 
@@ -23,14 +24,15 @@ interface Item {
   icon: LucideIcon
 }
 
-const CONTENT: Item[] = [
+const BASE_CONTENT: Item[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/articles", label: "Articles", icon: FileText },
-  { href: "/admin/events", label: "Events", icon: CalendarDays },
   { href: "/admin/pages", label: "Pages", icon: Layers },
   { href: "/admin/categories", label: "Categories", icon: Tag },
   { href: "/admin/navigation", label: "Navigation", icon: Compass },
 ]
+
+const EVENTS_ITEM: Item = { href: "/admin/events", label: "Events", icon: CalendarDays }
 
 const ADMINISTRATION: Item[] = [
   { href: "/admin/users", label: "Users", icon: Users },
@@ -38,6 +40,7 @@ const ADMINISTRATION: Item[] = [
 ]
 
 const SYSTEM: Item[] = [
+  { href: "/admin/modules", label: "Modules", icon: LayoutGrid },
   { href: "/admin/branding", label: "Branding", icon: Brush },
   { href: "/admin/theme", label: "Theme", icon: Palette },
   { href: "/admin/auth-providers", label: "Authentication", icon: ShieldCheck },
@@ -49,12 +52,22 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
-export function AdminNav({ canAdminister }: { canAdminister: boolean }) {
+export function AdminNav({
+  canAdminister,
+  eventsEnabled,
+}: {
+  canAdminister: boolean
+  eventsEnabled: boolean
+}) {
   const pathname = usePathname()
+
+  const content = eventsEnabled
+    ? [BASE_CONTENT[0], BASE_CONTENT[1], EVENTS_ITEM, ...BASE_CONTENT.slice(2)]
+    : BASE_CONTENT
 
   return (
     <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-4" aria-label="Admin">
-      <Group items={CONTENT} pathname={pathname} />
+      <Group items={content} pathname={pathname} />
       {canAdminister && (
         <>
           <Group label="Administration" items={ADMINISTRATION} pathname={pathname} />

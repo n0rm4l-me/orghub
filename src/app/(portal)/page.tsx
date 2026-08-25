@@ -6,6 +6,7 @@ import { CategoryFilter } from "@/components/category-filter"
 import { EmptyState } from "@/components/ui/empty-state"
 import { getQuickLinks, getUpcomingEvents } from "@/lib/nav"
 import { getSettings } from "@/lib/settings"
+import { parseModules } from "@/lib/modules"
 import { getCurrentUser, can } from "@/lib/rbac"
 
 const PER_PAGE = 15
@@ -92,6 +93,8 @@ export default async function FeedPage({ searchParams }: Props) {
   const [featured, ...rest] = isPlainFirstPage ? mapped : []
   const listed = isPlainFirstPage ? rest : mapped
   const totalPages = Math.ceil(total / PER_PAGE)
+  const eventsEnabled = parseModules(settings.enabledModules).has("events")
+  const sidebarBlocks = settings.sidebarOrder?.split(",").filter(Boolean) ?? ["quickLinks", "browseByTopic", "upcomingEvents"]
 
   return (
     <div className="flex items-start gap-8">
@@ -211,7 +214,8 @@ export default async function FeedPage({ searchParams }: Props) {
       </div>
 
       <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
-        {(settings.sidebarOrder?.split(",").filter(Boolean) ?? ["quickLinks", "browseByTopic", "upcomingEvents"]).map((blockId) => {
+        {sidebarBlocks.map((blockId) => {
+          if (blockId === "upcomingEvents" && !eventsEnabled) return null
           if (blockId === "quickLinks") {
             if (quickLinks.length === 0) {
               return can.manageContent(user) ? (

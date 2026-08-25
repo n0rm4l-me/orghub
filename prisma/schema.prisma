@@ -162,6 +162,8 @@ model SiteSettings {
   primaryColor   String @default("#2563eb")
   /// Comma-separated IDs of the feed sidebar blocks in display order.
   sidebarOrder   String @default("quickLinks,browseByTopic,upcomingEvents")
+  /// Comma-separated IDs of enabled optional modules (e.g. "events").
+  enabledModules String @default("events")
 }
 
 model AuditLog {

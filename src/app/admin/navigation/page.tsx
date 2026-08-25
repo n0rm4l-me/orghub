@@ -1,6 +1,7 @@
 import { db } from "@/lib/db"
 import { requireRole } from "@/lib/rbac"
 import { getSettings } from "@/lib/settings"
+import { parseModules } from "@/lib/modules"
 import { PageHeader } from "@/components/ui/page-header"
 import { NavManager } from "@/components/nav-manager"
 import { SidebarOrderManager } from "@/components/sidebar-order-manager"
@@ -26,6 +27,7 @@ export default async function NavigationPage() {
 
   const inMenu = pages.filter((p) => p.published && p.showInNav).length
   const sidebarOrder = settings.sidebarOrder?.split(",").filter(Boolean) ?? DEFAULT_ORDER
+  const enabledModules = parseModules(settings.enabledModules)
 
   return (
     <div className="max-w-3xl">
@@ -35,7 +37,7 @@ export default async function NavigationPage() {
       />
       <NavManager pages={pages} links={links} />
       <div className="mt-6">
-        <SidebarOrderManager initialOrder={sidebarOrder} />
+        <SidebarOrderManager initialOrder={sidebarOrder} enabledModules={enabledModules} />
       </div>
     </div>
   )

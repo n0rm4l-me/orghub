@@ -24,6 +24,7 @@ export type AuditAction =
   | "settings.branding"
   | "settings.theme"
   | "settings.navigation"
+  | "settings.modules"
 
 interface LogInput {
   userId: string

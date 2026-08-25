@@ -7,17 +7,18 @@ import { useAction } from "@/lib/use-action"
 import { Panel } from "@/components/ui/field"
 import type { LucideIcon } from "lucide-react"
 
-const BLOCKS: { id: string; label: string; description: string; icon: LucideIcon }[] = [
+const BLOCKS: { id: string; label: string; description: string; icon: LucideIcon; moduleId?: string }[] = [
   { id: "quickLinks", label: "Quick links", description: "External shortcuts", icon: Zap },
   { id: "browseByTopic", label: "Browse by topic", description: "Category filter pills", icon: Tag },
-  { id: "upcomingEvents", label: "Upcoming events", description: "Next calendar events", icon: CalendarDays },
+  { id: "upcomingEvents", label: "Upcoming events", description: "Next calendar events (Events module)", icon: CalendarDays, moduleId: "events" },
 ]
 
 interface Props {
   initialOrder: string[]
+  enabledModules: Set<string>
 }
 
-export function SidebarOrderManager({ initialOrder }: Props) {
+export function SidebarOrderManager({ initialOrder, enabledModules }: Props) {
   const [order, setOrder] = useState(initialOrder)
   const { run, pending } = useAction(saveSidebarOrder)
 
@@ -42,6 +43,7 @@ export function SidebarOrderManager({ initialOrder }: Props) {
         {order.map((id, idx) => {
           const block = BLOCKS.find((b) => b.id === id)
           if (!block) return null
+          if (block.moduleId && !enabledModules.has(block.moduleId)) return null
           const Icon = block.icon
           return (
             <li key={id} className="flex items-center gap-3 py-2.5">

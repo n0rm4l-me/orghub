@@ -3,6 +3,7 @@ import { Search, LayoutDashboard } from "lucide-react"
 import { getSettings } from "@/lib/settings"
 import { getNavPages } from "@/lib/nav"
 import { getCurrentUser, can } from "@/lib/rbac"
+import { parseModules } from "@/lib/modules"
 import { BrandLogo } from "@/components/brand-logo"
 import { HeaderNav } from "@/components/header-nav"
 
@@ -22,9 +23,11 @@ export async function Header() {
       .toUpperCase()
       .slice(0, 2) || "?"
 
+  const enabled = parseModules(settings.enabledModules)
+
   const items = [
     { href: "/", label: "Feed" },
-    { href: "/events", label: "Calendar" },
+    ...(enabled.has("events") ? [{ href: "/events", label: "Calendar" }] : []),
     ...pages.map((page) => ({ href: `/pages/${page.slug}`, label: page.title })),
   ]
 

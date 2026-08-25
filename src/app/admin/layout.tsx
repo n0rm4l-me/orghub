@@ -5,6 +5,7 @@ import { getSettings } from "@/lib/settings"
 import { requireRole, can } from "@/lib/rbac"
 import { AdminNav } from "@/components/admin-nav"
 import { BrandLogo } from "@/components/brand-logo"
+import { parseModules } from "@/lib/modules"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Anyone below EDITOR has nothing to do in here; requireRole redirects them.
@@ -34,7 +35,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </Link>
         </div>
 
-        <AdminNav canAdminister={can.manageUsers(user)} />
+        <AdminNav
+          canAdminister={can.manageUsers(user)}
+          eventsEnabled={parseModules(settings.enabledModules).has("events")}
+        />
 
         <div className="shrink-0 border-t border-white/5 p-3">
           <Link

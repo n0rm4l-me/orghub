@@ -53,7 +53,10 @@ export async function saveSettings(formData: FormData): Promise<ActionResult> {
   return ok("Branding updated.")
 }
 
+import { MODULES, type ModuleId } from "@/lib/modules"
+
 const SIDEBAR_BLOCK_IDS = new Set(["quickLinks", "browseByTopic", "upcomingEvents"])
+const VALID_MODULE_IDS = new Set(Object.keys(MODULES) as ModuleId[])
 
 export async function saveSidebarOrder(order: string[]): Promise<ActionResult> {
   const user = await requireRole("EDITOR")
@@ -81,6 +84,31 @@ export async function saveSidebarOrder(order: string[]): Promise<ActionResult> {
 
   revalidatePath("/")
   return ok("Sidebar order saved.")
+}
+
+export async function saveEnabledModules(modules: string[]): Promise<ActionResult> {
+  const user = await requireRole("ADMIN")
+
+  if (!modules.every((id) => VALID_MODULE_IDS.has(id as ModuleId)))
+    return fail("Unknown module ID.")
+
+  const value = [...new Set(modules)].join(",")
+
+  await db.siteSettings.upsert({
+    where: { id: "singleton" },
+    create: { id: "singleton", enabledModules: value },
+    update: { enabledModules: value },
+  })
+
+  await logAudit({
+    userId: user.id,
+    action: "settings.modules",
+    resourceType: "SiteSettings",
+    metadata: { enabledModules: modules },
+  })
+
+  revalidatePath("/", "layout")
+  return ok("Module settings saved.")
 }
 
 export async function saveTheme(formData: FormData): Promise<ActionResult> {

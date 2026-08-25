@@ -1,6 +1,9 @@
+import { notFound } from "next/navigation"
 import { db } from "@/lib/db"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight, CalendarDays, MapPin } from "lucide-react"
+import { getSettings } from "@/lib/settings"
+import { parseModules } from "@/lib/modules"
 
 interface Props {
   searchParams: Promise<{ month?: string }>
@@ -39,6 +42,9 @@ export async function generateMetadata() {
 }
 
 export default async function EventsPage({ searchParams }: Props) {
+  const settings = await getSettings()
+  if (!parseModules(settings.enabledModules).has("events")) notFound()
+
   const sp = await searchParams
   const { year, month } = parseMonth(sp.month)
 
