@@ -29,6 +29,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
   const page = Math.max(1, Number(params.page) || 1)
 
   const where: Prisma.ArticleWhereInput = {
+    eventDate: null,
     ...(status ? { published: status === "published" } : {}),
     ...(query
       ? {
