@@ -22,8 +22,6 @@ export function ModuleToggle({ moduleId, initialEnabled, allEnabled }: Props) {
     const next = enabled
       ? allEnabled.filter((id) => id !== moduleId)
       : [...allEnabled, moduleId]
-    // Optimistic: flip immediately; onSuccess confirms, error toast rolls back visually.
-    setEnabled((v) => !v)
     run(next)
   }
 
