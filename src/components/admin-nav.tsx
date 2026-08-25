@@ -13,6 +13,7 @@ import {
   Brush,
   ScrollText,
   Compass,
+  CalendarDays,
   type LucideIcon,
 } from "lucide-react"
 
@@ -25,6 +26,7 @@ interface Item {
 const CONTENT: Item[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/articles", label: "Articles", icon: FileText },
+  { href: "/admin/events", label: "Events", icon: CalendarDays },
   { href: "/admin/pages", label: "Pages", icon: Layers },
   { href: "/admin/categories", label: "Categories", icon: Tag },
   { href: "/admin/navigation", label: "Navigation", icon: Compass },

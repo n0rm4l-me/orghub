@@ -28,6 +28,9 @@ export default async function EditArticlePage({ params }: Props) {
         excerpt: true,
         body: true,
         published: true,
+        eventDate: true,
+        eventEndDate: true,
+        eventLocation: true,
         categories: { select: { categoryId: true } },
       },
     }),
@@ -58,6 +61,9 @@ export default async function EditArticlePage({ params }: Props) {
           body: article.body as object,
           published: article.published,
           ...(article.categories[0] ? { categoryId: article.categories[0].categoryId } : {}),
+          eventDate: article.eventDate,
+          eventEndDate: article.eventEndDate,
+          eventLocation: article.eventLocation,
         }}
       />
     </div>

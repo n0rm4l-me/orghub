@@ -21,6 +21,9 @@ export interface ContentFormValues {
   body: object
   published: boolean
   categoryId?: string
+  eventDate?: Date | null
+  eventEndDate?: Date | null
+  eventLocation?: string | null
 }
 
 interface Props {
@@ -205,6 +208,60 @@ export function ContentForm({
               )}
             </p>
           </section>
+
+          {kind === "article" && (
+            <section className="rounded-xl border border-gray-200 bg-white p-4">
+              <h2 className="mb-3 text-sm font-semibold text-gray-900">Event</h2>
+              <p className="mb-3 text-xs text-gray-400 leading-relaxed">
+                Optional. Fill in to show this article as a calendar event.
+              </p>
+              <div className="space-y-3">
+                <div>
+                  <label htmlFor="eventDate" className="mb-1 block text-xs text-gray-600">Start date &amp; time</label>
+                  <input
+                    id="eventDate"
+                    name="eventDate"
+                    type="datetime-local"
+                    defaultValue={
+                      values?.eventDate
+                        ? new Date(values.eventDate).toISOString().slice(0, 16)
+                        : ""
+                    }
+                    className="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-700
+                      outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="eventEndDate" className="mb-1 block text-xs text-gray-600">End date &amp; time</label>
+                  <input
+                    id="eventEndDate"
+                    name="eventEndDate"
+                    type="datetime-local"
+                    defaultValue={
+                      values?.eventEndDate
+                        ? new Date(values.eventEndDate).toISOString().slice(0, 16)
+                        : ""
+                    }
+                    className="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-700
+                      outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="eventLocation" className="mb-1 block text-xs text-gray-600">Location</label>
+                  <input
+                    id="eventLocation"
+                    name="eventLocation"
+                    type="text"
+                    maxLength={200}
+                    defaultValue={values?.eventLocation ?? ""}
+                    placeholder="e.g. Room A, 3F"
+                    className="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-700
+                      outline-none placeholder:text-gray-300 focus:border-brand focus:ring-1 focus:ring-brand"
+                  />
+                </div>
+              </div>
+            </section>
+          )}
 
           {kind === "article" && (
             <section className="rounded-xl border border-gray-200 bg-white p-4">

@@ -24,6 +24,7 @@ export async function Header() {
 
   const items = [
     { href: "/", label: "Feed" },
+    { href: "/events", label: "Calendar" },
     ...pages.map((page) => ({ href: `/pages/${page.slug}`, label: page.title })),
   ]
 

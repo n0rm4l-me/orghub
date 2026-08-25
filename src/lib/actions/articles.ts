@@ -10,12 +10,17 @@ import { type ActionResult, ok, okWith, fail } from "@/lib/actions/types"
 const TITLE_MAX = 200
 const EXCERPT_MAX = 300
 
+const LOCATION_MAX = 200
+
 interface ParsedInput {
   title: string
   excerpt: string | null
   body: object
   categoryId: string | null
   published: boolean
+  eventDate: Date | null
+  eventEndDate: Date | null
+  eventLocation: string | null
 }
 
 /** Validates and normalizes the editor payload. */
@@ -38,12 +43,31 @@ function parse(formData: FormData): ParsedInput | { error: string; field: string
 
   const categoryId = ((formData.get("categoryId") as string) ?? "").trim()
 
+  const eventDateRaw = ((formData.get("eventDate") as string) ?? "").trim()
+  const eventEndDateRaw = ((formData.get("eventEndDate") as string) ?? "").trim()
+  const eventLocationRaw = ((formData.get("eventLocation") as string) ?? "").trim()
+
+  const eventDate = eventDateRaw ? new Date(eventDateRaw) : null
+  const eventEndDate = eventEndDateRaw ? new Date(eventEndDateRaw) : null
+
+  if (eventDate && isNaN(eventDate.getTime()))
+    return { error: "Invalid event date.", field: "eventDate" }
+  if (eventEndDate && isNaN(eventEndDate.getTime()))
+    return { error: "Invalid end date.", field: "eventEndDate" }
+  if (eventDate && eventEndDate && eventEndDate <= eventDate)
+    return { error: "End date must be after start date.", field: "eventEndDate" }
+  if (eventLocationRaw.length > LOCATION_MAX)
+    return { error: `Location must be ${LOCATION_MAX} characters or fewer.`, field: "eventLocation" }
+
   return {
     title,
     excerpt: excerptRaw || null,
     body,
     categoryId: categoryId || null,
     published: formData.get("published") === "true",
+    eventDate,
+    eventEndDate,
+    eventLocation: eventLocationRaw || null,
   }
 }
 
@@ -72,6 +96,9 @@ export async function createArticle(
       body: parsed.body,
       published: parsed.published,
       publishedAt: parsed.published ? new Date() : null,
+      eventDate: parsed.eventDate,
+      eventEndDate: parsed.eventEndDate,
+      eventLocation: parsed.eventLocation,
       authorId: user.id,
       categories: parsed.categoryId ? { create: { categoryId: parsed.categoryId } } : undefined,
     },
@@ -124,6 +151,9 @@ export async function updateArticle(
       published: parsed.published,
       // Preserve the original publish timestamp across edits.
       publishedAt: parsed.published ? (existing.publishedAt ?? new Date()) : null,
+      eventDate: parsed.eventDate,
+      eventEndDate: parsed.eventEndDate,
+      eventLocation: parsed.eventLocation,
       categories: {
         deleteMany: {},
         ...(parsed.categoryId ? { create: { categoryId: parsed.categoryId } } : {}),

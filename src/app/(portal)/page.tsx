@@ -1,10 +1,10 @@
 import Link from "next/link"
 import { db } from "@/lib/db"
 import type { Prisma } from "@prisma/client"
-import { ExternalLink, Newspaper, SearchX, Zap } from "lucide-react"
+import { CalendarDays, ExternalLink, MapPin, Newspaper, SearchX, Zap } from "lucide-react"
 import { CategoryFilter } from "@/components/category-filter"
 import { EmptyState } from "@/components/ui/empty-state"
-import { getQuickLinks } from "@/lib/nav"
+import { getQuickLinks, getUpcomingEvents } from "@/lib/nav"
 import { getCurrentUser, can } from "@/lib/rbac"
 
 const PER_PAGE = 15
@@ -51,7 +51,7 @@ export default async function FeedPage({ searchParams }: Props) {
       : {}),
   }
 
-  const [articles, total, categories, quickLinks, user] = await Promise.all([
+  const [articles, total, categories, quickLinks, upcomingEvents, user] = await Promise.all([
     db.article.findMany({
       where,
       orderBy: { publishedAt: "desc" },
@@ -71,6 +71,7 @@ export default async function FeedPage({ searchParams }: Props) {
     db.article.count({ where }),
     db.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, slug: true } }),
     getQuickLinks(),
+    getUpcomingEvents(),
     getCurrentUser(),
   ])
 
@@ -261,6 +262,51 @@ export default async function FeedPage({ searchParams }: Props) {
             </ul>
           </section>
         )}
+
+        <section className="rounded-xl border border-gray-200 bg-white p-5">
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
+            <CalendarDays className="size-4 text-brand" aria-hidden />
+            Upcoming events
+          </h2>
+          {upcomingEvents.length === 0 ? (
+            <p className="text-xs text-gray-400">No upcoming events.</p>
+          ) : (
+            <ul className="space-y-2">
+              {upcomingEvents.map((ev) => {
+                const date = new Date(ev.eventDate!)
+                return (
+                  <li key={ev.id}>
+                    <Link
+                      href={`/articles/${ev.id}`}
+                      className="group block rounded-lg p-2 transition hover:bg-gray-50"
+                    >
+                      <p className="text-[11px] font-semibold text-brand">
+                        {date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        {" · "}
+                        {date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                      </p>
+                      <p className="mt-0.5 line-clamp-2 text-xs font-medium text-gray-700 group-hover:text-brand transition">
+                        {ev.title}
+                      </p>
+                      {ev.eventLocation && (
+                        <p className="mt-0.5 flex items-center gap-1 text-[11px] text-gray-400">
+                          <MapPin className="size-2.5 shrink-0" aria-hidden />
+                          {ev.eventLocation}
+                        </p>
+                      )}
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+          <Link
+            href="/events"
+            className="mt-3 block text-center text-xs font-medium text-brand hover:underline"
+          >
+            View full calendar →
+          </Link>
+        </section>
 
         {can.manageContent(user) && quickLinks.length === 0 && (
           <p className="px-1 text-xs leading-relaxed text-gray-400">

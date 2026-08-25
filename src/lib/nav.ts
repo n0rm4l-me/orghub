@@ -22,3 +22,12 @@ export const getQuickLinks = cache(async () =>
     select: { id: true, label: true, url: true },
   })
 )
+
+export const getUpcomingEvents = cache(async () =>
+  db.article.findMany({
+    where: { published: true, eventDate: { gte: new Date() } },
+    orderBy: { eventDate: "asc" },
+    take: 4,
+    select: { id: true, title: true, eventDate: true, eventLocation: true },
+  })
+)
