@@ -208,13 +208,7 @@ export async function pinArticle(id: string): Promise<ActionResult> {
   if (!existing.published) return fail("Only published articles can be pinned.")
 
   const pinning = !existing.pinned
-
-  if (pinning) {
-    await db.article.updateMany({ where: {}, data: { pinned: false } })
-    await db.article.update({ where: { id }, data: { pinned: true } })
-  } else {
-    await db.article.update({ where: { id }, data: { pinned: false } })
-  }
+  await db.article.update({ where: { id }, data: { pinned: pinning } })
 
   await logAudit({
     userId: user.id,

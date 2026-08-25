@@ -34,13 +34,96 @@ const dateFormat: Intl.DateTimeFormatOptions = {
   year: "numeric",
 }
 
+function Byline({
+  author,
+  date,
+  readTime,
+}: {
+  author: { name: string; initials: string }
+  date: string
+  readTime: string
+}) {
+  return (
+    <div className="flex items-center gap-2 text-xs text-gray-400">
+      <span
+        aria-hidden
+        className="grid size-6 shrink-0 place-items-center rounded-full bg-gray-100 text-[10px]
+          font-bold text-gray-600"
+      >
+        {author.initials}
+      </span>
+      <span className="font-medium text-gray-600">{author.name}</span>
+      <span aria-hidden>·</span>
+      <span>{date}</span>
+      <span aria-hidden>·</span>
+      <span>{readTime}</span>
+    </div>
+  )
+}
+
+type MappedArticle = {
+  id: string
+  title: string
+  excerpt: string
+  category: { name: string; slug: string } | null
+  author: { name: string; initials: string }
+  date: string
+  readTime: string
+  eventDate: Date | null
+}
+
+function FeaturedCard({ article, pinned = false }: { article: MappedArticle; pinned?: boolean }) {
+  return (
+    <Link href={`/articles/${article.id}`} className="group mb-3 block">
+      <article
+        className="overflow-hidden rounded-2xl border border-gray-200 bg-white transition-shadow
+          group-hover:shadow-md"
+      >
+        <div className="h-1.5 w-full bg-brand" aria-hidden />
+        <div className="p-6">
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            {pinned && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">
+                <Pin className="size-3" aria-hidden />
+                Pinned
+              </span>
+            )}
+            {article.eventDate && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                <CalendarDays className="size-3" aria-hidden />
+                Event
+              </span>
+            )}
+            {article.category && (
+              <span className="inline-block rounded-full bg-brand px-2.5 py-1 text-xs font-semibold text-white">
+                {article.category.name}
+              </span>
+            )}
+          </div>
+          <h2 className="mb-2 text-2xl leading-snug font-bold text-gray-900 transition-colors group-hover:text-brand">
+            {article.title}
+          </h2>
+          {article.excerpt && (
+            <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-gray-500">
+              {article.excerpt}
+            </p>
+          )}
+          <Byline {...article} />
+        </div>
+      </article>
+    </Link>
+  )
+}
+
 export default async function FeedPage({ searchParams }: Props) {
   const params = await searchParams
   const categorySlug = params.category?.trim() || undefined
   const query = params.q?.trim() || undefined
   const page = Math.max(1, Number(params.page) || 1)
 
-  const where: Prisma.ArticleWhereInput = {
+  const isHomeFeed = page === 1 && !query && !categorySlug
+
+  const baseWhere: Prisma.ArticleWhereInput = {
     published: true,
     eventDate: null,
     ...(categorySlug ? { categories: { some: { category: { slug: categorySlug } } } } : {}),
@@ -53,6 +136,8 @@ export default async function FeedPage({ searchParams }: Props) {
         }
       : {}),
   }
+  // On the home feed exclude pinned from the regular list — they render above as hero cards.
+  const listWhere: Prisma.ArticleWhereInput = isHomeFeed ? { ...baseWhere, pinned: false } : baseWhere
 
   const articleSelect = {
     id: true,
@@ -67,73 +152,49 @@ export default async function FeedPage({ searchParams }: Props) {
     categories: { select: { category: { select: { name: true, slug: true } } } },
   } as const
 
-  const [articles, total, categories, quickLinks, upcomingEvents, user, settings, pinnedArticle] =
+  const [articles, total, categories, quickLinks, upcomingEvents, user, settings, pinnedRaw] =
     await Promise.all([
       db.article.findMany({
-        where,
+        where: listWhere,
         orderBy: { publishedAt: "desc" },
         select: articleSelect,
         skip: (page - 1) * PER_PAGE,
         take: PER_PAGE,
       }),
-      db.article.count({ where }),
+      db.article.count({ where: listWhere }),
       db.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, slug: true } }),
       getQuickLinks(),
       getUpcomingEvents(),
       getCurrentUser(),
       getSettings(),
-      db.article.findFirst({
-        where: { published: true, pinned: true },
+      db.article.findMany({
+        where: { published: true, pinned: true, eventDate: null },
+        orderBy: { publishedAt: "desc" },
         select: articleSelect,
       }),
     ])
 
-  const mapped = articles.map((a) => ({
-    id: a.id,
-    title: a.title,
-    excerpt: a.excerpt ?? "",
-    category: a.categories[0]?.category ?? null,
-    author: { name: a.author.name ?? "Unknown", initials: initialsOf(a.author.name) },
-    date: a.publishedAt ? new Date(a.publishedAt).toLocaleDateString("en-US", dateFormat) : "",
-    readTime: `${Math.max(1, Math.round(JSON.stringify(a.body).split(/\s+/).length / WORDS_PER_MINUTE))} min read`,
-    eventDate: a.eventDate ?? null,
-    eventLocation: a.eventLocation ?? null,
-  }))
-
-  const isPlainFirstPage = page === 1 && !query
-  // On the unfiltered home feed, a pinned article takes the featured slot.
-  const isHomeFeed = isPlainFirstPage && !categorySlug
-  const mappedPinned = pinnedArticle
-    ? {
-        id: pinnedArticle.id,
-        title: pinnedArticle.title,
-        excerpt: pinnedArticle.excerpt ?? "",
-        category: pinnedArticle.categories[0]?.category ?? null,
-        author: { name: pinnedArticle.author.name ?? "Unknown", initials: initialsOf(pinnedArticle.author.name) },
-        date: pinnedArticle.publishedAt
-          ? new Date(pinnedArticle.publishedAt).toLocaleDateString("en-US", dateFormat)
-          : "",
-        readTime: `${Math.max(1, Math.round(JSON.stringify(pinnedArticle.body).split(/\s+/).length / WORDS_PER_MINUTE))} min read`,
-        eventDate: pinnedArticle.eventDate ?? null,
-        eventLocation: pinnedArticle.eventLocation ?? null,
-      }
-    : null
-
-  let featured: (typeof mapped)[0] | undefined
-  let listed: typeof mapped
-
-  if (isHomeFeed && mappedPinned) {
-    featured = mappedPinned
-    // Remove pinned from the list if it appears there (it may or may not be on this page)
-    listed = mapped.filter((a) => a.id !== pinnedArticle!.id)
-  } else if (isPlainFirstPage) {
-    const [first, ...rest] = mapped
-    featured = first
-    listed = rest
-  } else {
-    featured = undefined
-    listed = mapped
+  function mapArticle(a: (typeof articles)[0]) {
+    return {
+      id: a.id,
+      title: a.title,
+      excerpt: a.excerpt ?? "",
+      category: a.categories[0]?.category ?? null,
+      author: { name: a.author.name ?? "Unknown", initials: initialsOf(a.author.name) },
+      date: a.publishedAt ? new Date(a.publishedAt).toLocaleDateString("en-US", dateFormat) : "",
+      readTime: `${Math.max(1, Math.round(JSON.stringify(a.body).split(/\s+/).length / WORDS_PER_MINUTE))} min read`,
+      eventDate: a.eventDate ?? null,
+    }
   }
+
+  const pinnedArticles = pinnedRaw.map(mapArticle)
+  const listed = articles.map(mapArticle)
+
+  // On a plain first page with no pinned articles fall back to first article as hero.
+  const isPlainFirstPage = page === 1 && !query
+  const fallbackFeatured =
+    isPlainFirstPage && !categorySlug && pinnedArticles.length === 0 ? listed[0] : undefined
+  const finalListed = fallbackFeatured ? listed.slice(1) : listed
 
   const totalPages = Math.ceil(total / PER_PAGE)
   const eventsEnabled = parseModules(settings.enabledModules).has("events")
@@ -179,53 +240,15 @@ export default async function FeedPage({ searchParams }: Props) {
             />
           ))}
 
-        {featured && (
-          <Link href={`/articles/${featured.id}`} className="group mb-3 block">
-            <article
-              className="overflow-hidden rounded-2xl border border-gray-200 bg-white transition-shadow
-                group-hover:shadow-md"
-            >
-              <div className="h-1.5 w-full bg-brand" aria-hidden />
-              <div className="p-6">
-                <div className="mb-3 flex flex-wrap items-center gap-2">
-                  {isHomeFeed && mappedPinned && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">
-                      <Pin className="size-3" aria-hidden />
-                      Pinned
-                    </span>
-                  )}
-                  {featured.eventDate && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                      <CalendarDays className="size-3" aria-hidden />
-                      Event
-                    </span>
-                  )}
-                  {featured.category && (
-                    <span className="inline-block rounded-full bg-brand px-2.5 py-1 text-xs font-semibold text-white">
-                      {featured.category.name}
-                    </span>
-                  )}
-                </div>
-                <h2
-                  className="mb-2 text-2xl leading-snug font-bold text-gray-900 transition-colors
-                    group-hover:text-brand"
-                >
-                  {featured.title}
-                </h2>
-                {featured.excerpt && (
-                  <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-gray-500">
-                    {featured.excerpt}
-                  </p>
-                )}
-                <Byline {...featured} />
-              </div>
-            </article>
-          </Link>
-        )}
+        {isHomeFeed && pinnedArticles.map((a) => (
+          <FeaturedCard key={a.id} article={a} pinned />
+        ))}
 
-        {listed.length > 0 && (
+        {fallbackFeatured && <FeaturedCard article={fallbackFeatured} />}
+
+        {finalListed.length > 0 && (
           <ul className="space-y-2">
-            {listed.map((article) => (
+            {finalListed.map((article) => (
               <li key={article.id}>
                 <Link href={`/articles/${article.id}`} className="group block">
                   <article
@@ -398,32 +421,6 @@ export default async function FeedPage({ searchParams }: Props) {
   )
 }
 
-function Byline({
-  author,
-  date,
-  readTime,
-}: {
-  author: { name: string; initials: string }
-  date: string
-  readTime: string
-}) {
-  return (
-    <div className="flex items-center gap-2 text-xs text-gray-400">
-      <span
-        aria-hidden
-        className="grid size-6 shrink-0 place-items-center rounded-full bg-gray-100 text-[10px]
-          font-bold text-gray-600"
-      >
-        {author.initials}
-      </span>
-      <span className="font-medium text-gray-600">{author.name}</span>
-      <span aria-hidden>·</span>
-      <span>{date}</span>
-      <span aria-hidden>·</span>
-      <span>{readTime}</span>
-    </div>
-  )
-}
 
 function Pagination({
   page,
