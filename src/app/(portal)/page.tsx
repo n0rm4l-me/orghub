@@ -125,7 +125,9 @@ export default async function FeedPage({ searchParams }: Props) {
 
   const baseWhere: Prisma.ArticleWhereInput = {
     published: true,
-    eventDate: null,
+    // Exclude events from the unfiltered feed — they live on /events.
+    // When browsing by category or searching, show all article types.
+    ...(categorySlug || query ? {} : { eventDate: null }),
     ...(categorySlug ? { categories: { some: { category: { slug: categorySlug } } } } : {}),
     ...(query
       ? {
