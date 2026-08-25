@@ -7,6 +7,8 @@ export type AuditAction =
   | "article.delete"
   | "article.publish"
   | "article.unpublish"
+  | "article.pin"
+  | "article.unpin"
   | "page.create"
   | "page.update"
   | "page.delete"

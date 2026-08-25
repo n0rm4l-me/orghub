@@ -3,9 +3,10 @@ import type { Prisma } from "@prisma/client"
 import Link from "next/link"
 import { Plus, FileText } from "lucide-react"
 import { requireRole } from "@/lib/rbac"
-import { togglePublish, deleteArticle } from "@/lib/actions/articles"
+import { togglePublish, deleteArticle, pinArticle } from "@/lib/actions/articles"
 import { StatusToggle } from "@/components/ui/status-toggle"
 import { DeleteButton } from "@/components/ui/delete-button"
+import { PinButton } from "@/components/pin-button"
 import { PageHeader } from "@/components/ui/page-header"
 import { EmptyState } from "@/components/ui/empty-state"
 import { AdminFilters } from "@/components/admin-filters"
@@ -48,6 +49,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
         title: true,
         excerpt: true,
         published: true,
+        pinned: true,
         updatedAt: true,
         author: { select: { name: true, email: true } },
         categories: { select: { category: { select: { name: true } } } },
@@ -112,6 +114,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
               <col className="w-36" />
               <col className="w-28" />
               <col className="w-24" />
+              <col className="w-10" />
               <col className="w-28" />
             </colgroup>
             <thead>
@@ -124,6 +127,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
                 <th className="px-5 py-3 text-left">Author</th>
                 <th className="px-5 py-3 text-left">Status</th>
                 <th className="px-5 py-3 text-left">Updated</th>
+                <th className="px-5 py-3 text-center" title="Pin as featured">📌</th>
                 <th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -167,6 +171,14 @@ export default async function ArticlesPage({ searchParams }: Props) {
                       month: "short",
                       day: "numeric",
                     })}
+                  </td>
+                  <td className="px-5 py-3 text-center">
+                    {article.published && (
+                      <PinButton
+                        initialPinned={article.pinned}
+                        onPin={pinArticle.bind(null, article.id)}
+                      />
+                    )}
                   </td>
                   <td className="px-5 py-3">
                     {/* Kept visible rather than hover-only: hidden controls are

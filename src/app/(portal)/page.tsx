@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { db } from "@/lib/db"
 import type { Prisma } from "@prisma/client"
-import { CalendarDays, ExternalLink, MapPin, Newspaper, SearchX, Zap } from "lucide-react"
+import { CalendarDays, ExternalLink, MapPin, Newspaper, Pin, SearchX, Zap } from "lucide-react"
 import { CategoryFilter } from "@/components/category-filter"
 import { EmptyState } from "@/components/ui/empty-state"
 import { getQuickLinks, getUpcomingEvents } from "@/lib/nav"
@@ -53,30 +53,39 @@ export default async function FeedPage({ searchParams }: Props) {
       : {}),
   }
 
-  const [articles, total, categories, quickLinks, upcomingEvents, user, settings] = await Promise.all([
-    db.article.findMany({
-      where,
-      orderBy: { publishedAt: "desc" },
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        excerpt: true,
-        body: true,
-        publishedAt: true,
-        author: { select: { name: true } },
-        categories: { select: { category: { select: { name: true, slug: true } } } },
-      },
-      skip: (page - 1) * PER_PAGE,
-      take: PER_PAGE,
-    }),
-    db.article.count({ where }),
-    db.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, slug: true } }),
-    getQuickLinks(),
-    getUpcomingEvents(),
-    getCurrentUser(),
-    getSettings(),
-  ])
+  const articleSelect = {
+    id: true,
+    slug: true,
+    title: true,
+    excerpt: true,
+    body: true,
+    publishedAt: true,
+    eventDate: true,
+    eventLocation: true,
+    author: { select: { name: true } },
+    categories: { select: { category: { select: { name: true, slug: true } } } },
+  } as const
+
+  const [articles, total, categories, quickLinks, upcomingEvents, user, settings, pinnedArticle] =
+    await Promise.all([
+      db.article.findMany({
+        where,
+        orderBy: { publishedAt: "desc" },
+        select: articleSelect,
+        skip: (page - 1) * PER_PAGE,
+        take: PER_PAGE,
+      }),
+      db.article.count({ where }),
+      db.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, slug: true } }),
+      getQuickLinks(),
+      getUpcomingEvents(),
+      getCurrentUser(),
+      getSettings(),
+      db.article.findFirst({
+        where: { published: true, pinned: true },
+        select: articleSelect,
+      }),
+    ])
 
   const mapped = articles.map((a) => ({
     id: a.id,
@@ -86,20 +95,54 @@ export default async function FeedPage({ searchParams }: Props) {
     author: { name: a.author.name ?? "Unknown", initials: initialsOf(a.author.name) },
     date: a.publishedAt ? new Date(a.publishedAt).toLocaleDateString("en-US", dateFormat) : "",
     readTime: `${Math.max(1, Math.round(JSON.stringify(a.body).split(/\s+/).length / WORDS_PER_MINUTE))} min read`,
+    eventDate: a.eventDate ?? null,
+    eventLocation: a.eventLocation ?? null,
   }))
 
-  // The lead story only earns the large treatment on an unfiltered first page.
   const isPlainFirstPage = page === 1 && !query
-  const [featured, ...rest] = isPlainFirstPage ? mapped : []
-  const listed = isPlainFirstPage ? rest : mapped
+  // On the unfiltered home feed, a pinned article takes the featured slot.
+  const isHomeFeed = isPlainFirstPage && !categorySlug
+  const mappedPinned = pinnedArticle
+    ? {
+        id: pinnedArticle.id,
+        title: pinnedArticle.title,
+        excerpt: pinnedArticle.excerpt ?? "",
+        category: pinnedArticle.categories[0]?.category ?? null,
+        author: { name: pinnedArticle.author.name ?? "Unknown", initials: initialsOf(pinnedArticle.author.name) },
+        date: pinnedArticle.publishedAt
+          ? new Date(pinnedArticle.publishedAt).toLocaleDateString("en-US", dateFormat)
+          : "",
+        readTime: `${Math.max(1, Math.round(JSON.stringify(pinnedArticle.body).split(/\s+/).length / WORDS_PER_MINUTE))} min read`,
+        eventDate: pinnedArticle.eventDate ?? null,
+        eventLocation: pinnedArticle.eventLocation ?? null,
+      }
+    : null
+
+  let featured: (typeof mapped)[0] | undefined
+  let listed: typeof mapped
+
+  if (isHomeFeed && mappedPinned) {
+    featured = mappedPinned
+    // Remove pinned from the list if it appears there (it may or may not be on this page)
+    listed = mapped.filter((a) => a.id !== pinnedArticle!.id)
+  } else if (isPlainFirstPage) {
+    const [first, ...rest] = mapped
+    featured = first
+    listed = rest
+  } else {
+    featured = undefined
+    listed = mapped
+  }
+
   const totalPages = Math.ceil(total / PER_PAGE)
   const eventsEnabled = parseModules(settings.enabledModules).has("events")
   const sidebarBlocks = settings.sidebarOrder?.split(",").filter(Boolean) ?? ["quickLinks", "browseByTopic", "upcomingEvents"]
 
   return (
-    <div className="flex items-start gap-8">
+    <>
+      <CategoryFilter categories={categories} active={categorySlug} query={query} />
+      <div className="flex items-start gap-8">
       <div className="min-w-0 flex-1">
-        <CategoryFilter categories={categories} active={categorySlug} query={query} />
 
         {query && (
           <p className="mb-4 text-sm text-gray-500">
@@ -143,14 +186,25 @@ export default async function FeedPage({ searchParams }: Props) {
             >
               <div className="h-1.5 w-full bg-brand" aria-hidden />
               <div className="p-6">
-                {featured.category && (
-                  <span
-                    className="mb-3 inline-block rounded-full bg-brand px-2.5 py-1 text-xs font-semibold
-                      text-white"
-                  >
-                    {featured.category.name}
-                  </span>
-                )}
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                  {isHomeFeed && mappedPinned && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">
+                      <Pin className="size-3" aria-hidden />
+                      Pinned
+                    </span>
+                  )}
+                  {featured.eventDate && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                      <CalendarDays className="size-3" aria-hidden />
+                      Event
+                    </span>
+                  )}
+                  {featured.category && (
+                    <span className="inline-block rounded-full bg-brand px-2.5 py-1 text-xs font-semibold text-white">
+                      {featured.category.name}
+                    </span>
+                  )}
+                </div>
                 <h2
                   className="mb-2 text-2xl leading-snug font-bold text-gray-900 transition-colors
                     group-hover:text-brand"
@@ -182,10 +236,20 @@ export default async function FeedPage({ searchParams }: Props) {
                       className="mt-0.5 w-1 shrink-0 self-stretch rounded-full bg-brand/40"
                     />
                     <div className="min-w-0 flex-1">
-                      {article.category && (
-                        <p className="mb-1 text-[11px] font-semibold tracking-wide text-gray-500 uppercase">
-                          {article.category.name}
-                        </p>
+                      {(article.category || article.eventDate) && (
+                        <div className="mb-1 flex items-center gap-1.5">
+                          {article.eventDate && (
+                            <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
+                              <CalendarDays className="size-2.5" aria-hidden />
+                              Event
+                            </span>
+                          )}
+                          {article.category && (
+                            <p className="text-[11px] font-semibold tracking-wide text-gray-500 uppercase">
+                              {article.category.name}
+                            </p>
+                          )}
+                        </div>
                       )}
                       <h3
                         className="mb-1 line-clamp-2 text-sm leading-snug font-semibold text-gray-900
@@ -198,7 +262,13 @@ export default async function FeedPage({ searchParams }: Props) {
                       )}
                     </div>
                     <div className="shrink-0 space-y-1 pt-0.5 text-right text-xs text-gray-400">
-                      <p className="whitespace-nowrap">{article.date}</p>
+                      {article.eventDate ? (
+                        <p className="whitespace-nowrap font-medium text-emerald-600">
+                          {new Date(article.eventDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        </p>
+                      ) : (
+                        <p className="whitespace-nowrap">{article.date}</p>
+                      )}
                       <p className="whitespace-nowrap">{article.readTime}</p>
                     </div>
                   </article>
@@ -339,6 +409,7 @@ export default async function FeedPage({ searchParams }: Props) {
         })}
       </aside>
     </div>
+    </>
   )
 }
 

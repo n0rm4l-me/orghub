@@ -197,6 +197,38 @@ export async function deleteArticle(id: string): Promise<ActionResult> {
   return ok(`"${existing.title}" was deleted.`)
 }
 
+export async function pinArticle(id: string): Promise<ActionResult> {
+  const user = await requireRole("EDITOR")
+
+  const existing = await db.article.findUnique({
+    where: { id },
+    select: { title: true, published: true, pinned: true },
+  })
+  if (!existing) return fail("This article no longer exists.")
+  if (!existing.published) return fail("Only published articles can be pinned.")
+
+  const pinning = !existing.pinned
+
+  if (pinning) {
+    await db.article.updateMany({ where: {}, data: { pinned: false } })
+    await db.article.update({ where: { id }, data: { pinned: true } })
+  } else {
+    await db.article.update({ where: { id }, data: { pinned: false } })
+  }
+
+  await logAudit({
+    userId: user.id,
+    action: pinning ? "article.pin" : "article.unpin",
+    resourceType: "Article",
+    resourceId: id,
+    metadata: { title: existing.title },
+  })
+
+  revalidatePath("/")
+  revalidatePath("/admin/articles")
+  return ok(pinning ? `"${existing.title}" pinned to the feed.` : `"${existing.title}" unpinned.`)
+}
+
 export async function togglePublish(
   id: string,
   currentlyPublished: boolean

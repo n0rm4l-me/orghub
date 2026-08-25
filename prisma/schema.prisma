@@ -86,6 +86,7 @@ model Article {
   eventDate     DateTime?
   eventEndDate  DateTime?
   eventLocation String?
+  pinned        Boolean   @default(false)
 
   authorId   String
   author     User                   @relation(fields: [authorId], references: [id])
