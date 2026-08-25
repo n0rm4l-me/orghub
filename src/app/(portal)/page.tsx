@@ -5,6 +5,7 @@ import { CalendarDays, ExternalLink, MapPin, Newspaper, SearchX, Zap } from "luc
 import { CategoryFilter } from "@/components/category-filter"
 import { EmptyState } from "@/components/ui/empty-state"
 import { getQuickLinks, getUpcomingEvents } from "@/lib/nav"
+import { getSettings } from "@/lib/settings"
 import { getCurrentUser, can } from "@/lib/rbac"
 
 const PER_PAGE = 15
@@ -51,7 +52,7 @@ export default async function FeedPage({ searchParams }: Props) {
       : {}),
   }
 
-  const [articles, total, categories, quickLinks, upcomingEvents, user] = await Promise.all([
+  const [articles, total, categories, quickLinks, upcomingEvents, user, settings] = await Promise.all([
     db.article.findMany({
       where,
       orderBy: { publishedAt: "desc" },
@@ -73,6 +74,7 @@ export default async function FeedPage({ searchParams }: Props) {
     getQuickLinks(),
     getUpcomingEvents(),
     getCurrentUser(),
+    getSettings(),
   ])
 
   const mapped = articles.map((a) => ({
@@ -209,114 +211,128 @@ export default async function FeedPage({ searchParams }: Props) {
       </div>
 
       <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
-        {quickLinks.length > 0 && (
-          <section className="rounded-xl border border-gray-200 bg-white p-5">
-            <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
-              <Zap className="size-4 text-brand" aria-hidden />
-              Quick links
-            </h2>
-            <ul className="space-y-0.5">
-              {quickLinks.map((link) => {
-                const external = !link.url.startsWith("/")
-                return (
-                  <li key={link.id}>
-                    <a
-                      href={link.url}
-                      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                      className="group flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-gray-600
-                        transition hover:bg-gray-50 hover:text-brand"
-                    >
-                      <span className="truncate">{link.label}</span>
-                      {external && (
-                        <ExternalLink
-                          className="ml-auto size-3 shrink-0 text-gray-300 transition group-hover:text-brand"
-                          aria-hidden
-                        />
-                      )}
-                    </a>
-                  </li>
-                )
-              })}
-            </ul>
-          </section>
-        )}
-
-        {categories.length > 0 && (
-          <section className="rounded-xl border border-gray-200 bg-white p-5">
-            <h2 className="mb-3 text-sm font-semibold text-gray-900">Browse by topic</h2>
-            <ul className="flex flex-wrap gap-1.5">
-              {categories.map((cat) => (
-                <li key={cat.id}>
-                  <Link
-                    href={`/?category=${cat.slug}`}
-                    className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium transition ${
-                      categorySlug === cat.slug
-                        ? "bg-brand text-white"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    {cat.name}
+        {(settings.sidebarOrder?.split(",").filter(Boolean) ?? ["quickLinks", "browseByTopic", "upcomingEvents"]).map((blockId) => {
+          if (blockId === "quickLinks") {
+            if (quickLinks.length === 0) {
+              return can.manageContent(user) ? (
+                <p key="quickLinks" className="px-1 text-xs leading-relaxed text-gray-400">
+                  Add sidebar shortcuts under{" "}
+                  <Link href="/admin/navigation" className="font-medium text-brand hover:underline">
+                    Navigation
                   </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+                  .
+                </p>
+              ) : null
+            }
+            return (
+              <section key="quickLinks" className="rounded-xl border border-gray-200 bg-white p-5">
+                <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
+                  <Zap className="size-4 text-brand" aria-hidden />
+                  Quick links
+                </h2>
+                <ul className="space-y-0.5">
+                  {quickLinks.map((link) => {
+                    const external = !link.url.startsWith("/")
+                    return (
+                      <li key={link.id}>
+                        <a
+                          href={link.url}
+                          {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                          className="group flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-gray-600
+                            transition hover:bg-gray-50 hover:text-brand"
+                        >
+                          <span className="truncate">{link.label}</span>
+                          {external && (
+                            <ExternalLink
+                              className="ml-auto size-3 shrink-0 text-gray-300 transition group-hover:text-brand"
+                              aria-hidden
+                            />
+                          )}
+                        </a>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </section>
+            )
+          }
 
-        <section className="rounded-xl border border-gray-200 bg-white p-5">
-          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
-            <CalendarDays className="size-4 text-brand" aria-hidden />
-            Upcoming events
-          </h2>
-          {upcomingEvents.length === 0 ? (
-            <p className="text-xs text-gray-400">No upcoming events.</p>
-          ) : (
-            <ul className="space-y-2">
-              {upcomingEvents.map((ev) => {
-                const date = new Date(ev.eventDate!)
-                return (
-                  <li key={ev.id}>
-                    <Link
-                      href={`/articles/${ev.id}`}
-                      className="group block rounded-lg p-2 transition hover:bg-gray-50"
-                    >
-                      <p className="text-[11px] font-semibold text-brand">
-                        {date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                        {" · "}
-                        {date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
-                      </p>
-                      <p className="mt-0.5 line-clamp-2 text-xs font-medium text-gray-700 group-hover:text-brand transition">
-                        {ev.title}
-                      </p>
-                      {ev.eventLocation && (
-                        <p className="mt-0.5 flex items-center gap-1 text-[11px] text-gray-400">
-                          <MapPin className="size-2.5 shrink-0" aria-hidden />
-                          {ev.eventLocation}
-                        </p>
-                      )}
-                    </Link>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-          <Link
-            href="/events"
-            className="mt-3 block text-center text-xs font-medium text-brand hover:underline"
-          >
-            View full calendar →
-          </Link>
-        </section>
+          if (blockId === "browseByTopic") {
+            if (categories.length === 0) return null
+            return (
+              <section key="browseByTopic" className="rounded-xl border border-gray-200 bg-white p-5">
+                <h2 className="mb-3 text-sm font-semibold text-gray-900">Browse by topic</h2>
+                <ul className="flex flex-wrap gap-1.5">
+                  {categories.map((cat) => (
+                    <li key={cat.id}>
+                      <Link
+                        href={`/?category=${cat.slug}`}
+                        className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium transition ${
+                          categorySlug === cat.slug
+                            ? "bg-brand text-white"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                      >
+                        {cat.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )
+          }
 
-        {can.manageContent(user) && quickLinks.length === 0 && (
-          <p className="px-1 text-xs leading-relaxed text-gray-400">
-            Add sidebar shortcuts under{" "}
-            <Link href="/admin/navigation" className="font-medium text-brand hover:underline">
-              Navigation
-            </Link>
-            .
-          </p>
-        )}
+          if (blockId === "upcomingEvents") {
+            return (
+              <section key="upcomingEvents" className="rounded-xl border border-gray-200 bg-white p-5">
+                <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
+                  <CalendarDays className="size-4 text-brand" aria-hidden />
+                  Upcoming events
+                </h2>
+                {upcomingEvents.length === 0 ? (
+                  <p className="text-xs text-gray-400">No upcoming events.</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {upcomingEvents.map((ev) => {
+                      const date = new Date(ev.eventDate!)
+                      return (
+                        <li key={ev.id}>
+                          <Link
+                            href={`/articles/${ev.id}`}
+                            className="group block rounded-lg p-2 transition hover:bg-gray-50"
+                          >
+                            <p className="text-[11px] font-semibold text-brand">
+                              {date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                              {" · "}
+                              {date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                            </p>
+                            <p className="mt-0.5 line-clamp-2 text-xs font-medium text-gray-700 group-hover:text-brand transition">
+                              {ev.title}
+                            </p>
+                            {ev.eventLocation && (
+                              <p className="mt-0.5 flex items-center gap-1 text-[11px] text-gray-400">
+                                <MapPin className="size-2.5 shrink-0" aria-hidden />
+                                {ev.eventLocation}
+                              </p>
+                            )}
+                          </Link>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
+                <Link
+                  href="/events"
+                  className="mt-3 block text-center text-xs font-medium text-brand hover:underline"
+                >
+                  View full calendar →
+                </Link>
+              </section>
+            )
+          }
+
+          return null
+        })}
       </aside>
     </div>
   )

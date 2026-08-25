@@ -160,6 +160,8 @@ model SiteSettings {
   /// logo on a white card.
   logoOnLightUrl String?
   primaryColor   String @default("#2563eb")
+  /// Comma-separated IDs of the feed sidebar blocks in display order.
+  sidebarOrder   String @default("quickLinks,browseByTopic,upcomingEvents")
 }
 
 model AuditLog {

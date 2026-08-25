@@ -23,6 +23,7 @@ export type AuditAction =
   | "user.reactivate"
   | "settings.branding"
   | "settings.theme"
+  | "settings.navigation"
 
 interface LogInput {
   userId: string

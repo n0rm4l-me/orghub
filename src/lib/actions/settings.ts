@@ -53,6 +53,36 @@ export async function saveSettings(formData: FormData): Promise<ActionResult> {
   return ok("Branding updated.")
 }
 
+const SIDEBAR_BLOCK_IDS = new Set(["quickLinks", "browseByTopic", "upcomingEvents"])
+
+export async function saveSidebarOrder(order: string[]): Promise<ActionResult> {
+  const user = await requireRole("EDITOR")
+
+  // Validate: must be exactly the 3 known IDs in any order.
+  if (
+    order.length !== 3 ||
+    !order.every((id) => SIDEBAR_BLOCK_IDS.has(id)) ||
+    new Set(order).size !== 3
+  )
+    return fail("Invalid sidebar order.")
+
+  await db.siteSettings.upsert({
+    where: { id: "singleton" },
+    create: { id: "singleton", sidebarOrder: order.join(",") },
+    update: { sidebarOrder: order.join(",") },
+  })
+
+  await logAudit({
+    userId: user.id,
+    action: "settings.navigation",
+    resourceType: "SiteSettings",
+    metadata: { sidebarOrder: order },
+  })
+
+  revalidatePath("/")
+  return ok("Sidebar order saved.")
+}
+
 export async function saveTheme(formData: FormData): Promise<ActionResult> {
   const user = await requireRole("ADMIN")
 
