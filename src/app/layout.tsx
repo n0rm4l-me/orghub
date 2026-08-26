@@ -6,6 +6,9 @@ import { ToastProvider } from "@/components/ui/toaster"
 
 const geist = GeistSans
 
+// Layout reads from DB (site settings), so all pages must be dynamic
+export const dynamic = "force-dynamic"
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
