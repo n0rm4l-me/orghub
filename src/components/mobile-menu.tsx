@@ -69,7 +69,7 @@ export function MobileMenu({ items }: Props) {
                   placeholder="Search news"
                   aria-label="Search news"
                   className="w-full rounded-lg border border-white/15 bg-white/10 py-2.5 pl-9 pr-4
-                    text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2
+                    text-base text-white placeholder:text-white/60 focus:outline-none focus:ring-2
                     focus:ring-white/40"
                 />
               </div>

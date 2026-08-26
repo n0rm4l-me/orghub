@@ -27,7 +27,7 @@ export function CommentForm({ articleId }: { articleId: string }) {
         placeholder="Write a comment…"
         rows={3}
         maxLength={2000}
-        className="w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm
+        className="w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-base
           text-gray-900 placeholder:text-gray-400 focus:border-brand focus:outline-none focus:ring-2
           focus:ring-brand/20 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
       />
