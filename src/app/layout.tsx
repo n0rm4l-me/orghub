@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next"
-import { Geist } from "next/font/google"
+import { GeistSans } from "geist/font/sans"
 import "./globals.css"
 import { getSettings } from "@/lib/settings"
 import { ToastProvider } from "@/components/ui/toaster"
 
-const geist = Geist({ subsets: ["latin"] })
+const geist = GeistSans
 
 export const viewport: Viewport = {
   width: "device-width",
