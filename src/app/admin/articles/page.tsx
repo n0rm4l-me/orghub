@@ -1,12 +1,13 @@
 import { db } from "@/lib/db"
 import type { Prisma } from "@prisma/client"
 import Link from "next/link"
-import { Plus, FileText, Pin } from "lucide-react"
+import { Plus, FileText, Pin, Star, Pencil, Eye } from "lucide-react"
 import { requireRole } from "@/lib/rbac"
-import { togglePublish, deleteArticle, pinArticle } from "@/lib/actions/articles"
+import { togglePublish, deleteArticle, pinArticle, markImportant } from "@/lib/actions/articles"
 import { StatusToggle } from "@/components/ui/status-toggle"
 import { DeleteButton } from "@/components/ui/delete-button"
 import { PinButton } from "@/components/pin-button"
+import { ImportantButton } from "@/components/important-button"
 import { PageHeader } from "@/components/ui/page-header"
 import { EmptyState } from "@/components/ui/empty-state"
 import { AdminFilters } from "@/components/admin-filters"
@@ -44,16 +45,18 @@ export default async function ArticlesPage({ searchParams }: Props) {
   const [articles, total, counts] = await Promise.all([
     db.article.findMany({
       where,
-      orderBy: { updatedAt: "desc" },
+      orderBy: { createdAt: "desc" },
       select: {
         id: true,
         title: true,
         excerpt: true,
         published: true,
         pinned: true,
+        important: true,
         updatedAt: true,
         author: { select: { name: true, email: true } },
         categories: { select: { category: { select: { name: true } } } },
+        _count: { select: { views: true } },
       },
       skip: (page - 1) * PER_PAGE,
       take: PER_PAGE,
@@ -115,7 +118,9 @@ export default async function ArticlesPage({ searchParams }: Props) {
               <col className="w-36" />
               <col className="w-28" />
               <col className="w-24" />
-              <col className="w-10" />
+              <col className="w-16" />
+              <col className="w-9" />
+              <col className="w-9" />
               <col className="w-28" />
             </colgroup>
             <thead>
@@ -128,7 +133,15 @@ export default async function ArticlesPage({ searchParams }: Props) {
                 <th className="px-5 py-3 text-left">Author</th>
                 <th className="px-5 py-3 text-left">Status</th>
                 <th className="px-5 py-3 text-left">Updated</th>
-                <th className="px-5 py-3 text-center" title="Pin as featured">📌</th>
+                <th className="px-5 py-3 text-right" title="Unique readers">
+                  <Eye className="size-3.5 ml-auto" aria-hidden />
+                </th>
+                <th className="px-1 py-3 text-center" title="Pin as featured">
+                  <Pin className="size-3.5 mx-auto" aria-hidden />
+                </th>
+                <th className="px-1 py-3 text-center" title="Mark as important">
+                  <Star className="size-3.5 mx-auto" aria-hidden />
+                </th>
                 <th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -155,12 +168,16 @@ export default async function ArticlesPage({ searchParams }: Props) {
                   </td>
                   <td className="px-5 py-3">
                     {article.categories[0] && (
-                      <span
-                        className="inline-block max-w-full truncate rounded-full bg-gray-100 px-2 py-0.5
-                          text-xs font-medium text-gray-600"
-                      >
-                        {article.categories[0].category.name}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-1">
+                        <span className="inline-block max-w-full truncate rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                          {article.categories[0].category.name}
+                        </span>
+                        {article.categories.length > 1 && (
+                          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-400">
+                            +{article.categories.length - 1}
+                          </span>
+                        )}
+                      </div>
                     )}
                   </td>
                   <td className="truncate px-5 py-3 text-sm text-gray-500">
@@ -178,7 +195,10 @@ export default async function ArticlesPage({ searchParams }: Props) {
                       day: "numeric",
                     })}
                   </td>
-                  <td className="px-5 py-3 text-center">
+                  <td className="px-5 py-3 text-right text-xs text-gray-400">
+                    {article._count.views}
+                  </td>
+                  <td className="px-1 py-3 text-center">
                     {article.published && (
                       <PinButton
                         initialPinned={article.pinned}
@@ -186,20 +206,29 @@ export default async function ArticlesPage({ searchParams }: Props) {
                       />
                     )}
                   </td>
+                  <td className="px-1 py-3 text-center">
+                    {article.published && (
+                      <ImportantButton
+                        initialImportant={article.important}
+                        onMark={markImportant.bind(null, article.id)}
+                      />
+                    )}
+                  </td>
                   <td className="px-5 py-3">
-                    {/* Kept visible rather than hover-only: hidden controls are
-                        unreachable by touch and by keyboard tabbing. */}
-                    <div className="flex items-center justify-end gap-3">
+                    <div className="flex items-center justify-end gap-1.5">
                       <Link
                         href={`/admin/articles/${article.id}/edit`}
-                        className="text-xs font-medium text-gray-500 transition hover:text-brand"
+                        aria-label="Edit article"
+                        className="grid size-7 place-items-center rounded-md text-gray-400 transition
+                          hover:bg-gray-100 hover:text-gray-700"
                       >
-                        Edit
+                        <Pencil className="size-3.5" aria-hidden />
                       </Link>
                       <DeleteButton
                         entity="article"
                         name={article.title}
                         onDelete={deleteArticle.bind(null, article.id)}
+                        variant="icon"
                       />
                     </div>
                   </td>

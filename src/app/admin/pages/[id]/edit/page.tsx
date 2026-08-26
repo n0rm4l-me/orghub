@@ -19,10 +19,17 @@ export default async function EditPagePage({ params }: Props) {
   const { id } = await params
   await requireRole("EDITOR")
 
-  const page = await db.page.findUnique({
-    where: { id },
-    select: { id: true, title: true, slug: true, body: true, published: true },
-  })
+  const [page, parentCandidates] = await Promise.all([
+    db.page.findUnique({
+      where: { id },
+      select: { id: true, title: true, slug: true, body: true, published: true, parentId: true },
+    }),
+    db.page.findMany({
+      where: { parentId: null, id: { not: id } },
+      orderBy: { title: "asc" },
+      select: { id: true, title: true },
+    }),
+  ])
   if (!page) notFound()
 
   return (
@@ -36,11 +43,13 @@ export default async function EditPagePage({ params }: Props) {
       <ContentForm
         kind="page"
         action={updatePage.bind(null, id)}
+        parentPages={parentCandidates}
         values={{
           id: page.id,
           title: page.title,
           body: page.body as object,
           published: page.published,
+          parentId: page.parentId,
         }}
       />
     </div>

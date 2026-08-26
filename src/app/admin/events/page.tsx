@@ -1,7 +1,7 @@
 import { db } from "@/lib/db"
 import type { Prisma } from "@prisma/client"
 import Link from "next/link"
-import { Plus, CalendarDays, MapPin } from "lucide-react"
+import { Plus, CalendarDays, MapPin, Pencil } from "lucide-react"
 import { requireRole } from "@/lib/rbac"
 import { togglePublish, deleteArticle } from "@/lib/actions/articles"
 import { StatusToggle } from "@/components/ui/status-toggle"
@@ -33,7 +33,7 @@ export default async function AdminEventsPage({ searchParams }: Props) {
     ...(query ? { title: { contains: query, mode: "insensitive" } } : {}),
   }
 
-  const [events, total, counts] = await Promise.all([
+  const [events, total, publishedCount, draftCount] = await Promise.all([
     db.article.findMany({
       where,
       orderBy: { eventDate: "asc" },
@@ -50,7 +50,8 @@ export default async function AdminEventsPage({ searchParams }: Props) {
       take: PER_PAGE,
     }),
     db.article.count({ where }),
-    db.article.count({ where: { eventDate: { not: null } } }),
+    db.article.count({ where: { eventDate: { not: null }, published: true } }),
+    db.article.count({ where: { eventDate: { not: null }, published: false } }),
   ])
 
   const filtering = Boolean(query || status)
@@ -59,10 +60,10 @@ export default async function AdminEventsPage({ searchParams }: Props) {
     <div>
       <PageHeader
         title="Events"
-        description={`${counts} event${counts === 1 ? "" : "s"} total`}
+        description={`${publishedCount} published · ${draftCount} draft${draftCount === 1 ? "" : "s"}`}
         action={
           <Link
-            href="/admin/articles/new"
+            href="/admin/articles/new?kind=event"
             className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3.5 py-2 text-sm
               font-medium text-white transition hover:brightness-95 active:brightness-90"
           >
@@ -171,17 +172,20 @@ export default async function AdminEventsPage({ searchParams }: Props) {
                       />
                     </td>
                     <td className="px-5 py-3">
-                      <div className="flex items-center justify-end gap-3">
+                      <div className="flex items-center justify-end gap-1.5">
                         <Link
                           href={`/admin/articles/${ev.id}/edit`}
-                          className="text-xs font-medium text-gray-500 transition hover:text-brand"
+                          aria-label="Edit event"
+                          className="grid size-7 place-items-center rounded-md text-gray-400 transition
+                            hover:bg-gray-100 hover:text-gray-700"
                         >
-                          Edit
+                          <Pencil className="size-3.5" aria-hidden />
                         </Link>
                         <DeleteButton
                           entity="event"
                           name={ev.title}
                           onDelete={deleteArticle.bind(null, ev.id)}
+                          variant="icon"
                         />
                       </div>
                     </td>

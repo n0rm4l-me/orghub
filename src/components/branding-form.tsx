@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Loader2 } from "lucide-react"
 import { saveSettings } from "@/lib/actions/settings"
 import { useAction } from "@/lib/use-action"
-import { BrandLogo } from "@/components/brand-logo"
 import { Field, Panel, inputClass } from "@/components/ui/field"
 
 interface Props {
@@ -117,34 +116,6 @@ export function BrandingForm({ siteName, logoUrl, logoOnLightUrl, primaryColor }
         </div>
       </Panel>
 
-      <Panel
-        title="Preview"
-        description="Rendered with the live values above, on both backgrounds the logo has to survive."
-      >
-        <div className="space-y-3">
-          <div
-            className="flex h-14 items-center rounded-lg px-4"
-            style={{ backgroundColor: primaryColor }}
-          >
-            {/* Keyed on the URL so editing it remounts the loader and re-runs the
-                loading / failed states instead of keeping a stale verdict. */}
-            <BrandLogo key={`onbrand-${logo}`} logoUrl={logo || null} siteName={name || "OrgHub"} height={30} />
-          </div>
-          <div className="flex h-14 items-center rounded-lg border border-gray-200 bg-white px-4">
-            <BrandLogo
-              key={`onlight-${lightLogo}`}
-              logoUrl={logo || null}
-              logoOnLightUrl={lightLogo || null}
-              siteName={name || "OrgHub"}
-              height={26}
-              tone="dark"
-            />
-          </div>
-          <p className="text-xs text-gray-400">
-            Top: the portal header and admin sidebar. Bottom: the sign-in screen.
-          </p>
-        </div>
-      </Panel>
     </form>
   )
 }

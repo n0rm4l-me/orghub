@@ -24,6 +24,7 @@ interface Props {
   primaryColor: string
   siteName: string
   logoUrl: string | null
+  logoOnLightUrl: string | null
 }
 
 /**
@@ -34,7 +35,7 @@ interface Props {
  * The previous version had the presets and the colour input both named
  * `primaryColor`, which meant whichever came first in the DOM silently won.
  */
-export function ThemeForm({ primaryColor, siteName, logoUrl }: Props) {
+export function ThemeForm({ primaryColor, siteName, logoUrl, logoOnLightUrl }: Props) {
   const [color, setColor] = useState(primaryColor)
   const [text, setText] = useState(primaryColor)
   const { run, pending } = useAction(saveTheme)
@@ -150,29 +151,43 @@ export function ThemeForm({ primaryColor, siteName, logoUrl }: Props) {
         </div>
       </Panel>
 
-      <Panel title="Preview" description="The portal header as readers will see it.">
-        <div className="overflow-hidden rounded-lg" style={{ backgroundColor: color }}>
-          <div className="flex h-14 items-center gap-6 px-4">
-            <BrandLogo logoUrl={logoUrl} siteName={siteName} height={30} />
-            <nav className="flex gap-5 text-sm font-medium">
-              <span className="text-white">Feed</span>
-              <span className="text-white/70">Handbook</span>
-              <span className="text-white/70">Contacts</span>
-            </nav>
+      <Panel title="Preview" description="Live preview on both surfaces the logo has to survive.">
+        <div className="space-y-2">
+          <div className="overflow-hidden rounded-lg" style={{ backgroundColor: color }}>
+            <div className="flex h-14 items-center gap-6 px-4">
+              <BrandLogo logoUrl={logoUrl} siteName={siteName} height={30} />
+              <nav className="flex gap-5 text-sm font-medium">
+                <span className="text-white">Feed</span>
+                <span className="text-white/70">Handbook</span>
+                <span className="text-white/70">Contacts</span>
+              </nav>
+            </div>
           </div>
-        </div>
-        <div className="mt-3 flex items-center gap-3">
-          <button
-            type="button"
-            className="rounded-lg px-3.5 py-2 text-sm font-medium text-white transition
-              hover:brightness-95"
-            style={{ backgroundColor: color }}
-          >
-            Primary button
-          </button>
-          <span className="text-sm font-medium" style={{ color }}>
-            A link in body text
-          </span>
+          <div className="flex h-14 items-center rounded-lg border border-gray-200 bg-white px-4">
+            <BrandLogo
+              logoUrl={logoUrl}
+              logoOnLightUrl={logoOnLightUrl}
+              siteName={siteName}
+              height={26}
+              tone="dark"
+            />
+          </div>
+          <p className="text-xs text-gray-400">
+            Top: portal header. Bottom: sign-in screen.
+          </p>
+          <div className="flex items-center gap-3 pt-1">
+            <button
+              type="button"
+              className="rounded-lg px-3.5 py-2 text-sm font-medium text-white transition
+                hover:brightness-95"
+              style={{ backgroundColor: color }}
+            >
+              Primary button
+            </button>
+            <span className="text-sm font-medium" style={{ color }}>
+              A link in body text
+            </span>
+          </div>
         </div>
       </Panel>
     </form>

@@ -33,24 +33,28 @@ export async function saveSettings(formData: FormData): Promise<ActionResult> {
   if (logoLightRaw && !validImageUrl(logoLightRaw))
     return fail("Enter a full image URL starting with https://", "logoOnLightUrl")
 
+  const colorRaw = ((formData.get("primaryColor") as string) ?? "").trim()
+  if (colorRaw && !HEX_COLOR.test(colorRaw))
+    return fail("Pick a colour in #rrggbb format.", "primaryColor")
+
   const logos = { logoUrl: logoRaw || null, logoOnLightUrl: logoLightRaw || null }
+  const color = colorRaw ? { primaryColor: colorRaw } : {}
 
   await db.siteSettings.upsert({
     where: { id: "singleton" },
-    create: { id: "singleton", siteName, ...logos },
-    update: { siteName, ...logos },
+    create: { id: "singleton", siteName, ...logos, ...color },
+    update: { siteName, ...logos, ...color },
   })
 
   await logAudit({
     userId: user.id,
     action: "settings.branding",
     resourceType: "SiteSettings",
-    metadata: { siteName, ...logos },
+    metadata: { siteName, ...logos, ...color },
   })
 
-  // The header renders in the root layout, so every route's shell is stale.
   revalidatePath("/", "layout")
-  return ok("Branding updated.")
+  return ok("Branding saved.")
 }
 
 import { MODULES, type ModuleId } from "@/lib/modules"
@@ -58,32 +62,31 @@ import { MODULES, type ModuleId } from "@/lib/modules"
 const SIDEBAR_BLOCK_IDS = new Set(["quickLinks", "browseByTopic", "upcomingEvents"])
 const VALID_MODULE_IDS = new Set(Object.keys(MODULES) as ModuleId[])
 
-export async function saveSidebarOrder(order: string[]): Promise<ActionResult> {
+export async function saveSidebarWidgets(
+  right: string[],
+  left: string[],
+): Promise<ActionResult> {
   const user = await requireRole("EDITOR")
 
-  // Validate: must be exactly the 3 known IDs in any order.
-  if (
-    order.length !== 3 ||
-    !order.every((id) => SIDEBAR_BLOCK_IDS.has(id)) ||
-    new Set(order).size !== 3
-  )
-    return fail("Invalid sidebar order.")
+  const all = [...right, ...left]
+  if (!all.every((id) => SIDEBAR_BLOCK_IDS.has(id)) || new Set(all).size !== all.length)
+    return fail("Invalid widget placement.")
 
   await db.siteSettings.upsert({
     where: { id: "singleton" },
-    create: { id: "singleton", sidebarOrder: order.join(",") },
-    update: { sidebarOrder: order.join(",") },
+    create: { id: "singleton", sidebarOrder: right.join(","), leftSidebarOrder: left.join(",") },
+    update: { sidebarOrder: right.join(","), leftSidebarOrder: left.join(",") },
   })
 
   await logAudit({
     userId: user.id,
     action: "settings.navigation",
     resourceType: "SiteSettings",
-    metadata: { sidebarOrder: order },
+    metadata: { rightSidebar: right, leftSidebar: left },
   })
 
-  revalidatePath("/")
-  return ok("Sidebar order saved.")
+  revalidatePath("/", "layout")
+  return ok("Sidebar widgets saved.")
 }
 
 export async function saveEnabledModules(modules: string[]): Promise<ActionResult> {
@@ -109,6 +112,48 @@ export async function saveEnabledModules(modules: string[]): Promise<ActionResul
 
   revalidatePath("/", "layout")
   return ok("Module settings saved.")
+}
+
+
+const VALID_LAYOUTS     = new Set(["content", "sidebar-right", "sidebar-left", "sidebar-both"])
+const VALID_WIDTHS      = new Set(["narrow", "default", "wide"])
+const VALID_PAGE_SIZE   = new Set([5, 10, 15, 20, 25, 30])
+const VALID_CARD_STYLES = new Set(["compact", "default", "preview"])
+
+export async function saveLayout(formData: FormData): Promise<ActionResult> {
+  const user = await requireRole("ADMIN")
+
+  const feedLayout    = (formData.get("feedLayout")    as string) || "sidebar-right"
+  const articleLayout = (formData.get("articleLayout") as string) || "sidebar-right"
+  const pagesLayout   = (formData.get("pagesLayout")   as string) || "content"
+  const portalWidth   = (formData.get("portalWidth")   as string) || "default"
+  const feedPageSize  = Number(formData.get("feedPageSize")) || 15
+  const feedCardStyle = (formData.get("feedCardStyle") as string) || "preview"
+
+  if (!VALID_LAYOUTS.has(feedLayout) || !VALID_LAYOUTS.has(articleLayout) || !VALID_LAYOUTS.has(pagesLayout))
+    return fail("Invalid layout value.")
+  if (!VALID_WIDTHS.has(portalWidth))
+    return fail("Invalid width value.")
+  if (!VALID_PAGE_SIZE.has(feedPageSize))
+    return fail("Invalid page size.")
+  if (!VALID_CARD_STYLES.has(feedCardStyle))
+    return fail("Invalid card style.")
+
+  await db.siteSettings.upsert({
+    where: { id: "singleton" },
+    create: { id: "singleton", feedLayout, articleLayout, pagesLayout, portalWidth, feedPageSize, feedCardStyle },
+    update: { feedLayout, articleLayout, pagesLayout, portalWidth, feedPageSize, feedCardStyle },
+  })
+
+  await logAudit({
+    userId: user.id,
+    action: "settings.layout",
+    resourceType: "SiteSettings",
+    metadata: { feedLayout, articleLayout, pagesLayout, portalWidth, feedPageSize, feedCardStyle },
+  })
+
+  revalidatePath("/", "layout")
+  return ok("Layout saved.")
 }
 
 export async function saveTheme(formData: FormData): Promise<ActionResult> {

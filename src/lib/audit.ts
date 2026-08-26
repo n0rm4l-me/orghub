@@ -9,6 +9,13 @@ export type AuditAction =
   | "article.unpublish"
   | "article.pin"
   | "article.unpin"
+  | "article.mark_important"
+  | "article.unmark_important"
+  | "announcement.create"
+  | "announcement.update"
+  | "announcement.delete"
+  | "announcement.activate"
+  | "announcement.deactivate"
   | "page.create"
   | "page.update"
   | "page.delete"
@@ -27,6 +34,7 @@ export type AuditAction =
   | "settings.theme"
   | "settings.navigation"
   | "settings.modules"
+  | "settings.layout"
 
 interface LogInput {
   userId: string

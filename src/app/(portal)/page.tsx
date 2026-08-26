@@ -1,19 +1,35 @@
 import Link from "next/link"
 import { db } from "@/lib/db"
 import type { Prisma } from "@prisma/client"
-import { CalendarDays, ExternalLink, MapPin, Newspaper, Pin, SearchX, Zap } from "lucide-react"
+import { CalendarDays, Heart, Newspaper, Pin, SearchX, Star } from "lucide-react"
+import { SidebarBlocks } from "@/components/sidebar-blocks"
 import { CategoryFilter } from "@/components/category-filter"
 import { EmptyState } from "@/components/ui/empty-state"
 import { getQuickLinks, getUpcomingEvents } from "@/lib/nav"
 import { getSettings } from "@/lib/settings"
 import { parseModules } from "@/lib/modules"
 import { getCurrentUser, can } from "@/lib/rbac"
+import { FeedSeenMarker } from "@/components/feed-seen-marker"
 
-const PER_PAGE = 15
 const WORDS_PER_MINUTE = 200
 
 interface Props {
   searchParams: Promise<{ category?: string; q?: string; page?: string }>
+}
+
+function extractBodyText(body: unknown, maxLen = 120): string {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function walk(node: any): string {
+    if (!node) return ""
+    if (node.type === "text") return node.text ?? ""
+    if (!node.content) return ""
+    return (node.content as unknown[]).reduce((acc: string, child) => {
+      if (acc.length >= maxLen) return acc
+      return acc + walk(child)
+    }, "")
+  }
+  const raw = walk(body).replace(/\s+/g, " ").trim()
+  return raw.length > maxLen ? raw.slice(0, maxLen) + "…" : raw
 }
 
 function initialsOf(name: string | null): string {
@@ -34,26 +50,9 @@ const dateFormat: Intl.DateTimeFormatOptions = {
   year: "numeric",
 }
 
-function Byline({
-  author,
-  date,
-  readTime,
-}: {
-  author: { name: string; initials: string }
-  date: string
-  readTime: string
-}) {
+function Byline({ date, readTime }: { date: string; readTime: string }) {
   return (
     <div className="flex items-center gap-2 text-xs text-gray-400">
-      <span
-        aria-hidden
-        className="grid size-6 shrink-0 place-items-center rounded-full bg-gray-100 text-[10px]
-          font-bold text-gray-600"
-      >
-        {author.initials}
-      </span>
-      <span className="font-medium text-gray-600">{author.name}</span>
-      <span aria-hidden>·</span>
       <span>{date}</span>
       <span aria-hidden>·</span>
       <span>{readTime}</span>
@@ -65,37 +64,65 @@ type MappedArticle = {
   id: string
   title: string
   excerpt: string
+  snippet: string
   category: { name: string; slug: string } | null
   author: { name: string; initials: string }
   date: string
   readTime: string
   eventDate: Date | null
+  coverImage: string | null
+  reactionCount: number
+  liked: boolean
+  important: boolean
+  isNew: boolean
 }
 
-function FeaturedCard({ article, pinned = false }: { article: MappedArticle; pinned?: boolean }) {
+function FeaturedCard({
+  article,
+  pinned = false,
+}: {
+  article: MappedArticle
+  pinned?: boolean
+}) {
   return (
-    <Link href={`/articles/${article.id}`} className="group mb-3 block">
-      <article
-        className="overflow-hidden rounded-2xl border border-gray-200 bg-white transition-shadow
-          group-hover:shadow-md"
-      >
-        <div className="h-1.5 w-full bg-brand" aria-hidden />
-        <div className="p-6">
+    <article className={`group mb-3 overflow-hidden rounded-2xl border transition-shadow hover:shadow-md ${article.important ? "border-amber-200 bg-amber-50/40" : "border-gray-200 bg-white"}`}>
+      <Link href={`/articles/${article.id}`} className="block">
+        {article.coverImage ? (
+          <div className="relative h-48 overflow-hidden">
+            <img src={article.coverImage} alt="" className="h-full w-full object-cover" />
+            <div
+              className={`absolute inset-x-0 bottom-0 h-1.5 ${article.important ? "bg-amber-400/80" : "bg-brand/80"}`}
+              aria-hidden
+            />
+          </div>
+        ) : (
+          <div
+            className={`h-1.5 w-full ${article.important ? "bg-amber-400" : "bg-brand"}`}
+            aria-hidden
+          />
+        )}
+        <div className="p-6 pb-4">
           <div className="mb-3 flex flex-wrap items-center gap-2">
+            {article.important && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/60 px-2.5 py-1 text-xs font-semibold text-amber-600">
+                <Star className="size-3 fill-amber-400" aria-hidden />
+                Important
+              </span>
+            )}
             {pinned && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">
+              <span className="inline-flex items-center gap-1 rounded-full border border-brand/30 px-2.5 py-1 text-xs font-semibold text-brand">
                 <Pin className="size-3" aria-hidden />
                 Pinned
               </span>
             )}
             {article.eventDate && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300/60 px-2.5 py-1 text-xs font-semibold text-emerald-600">
                 <CalendarDays className="size-3" aria-hidden />
                 Event
               </span>
             )}
             {article.category && (
-              <span className="inline-block rounded-full bg-brand px-2.5 py-1 text-xs font-semibold text-white">
+              <span className="inline-block rounded-full border border-brand/30 px-2.5 py-1 text-xs font-semibold text-brand">
                 {article.category.name}
               </span>
             )}
@@ -108,10 +135,18 @@ function FeaturedCard({ article, pinned = false }: { article: MappedArticle; pin
               {article.excerpt}
             </p>
           )}
-          <Byline {...article} />
         </div>
-      </article>
-    </Link>
+      </Link>
+      <div className="flex items-center justify-between px-6 pb-4">
+        <Byline {...article} />
+        {article.reactionCount > 0 && (
+          <span className="flex items-center gap-1 text-xs text-gray-400">
+            <Heart className="size-3" aria-hidden />
+            {article.reactionCount}
+          </span>
+        )}
+      </div>
+    </article>
   )
 }
 
@@ -150,11 +185,17 @@ export default async function FeedPage({ searchParams }: Props) {
     publishedAt: true,
     eventDate: true,
     eventLocation: true,
+    coverImage: true,
     author: { select: { name: true } },
     categories: { select: { category: { select: { name: true, slug: true } } } },
+    _count: { select: { reactions: true } },
+    important: true,
   } as const
 
-  const [articles, total, categories, quickLinks, upcomingEvents, user, settings, pinnedRaw] =
+  const settings = await getSettings()
+  const PER_PAGE = settings.feedPageSize ?? 15
+
+  const [articles, total, categories, quickLinks, upcomingEvents, user, pinnedRaw] =
     await Promise.all([
       db.article.findMany({
         where: listWhere,
@@ -168,7 +209,6 @@ export default async function FeedPage({ searchParams }: Props) {
       getQuickLinks(),
       getUpcomingEvents(),
       getCurrentUser(),
-      getSettings(),
       db.article.findMany({
         where: { published: true, pinned: true, eventDate: null },
         orderBy: { publishedAt: "desc" },
@@ -176,16 +216,41 @@ export default async function FeedPage({ searchParams }: Props) {
       }),
     ])
 
+  const allArticleIds = [...articles.map((a) => a.id), ...pinnedRaw.map((a) => a.id)]
+  let likedIds: Set<string> = new Set()
+  let lastFeedVisitAt: Date | null = null
+
+  if (user) {
+    const [reactions, feedUser] = await Promise.all([
+      db.articleReaction.findMany({
+        where: { userId: user.id, articleId: { in: allArticleIds } },
+        select: { articleId: true },
+      }),
+      db.user.findUnique({
+        where: { id: user.id },
+        select: { lastFeedVisitAt: true },
+      }),
+    ])
+    likedIds = new Set(reactions.map((r) => r.articleId))
+    lastFeedVisitAt = feedUser?.lastFeedVisitAt ?? null
+  }
+
   function mapArticle(a: (typeof articles)[0]) {
     return {
       id: a.id,
       title: a.title,
       excerpt: a.excerpt ?? "",
+      snippet: a.excerpt ?? extractBodyText(a.body, 120),
       category: a.categories[0]?.category ?? null,
       author: { name: a.author.name ?? "Unknown", initials: initialsOf(a.author.name) },
       date: a.publishedAt ? new Date(a.publishedAt).toLocaleDateString("en-US", dateFormat) : "",
       readTime: `${Math.max(1, Math.round(JSON.stringify(a.body).split(/\s+/).length / WORDS_PER_MINUTE))} min read`,
       eventDate: a.eventDate ?? null,
+      coverImage: a.coverImage ?? null,
+      reactionCount: a._count.reactions,
+      liked: likedIds.has(a.id),
+      important: a.important,
+      isNew: lastFeedVisitAt !== null && a.publishedAt !== null && a.publishedAt > lastFeedVisitAt,
     }
   }
 
@@ -200,13 +265,31 @@ export default async function FeedPage({ searchParams }: Props) {
 
   const totalPages = Math.ceil(total / PER_PAGE)
   const eventsEnabled = parseModules(settings.enabledModules).has("events")
-  const sidebarBlocks = settings.sidebarOrder?.split(",").filter(Boolean) ?? ["quickLinks", "browseByTopic", "upcomingEvents"]
+  const feedLayout = settings.feedLayout ?? "sidebar-right"
+  const cardStyle = (settings.feedCardStyle ?? "preview") as "compact" | "default" | "preview"
+  const rightBlocks = settings.sidebarOrder?.split(",").filter(Boolean) ?? ["quickLinks", "browseByTopic", "upcomingEvents"]
+  const leftBlocks  = settings.leftSidebarOrder?.split(",").filter(Boolean) ?? []
+  const showLeft  = feedLayout === "sidebar-left"  || feedLayout === "sidebar-both"
+  const showRight = feedLayout === "sidebar-right" || feedLayout === "sidebar-both"
 
   return (
     <>
+      <FeedSeenMarker />
       <CategoryFilter categories={categories} active={categorySlug} query={query} />
       <div className="flex items-start gap-8">
-      <div className="min-w-0 flex-1">
+        {showLeft && (
+          <aside className="sticky top-20 hidden w-52 shrink-0 space-y-4 lg:block">
+            <SidebarBlocks
+              blocks={leftBlocks}
+              eventsEnabled={eventsEnabled}
+              quickLinks={quickLinks}
+              categories={categories}
+              upcomingEvents={upcomingEvents}
+              activeCategory={categorySlug}
+            />
+          </aside>
+        )}
+        <div className="min-w-0 flex-1">
 
         {query && (
           <p className="mb-4 text-sm text-gray-500">
@@ -252,37 +335,69 @@ export default async function FeedPage({ searchParams }: Props) {
           <ul className="space-y-2">
             {finalListed.map((article) => (
               <li key={article.id}>
-                <Link href={`/articles/${article.id}`} className="group block">
-                  <article
-                    className="flex items-start gap-4 rounded-xl border border-gray-200 bg-white px-5 py-4
-                      transition group-hover:border-gray-300 group-hover:shadow-sm"
+                <article
+                  className={`group overflow-hidden rounded-xl border transition hover:shadow-sm ${
+                    article.important
+                      ? "border-amber-200 bg-amber-50/40 hover:border-amber-300"
+                      : "border-gray-200 bg-white hover:border-gray-300"
+                  }`}
+                >
+                  <Link
+                    href={`/articles/${article.id}`}
+                    className="flex min-w-0 items-center gap-3 px-4 pt-4 pb-3"
                   >
-                    <span
-                      aria-hidden
-                      className="mt-0.5 w-1 shrink-0 self-stretch rounded-full bg-brand/40"
-                    />
+                    {cardStyle === "preview" && article.coverImage && (
+                      <img
+                        src={article.coverImage}
+                        alt=""
+                        className="size-14 shrink-0 rounded-md object-cover"
+                      />
+                    )}
                     <div className="min-w-0 flex-1">
-                      {article.category && (
-                        <p className="mb-1 text-[11px] font-semibold tracking-wide text-gray-500 uppercase">
-                          {article.category.name}
-                        </p>
+                      <div className="mb-0.5 flex items-center gap-2">
+                        {article.isNew && (
+                          <span className="shrink-0 rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                            NEW
+                          </span>
+                        )}
+                        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-gray-900 transition-colors group-hover:text-brand">
+                          {article.title}
+                        </h3>
+                      </div>
+                      {cardStyle === "preview" && article.snippet && (
+                        <p className="line-clamp-1 text-xs text-gray-400">{article.snippet}</p>
                       )}
-                      <h3
-                        className="mb-1 line-clamp-2 text-sm leading-snug font-semibold text-gray-900
-                          transition-colors group-hover:text-brand"
-                      >
-                        {article.title}
-                      </h3>
-                      {article.excerpt && (
+                      {cardStyle === "default" && article.excerpt && (
                         <p className="line-clamp-1 text-xs text-gray-400">{article.excerpt}</p>
                       )}
                     </div>
-                    <div className="shrink-0 space-y-1 pt-0.5 text-right text-xs text-gray-400">
-                      <p className="whitespace-nowrap">{article.date}</p>
-                      <p className="whitespace-nowrap">{article.readTime}</p>
-                    </div>
-                  </article>
-                </Link>
+                  </Link>
+                  <div className="flex items-center gap-2 px-4 pb-3 text-[11px] text-gray-400">
+                    {article.category && (
+                      <span className="rounded-full border border-brand/30 px-2 py-0.5 font-medium text-brand">
+                        {article.category.name}
+                      </span>
+                    )}
+                    {article.important && (
+                      <span className="rounded-full border border-amber-300/60 px-2 py-0.5 font-medium text-amber-600">
+                        Important
+                      </span>
+                    )}
+                    <span className="flex-1" />
+                    <span>{article.date}</span>
+                    <span aria-hidden className="text-gray-300">·</span>
+                    <span>{article.readTime}</span>
+                    {article.reactionCount > 0 && (
+                      <>
+                        <span aria-hidden className="text-gray-300">·</span>
+                        <span className="flex items-center gap-1">
+                          <Heart className="size-3" aria-hidden />
+                          {article.reactionCount}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </article>
               </li>
             ))}
           </ul>
@@ -293,132 +408,28 @@ export default async function FeedPage({ searchParams }: Props) {
         )}
       </div>
 
-      <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
-        {sidebarBlocks.map((blockId) => {
-          if (blockId === "upcomingEvents" && !eventsEnabled) return null
-          if (blockId === "quickLinks") {
-            if (quickLinks.length === 0) {
-              return can.manageContent(user) ? (
-                <p key="quickLinks" className="px-1 text-xs leading-relaxed text-gray-400">
-                  Add sidebar shortcuts under{" "}
-                  <Link href="/admin/navigation" className="font-medium text-brand hover:underline">
-                    Navigation
-                  </Link>
-                  .
-                </p>
-              ) : null
-            }
-            return (
-              <section key="quickLinks" className="rounded-xl border border-gray-200 bg-white p-5">
-                <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
-                  <Zap className="size-4 text-brand" aria-hidden />
-                  Quick links
-                </h2>
-                <ul className="space-y-0.5">
-                  {quickLinks.map((link) => {
-                    const external = !link.url.startsWith("/")
-                    return (
-                      <li key={link.id}>
-                        <a
-                          href={link.url}
-                          {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                          className="group flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-gray-600
-                            transition hover:bg-gray-50 hover:text-brand"
-                        >
-                          <span className="truncate">{link.label}</span>
-                          {external && (
-                            <ExternalLink
-                              className="ml-auto size-3 shrink-0 text-gray-300 transition group-hover:text-brand"
-                              aria-hidden
-                            />
-                          )}
-                        </a>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </section>
-            )
-          }
-
-          if (blockId === "browseByTopic") {
-            if (categories.length === 0) return null
-            return (
-              <section key="browseByTopic" className="rounded-xl border border-gray-200 bg-white p-5">
-                <h2 className="mb-3 text-sm font-semibold text-gray-900">Browse by topic</h2>
-                <ul className="flex flex-wrap gap-1.5">
-                  {categories.map((cat) => (
-                    <li key={cat.id}>
-                      <Link
-                        href={`/?category=${cat.slug}`}
-                        className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium transition ${
-                          categorySlug === cat.slug
-                            ? "bg-brand text-white"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
-                      >
-                        {cat.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )
-          }
-
-          if (blockId === "upcomingEvents") {
-            return (
-              <section key="upcomingEvents" className="rounded-xl border border-gray-200 bg-white p-5">
-                <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
-                  <CalendarDays className="size-4 text-brand" aria-hidden />
-                  Upcoming events
-                </h2>
-                {upcomingEvents.length === 0 ? (
-                  <p className="text-xs text-gray-400">No upcoming events.</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {upcomingEvents.map((ev) => {
-                      const date = new Date(ev.eventDate!)
-                      return (
-                        <li key={ev.id}>
-                          <Link
-                            href={`/articles/${ev.id}`}
-                            className="group block rounded-lg p-2 transition hover:bg-gray-50"
-                          >
-                            <p className="text-[11px] font-semibold text-brand">
-                              {date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                              {" · "}
-                              {date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
-                            </p>
-                            <p className="mt-0.5 line-clamp-2 text-xs font-medium text-gray-700 group-hover:text-brand transition">
-                              {ev.title}
-                            </p>
-                            {ev.eventLocation && (
-                              <p className="mt-0.5 flex items-center gap-1 text-[11px] text-gray-400">
-                                <MapPin className="size-2.5 shrink-0" aria-hidden />
-                                {ev.eventLocation}
-                              </p>
-                            )}
-                          </Link>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                )}
-                <Link
-                  href="/events"
-                  className="mt-3 block text-center text-xs font-medium text-brand hover:underline"
-                >
-                  View full calendar →
+        {showRight && (
+          <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
+            {rightBlocks.length === 0 && can.manageContent(user) && (
+              <p className="px-1 text-xs leading-relaxed text-gray-400">
+                Add sidebar shortcuts under{" "}
+                <Link href="/admin/navigation" className="font-medium text-brand hover:underline">
+                  Navigation
                 </Link>
-              </section>
-            )
-          }
-
-          return null
-        })}
-      </aside>
-    </div>
+                .
+              </p>
+            )}
+            <SidebarBlocks
+              blocks={rightBlocks}
+              eventsEnabled={eventsEnabled}
+              quickLinks={quickLinks}
+              categories={categories}
+              upcomingEvents={upcomingEvents}
+              activeCategory={categorySlug}
+            />
+          </aside>
+        )}
+      </div>
     </>
   )
 }
@@ -450,11 +461,11 @@ function Pagination({
     <nav className="mt-6 flex items-center justify-between" aria-label="Pagination">
       {page > 1 ? (
         <Link href={href(page - 1)} className={`${base} text-gray-700`} rel="prev">
-          ← Newer
+          ← Previous
         </Link>
       ) : (
         <span className={`${base} cursor-not-allowed text-gray-300`} aria-disabled>
-          ← Newer
+          ← Previous
         </span>
       )}
 
@@ -464,11 +475,11 @@ function Pagination({
 
       {page < totalPages ? (
         <Link href={href(page + 1)} className={`${base} text-gray-700`} rel="next">
-          Older →
+          Next →
         </Link>
       ) : (
         <span className={`${base} cursor-not-allowed text-gray-300`} aria-disabled>
-          Older →
+          Next →
         </span>
       )}
     </nav>

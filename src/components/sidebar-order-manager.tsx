@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { ChevronUp, ChevronDown, Zap, Tag, CalendarDays } from "lucide-react"
-import { saveSidebarOrder } from "@/lib/actions/settings"
+import { saveSidebarWidgets } from "@/lib/actions/settings"
 import { useAction } from "@/lib/use-action"
 import { Panel } from "@/components/ui/field"
 import type { LucideIcon } from "lucide-react"
@@ -20,7 +20,7 @@ interface Props {
 
 export function SidebarOrderManager({ initialOrder, enabledModules }: Props) {
   const [order, setOrder] = useState(initialOrder)
-  const { run, pending } = useAction(saveSidebarOrder)
+  const { run, pending } = useAction((order: string[]) => saveSidebarWidgets(order, []))
 
   function move(idx: number, dir: "up" | "down") {
     const next = [...order]

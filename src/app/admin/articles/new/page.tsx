@@ -4,10 +4,15 @@ import { createArticle } from "@/lib/actions/articles"
 import { ContentForm } from "@/components/content-form"
 import { EditorHeader } from "@/components/editor-header"
 
-export const metadata = { title: "New article" }
+interface Props {
+  searchParams: Promise<{ kind?: string }>
+}
 
-export default async function NewArticlePage() {
+export default async function NewArticlePage({ searchParams }: Props) {
   await requireRole("EDITOR")
+  const { kind } = await searchParams
+  const isEvent = kind === "event"
+
   const categories = await db.category.findMany({
     orderBy: { name: "asc" },
     select: { id: true, name: true, slug: true },
@@ -15,7 +20,11 @@ export default async function NewArticlePage() {
 
   return (
     <div>
-      <EditorHeader backHref="/admin/articles" backLabel="Articles" title="New article" />
+      <EditorHeader
+        backHref={isEvent ? "/admin/events" : "/admin/articles"}
+        backLabel={isEvent ? "Events" : "Articles"}
+        title={isEvent ? "New event" : "New article"}
+      />
       <ContentForm
         kind="article"
         categories={categories}

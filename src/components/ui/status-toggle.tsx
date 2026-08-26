@@ -7,6 +7,8 @@ import type { ActionResult } from "@/lib/actions/types"
 interface Props {
   published: boolean
   onToggle: (published: boolean) => Promise<ActionResult>
+  labelOn?: string
+  labelOff?: string
 }
 
 /**
@@ -15,7 +17,7 @@ interface Props {
  * The label reflects the current state and the tooltip names the action, so the
  * control never leaves the user guessing whether it reads or writes.
  */
-export function StatusToggle({ published, onToggle }: Props) {
+export function StatusToggle({ published, onToggle, labelOn = "Published", labelOff = "Draft" }: Props) {
   const { run, pending } = useAction(onToggle)
 
   return (
@@ -40,7 +42,7 @@ export function StatusToggle({ published, onToggle }: Props) {
           className={`size-1.5 rounded-full ${published ? "bg-emerald-500" : "bg-amber-500"}`}
         />
       )}
-      {published ? "Published" : "Draft"}
+      {published ? labelOn : labelOff}
     </button>
   )
 }

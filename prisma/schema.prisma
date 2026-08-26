@@ -29,10 +29,15 @@ model User {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
+  lastFeedVisitAt DateTime?
+
   accounts  Account[]
   sessions  Session[]
   articles  Article[]
   auditLogs AuditLog[]
+  reactions ArticleReaction[]
+  comments  Comment[]
+  views     ArticleView[]
 }
 
 model Account {
@@ -86,15 +91,33 @@ model Article {
   eventDate     DateTime?
   eventEndDate  DateTime?
   eventLocation String?
-  pinned        Boolean   @default(false)
+  pinned           Boolean   @default(false)
+  important        Boolean   @default(false)
+  commentsEnabled  Boolean   @default(true)
 
   authorId   String
   author     User                   @relation(fields: [authorId], references: [id])
   categories CategoriesOnArticles[]
+  reactions  ArticleReaction[]
+  comments   Comment[]
+  views      ArticleView[]
 
   @@index([published, publishedAt])
   @@index([published, eventDate])
   @@index([organizationId])
+}
+
+model ArticleView {
+  articleId String
+  userId    String
+  viewedAt  DateTime @default(now())
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, userId])
+  @@index([articleId])
+  @@index([viewedAt])
 }
 
 model Page {
@@ -110,7 +133,12 @@ model Page {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
+  parentId String?
+  parent   Page?   @relation("PageChildren", fields: [parentId], references: [id], onDelete: SetNull)
+  children Page[]  @relation("PageChildren")
+
   @@index([published, order])
+  @@index([parentId])
 }
 
 /// Sidebar shortcuts on the feed: payroll, VPN, service desk, and the like.
@@ -165,6 +193,60 @@ model SiteSettings {
   sidebarOrder   String @default("quickLinks,browseByTopic,upcomingEvents")
   /// Comma-separated IDs of enabled optional modules (e.g. "events").
   enabledModules String @default("events")
+  /// Layout for the feed homepage: "content" | "sidebar-right" | "sidebar-left" | "sidebar-both"
+  feedLayout     String @default("sidebar-right")
+  /// Layout for article reader pages.
+  articleLayout  String @default("sidebar-right")
+  /// Layout for static wiki Pages.
+  pagesLayout    String @default("content")
+  /// Comma-separated IDs of widgets in the left sidebar, in display order.
+  leftSidebarOrder String @default("")
+  /// Portal content width: "narrow" (1024px) | "default" (1152px) | "wide" (1280px)
+  portalWidth      String @default("default")
+  /// Number of articles per page on the feed.
+  feedPageSize     Int    @default(15)
+  /// Feed card style: "compact" | "default" | "preview"
+  feedCardStyle    String @default("preview")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  body      String
+  createdAt DateTime @default(now())
+
+  authorId  String
+  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  articleId String
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@index([articleId])
+}
+
+model ArticleReaction {
+  articleId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, userId])
+  @@index([articleId])
+}
+
+model Announcement {
+  id         String    @id @default(cuid())
+  message    String
+  linkUrl    String?
+  linkLabel  String?
+  color      String    @default("brand")
+  active     Boolean   @default(false)
+  showFrom   DateTime?
+  showUntil  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([active])
 }
 
 model AuditLog {

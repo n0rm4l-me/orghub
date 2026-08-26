@@ -47,25 +47,31 @@ export async function setPageInNav(pageId: string, showInNav: boolean): Promise<
 export async function movePage(pageId: string, direction: "up" | "down"): Promise<ActionResult> {
   const user = await requireRole("EDITOR")
 
-  const pages = await db.page.findMany({
+  const page = await db.page.findUnique({
+    where: { id: pageId },
+    select: { title: true, parentId: true },
+  })
+  if (!page) return fail("This page no longer exists.")
+
+  // Scope reordering to siblings (same parentId) so children can't escape their parent group.
+  const siblings = await db.page.findMany({
+    where: { parentId: page.parentId },
     orderBy: [{ order: "asc" }, { title: "asc" }],
     select: { id: true, title: true },
   })
 
-  const index = pages.findIndex((p) => p.id === pageId)
+  const index = siblings.findIndex((p) => p.id === pageId)
   if (index === -1) return fail("This page no longer exists.")
 
   const target = direction === "up" ? index - 1 : index + 1
-  if (target < 0 || target >= pages.length) return ok()
+  if (target < 0 || target >= siblings.length) return ok()
 
-  // Rewrite the whole sequence: cheap at this scale and it repairs any
-  // duplicate or gapped order values left by earlier edits.
-  const reordered = [...pages]
+  const reordered = [...siblings]
   const [moved] = reordered.splice(index, 1)
   reordered.splice(target, 0, moved!)
 
   await db.$transaction(
-    reordered.map((page, i) => db.page.update({ where: { id: page.id }, data: { order: i } }))
+    reordered.map((p, i) => db.page.update({ where: { id: p.id }, data: { order: i } }))
   )
 
   await logAudit({
@@ -73,7 +79,7 @@ export async function movePage(pageId: string, direction: "up" | "down"): Promis
     action: "nav.update",
     resourceType: "Page",
     resourceId: pageId,
-    metadata: { title: pages[index]!.title, direction },
+    metadata: { title: page.title, direction },
   })
 
   revalidateNav()

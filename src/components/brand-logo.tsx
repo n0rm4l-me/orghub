@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 
 interface Props {
@@ -42,6 +42,14 @@ export function BrandLogo({
   const [state, setState] = useState<"loading" | "loaded" | "failed">(
     src ? "loading" : "failed"
   )
+  const imgRef = useRef<HTMLImageElement>(null)
+
+  useEffect(() => {
+    const img = imgRef.current
+    if (!img) return
+    if (img.complete && img.naturalWidth > 0) setState("loaded")
+    else if (img.complete) setState("failed")
+  }, [])
 
   const initials = siteName.slice(0, 2).toUpperCase()
 
@@ -88,6 +96,7 @@ export function BrandLogo({
       )}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
+        ref={imgRef}
         src={src}
         alt={siteName}
         /* Decode off the main thread so a large logo cannot block first paint. */

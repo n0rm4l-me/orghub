@@ -9,9 +9,18 @@ import { db } from "@/lib/db"
  */
 export const getNavPages = cache(async () =>
   db.page.findMany({
-    where: { published: true, showInNav: true },
+    where: { published: true, showInNav: true, parentId: null },
     orderBy: [{ order: "asc" }, { title: "asc" }],
-    select: { id: true, title: true, slug: true },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      children: {
+        where: { published: true, showInNav: true },
+        orderBy: [{ order: "asc" }, { title: "asc" }],
+        select: { id: true, title: true, slug: true },
+      },
+    },
     take: 8,
   })
 )

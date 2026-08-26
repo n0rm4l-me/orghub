@@ -18,9 +18,11 @@ interface ParsedInput {
   body: object
   categoryId: string | null
   published: boolean
+  commentsEnabled: boolean
   eventDate: Date | null
   eventEndDate: Date | null
   eventLocation: string | null
+  coverImage: string | null
 }
 
 /** Validates and normalizes the editor payload. */
@@ -46,6 +48,7 @@ function parse(formData: FormData): ParsedInput | { error: string; field: string
   const eventDateRaw = ((formData.get("eventDate") as string) ?? "").trim()
   const eventEndDateRaw = ((formData.get("eventEndDate") as string) ?? "").trim()
   const eventLocationRaw = ((formData.get("eventLocation") as string) ?? "").trim()
+  const coverImageRaw = ((formData.get("coverImage") as string) ?? "").trim()
 
   const eventDate = eventDateRaw ? new Date(eventDateRaw) : null
   const eventEndDate = eventEndDateRaw ? new Date(eventEndDateRaw) : null
@@ -65,9 +68,11 @@ function parse(formData: FormData): ParsedInput | { error: string; field: string
     body,
     categoryId: categoryId || null,
     published: formData.get("published") === "true",
+    commentsEnabled: formData.get("commentsEnabled") !== "false",
     eventDate,
     eventEndDate,
     eventLocation: eventLocationRaw || null,
+    coverImage: coverImageRaw || null,
   }
 }
 
@@ -96,9 +101,11 @@ export async function createArticle(
       body: parsed.body,
       published: parsed.published,
       publishedAt: parsed.published ? new Date() : null,
+      commentsEnabled: parsed.commentsEnabled,
       eventDate: parsed.eventDate,
       eventEndDate: parsed.eventEndDate,
       eventLocation: parsed.eventLocation,
+      coverImage: parsed.coverImage,
       authorId: user.id,
       categories: parsed.categoryId ? { create: { categoryId: parsed.categoryId } } : undefined,
     },
@@ -151,9 +158,11 @@ export async function updateArticle(
       published: parsed.published,
       // Preserve the original publish timestamp across edits.
       publishedAt: parsed.published ? (existing.publishedAt ?? new Date()) : null,
+      commentsEnabled: parsed.commentsEnabled,
       eventDate: parsed.eventDate,
       eventEndDate: parsed.eventEndDate,
       eventLocation: parsed.eventLocation,
+      coverImage: parsed.coverImage,
       categories: {
         deleteMany: {},
         ...(parsed.categoryId ? { create: { categoryId: parsed.categoryId } } : {}),
@@ -221,6 +230,31 @@ export async function pinArticle(id: string): Promise<ActionResult> {
   revalidatePath("/")
   revalidatePath("/admin/articles")
   return ok(pinning ? `"${existing.title}" pinned to the feed.` : `"${existing.title}" unpinned.`)
+}
+
+export async function markImportant(id: string): Promise<ActionResult> {
+  const user = await requireRole("EDITOR")
+
+  const existing = await db.article.findUnique({
+    where: { id },
+    select: { title: true, important: true },
+  })
+  if (!existing) return fail("This article no longer exists.")
+
+  const marking = !existing.important
+  await db.article.update({ where: { id }, data: { important: marking } })
+
+  await logAudit({
+    userId: user.id,
+    action: marking ? "article.mark_important" : "article.unmark_important",
+    resourceType: "Article",
+    resourceId: id,
+    metadata: { title: existing.title },
+  })
+
+  revalidatePath("/")
+  revalidatePath("/admin/articles")
+  return ok(marking ? `"${existing.title}" marked as important.` : `"${existing.title}" unmarked.`)
 }
 
 export async function togglePublish(

@@ -1,13 +1,17 @@
 import Link from "next/link"
-import { Search, LayoutDashboard } from "lucide-react"
+import { Search } from "lucide-react"
+import { db } from "@/lib/db"
 import { getSettings } from "@/lib/settings"
 import { getNavPages } from "@/lib/nav"
 import { getCurrentUser, can } from "@/lib/rbac"
 import { parseModules } from "@/lib/modules"
 import { BrandLogo } from "@/components/brand-logo"
 import { HeaderNav } from "@/components/header-nav"
+import { UserMenu } from "@/components/user-menu"
+import { HeaderContainer } from "@/components/portal-width"
+import { signOut } from "@/auth"
 
-export async function Header() {
+export async function Header({ widthToggle }: { widthToggle?: React.ReactNode } = {}) {
   const [settings, user, pages] = await Promise.all([
     getSettings(),
     getCurrentUser(),
@@ -25,16 +29,41 @@ export async function Header() {
 
   const enabled = parseModules(settings.enabledModules)
 
+  let feedUnread = 0
+  if (user) {
+    const feedUser = await db.user.findUnique({
+      where: { id: user.id },
+      select: { lastFeedVisitAt: true },
+    })
+    if (feedUser?.lastFeedVisitAt) {
+      feedUnread = await db.article.count({
+        where: {
+          published: true,
+          eventDate: null,
+          publishedAt: { gt: feedUser.lastFeedVisitAt },
+        },
+      })
+    }
+  }
+
   const items = [
-    { href: "/", label: "Feed" },
+    { href: "/", label: "Feed", ...(feedUnread > 0 ? { badge: feedUnread } : {}) },
     ...(enabled.has("events") ? [{ href: "/events", label: "Calendar" }] : []),
-    ...pages.map((page) => ({ href: `/pages/${page.slug}`, label: page.title })),
+    ...(enabled.has("pages")
+      ? pages.map((page) => ({
+          href: `/pages/${page.slug}`,
+          label: page.title,
+          ...(page.children?.length
+            ? { children: page.children.map((c) => ({ href: `/pages/${c.slug}`, label: c.title })) }
+            : {}),
+        }))
+      : []),
   ]
 
   return (
     <header className="sticky top-0 z-50 bg-brand text-white">
       {/* Fixed height: the bar never grows or shrinks as its contents load. */}
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-5 px-4 sm:px-6">
+      <HeaderContainer>
         <Link
           href="/"
           className="flex shrink-0 items-center rounded-md transition-opacity hover:opacity-85"
@@ -65,32 +94,18 @@ export async function Header() {
           </div>
         </form>
 
-        <div className="flex shrink-0 items-center gap-1 sm:ml-0 ml-auto">
-          {can.manageContent(user) && (
-            <Link
-              href="/admin"
-              title="Admin"
-              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-white/80
-                transition-colors hover:bg-white/10 hover:text-white"
-            >
-              <LayoutDashboard className="size-4" aria-hidden />
-              <span className="hidden lg:inline">Admin</span>
-            </Link>
-          )}
-
+        <div className="flex shrink-0 items-center gap-1 ml-auto sm:ml-0">
+          {widthToggle}
           {user ? (
-            <span className="flex items-center gap-2 pl-1">
-              <span
-                aria-hidden
-                className="grid size-7 shrink-0 place-items-center rounded-full bg-white/20
-                  text-[11px] font-semibold"
-              >
-                {initials}
-              </span>
-              <span className="hidden max-w-[130px] truncate text-sm text-white/85 lg:block">
-                {user.name ?? user.email}
-              </span>
-            </span>
+            <UserMenu
+              initials={initials}
+              name={user.name ?? user.email ?? ""}
+              canAdmin={can.manageContent(user)}
+              signOutAction={async () => {
+                "use server"
+                await signOut({ redirectTo: "/" })
+              }}
+            />
           ) : (
             <Link
               href="/login"
@@ -101,7 +116,7 @@ export async function Header() {
             </Link>
           )}
         </div>
-      </div>
+      </HeaderContainer>
     </header>
   )
 }

@@ -4,6 +4,11 @@ export const MODULES = {
     label: "Events calendar",
     description: "Monthly calendar for company events. Editors add event dates to articles.",
   },
+  pages: {
+    id: "pages" as const,
+    label: "Pages",
+    description: "Static wiki-style pages accessible from the main navigation.",
+  },
 } as const
 
 export type ModuleId = keyof typeof MODULES

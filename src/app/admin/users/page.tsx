@@ -180,11 +180,6 @@ export default async function UsersPage({ searchParams }: Props) {
         </div>
       )}
 
-      <p className="mt-3 text-xs leading-relaxed text-gray-400">
-        Viewers read the portal. Editors also write articles and pages. Admins additionally manage
-        users, branding, and authentication. The last active admin cannot be demoted or deactivated.
-      </p>
-
       {total > PER_PAGE && (
         <TablePagination
           basePath="/admin/users"
@@ -193,6 +188,11 @@ export default async function UsersPage({ searchParams }: Props) {
           params={params}
         />
       )}
+
+      <p className="mt-3 text-xs leading-relaxed text-gray-400">
+        Viewers read the portal. Editors also write articles and pages. Admins additionally manage
+        users, branding, and authentication. The last active admin cannot be demoted or deactivated.
+      </p>
     </div>
   )
 }

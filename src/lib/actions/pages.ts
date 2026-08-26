@@ -13,6 +13,7 @@ interface ParsedInput {
   title: string
   body: object
   published: boolean
+  parentId: string | null
 }
 
 function parse(formData: FormData): ParsedInput | { error: string; field: string } {
@@ -28,7 +29,9 @@ function parse(formData: FormData): ParsedInput | { error: string; field: string
     return { error: "The editor content could not be saved. Please retry.", field: "body" }
   }
 
-  return { title, body, published: formData.get("published") === "true" }
+  const parentId = (formData.get("parentId") as string | null) || null
+
+  return { title, body, published: formData.get("published") === "true", parentId }
 }
 
 /** Pages appear in the site navigation, so the header on every route must refresh. */
@@ -47,7 +50,13 @@ export async function createPage(formData: FormData): Promise<ActionResult<{ id:
   const slug = await uniquePageSlug(parsed.title)
 
   const page = await db.page.create({
-    data: { title: parsed.title, slug, body: parsed.body, published: parsed.published },
+    data: {
+      title: parsed.title,
+      slug,
+      body: parsed.body,
+      published: parsed.published,
+      parentId: parsed.parentId,
+    },
     select: { id: true, slug: true },
   })
 
@@ -86,7 +95,13 @@ export async function updatePage(
 
   await db.page.update({
     where: { id },
-    data: { title: parsed.title, slug, body: parsed.body, published: parsed.published },
+    data: {
+      title: parsed.title,
+      slug,
+      body: parsed.body,
+      published: parsed.published,
+      parentId: parsed.parentId,
+    },
   })
 
   await logAudit({

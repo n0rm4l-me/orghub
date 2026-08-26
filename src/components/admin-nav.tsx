@@ -9,12 +9,12 @@ import {
   Users,
   Tag,
   ShieldCheck,
-  Palette,
-  Brush,
+  Paintbrush,
   ScrollText,
   Compass,
   CalendarDays,
   LayoutGrid,
+  Megaphone,
   type LucideIcon,
 } from "lucide-react"
 
@@ -30,6 +30,7 @@ const BASE_CONTENT: Item[] = [
   { href: "/admin/pages", label: "Pages", icon: Layers },
   { href: "/admin/categories", label: "Categories", icon: Tag },
   { href: "/admin/navigation", label: "Navigation", icon: Compass },
+  { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
 ]
 
 const EVENTS_ITEM: Item = { href: "/admin/events", label: "Events", icon: CalendarDays }
@@ -41,8 +42,7 @@ const ADMINISTRATION: Item[] = [
 
 const SYSTEM: Item[] = [
   { href: "/admin/modules", label: "Modules", icon: LayoutGrid },
-  { href: "/admin/branding", label: "Branding", icon: Brush },
-  { href: "/admin/theme", label: "Theme", icon: Palette },
+  { href: "/admin/appearance", label: "Appearance", icon: Paintbrush },
   { href: "/admin/auth-providers", label: "Authentication", icon: ShieldCheck },
 ]
 

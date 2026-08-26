@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef } from "react"
+import { Fragment, useRef } from "react"
 import Link from "next/link"
 import { ChevronUp, ChevronDown, ExternalLink, Loader2, Plus } from "lucide-react"
 import { setPageInNav, movePage, createQuickLink, deleteQuickLink, moveQuickLink } from "@/lib/actions/nav"
@@ -15,6 +15,7 @@ interface Page {
   slug: string
   published: boolean
   showInNav: boolean
+  parentId: string | null
 }
 
 interface QuickLink {
@@ -24,6 +25,9 @@ interface QuickLink {
 }
 
 export function NavManager({ pages, links }: { pages: Page[]; links: QuickLink[] }) {
+  const topLevel = pages.filter((p) => !p.parentId)
+  const childrenOf = (id: string) => pages.filter((p) => p.parentId === id)
+
   return (
     <div className="space-y-6">
       <Panel
@@ -39,14 +43,27 @@ export function NavManager({ pages, links }: { pages: Page[]; links: QuickLink[]
           </p>
         ) : (
           <ul className="divide-y divide-gray-100">
-            {pages.map((page, i) => (
-              <PageRow
-                key={page.id}
-                page={page}
-                isFirst={i === 0}
-                isLast={i === pages.length - 1}
-              />
-            ))}
+            {topLevel.map((page, i) => {
+              const children = childrenOf(page.id)
+              return (
+                <Fragment key={page.id}>
+                  <PageRow
+                    page={page}
+                    isFirst={i === 0}
+                    isLast={i === topLevel.length - 1}
+                  />
+                  {children.map((child, j) => (
+                    <PageRow
+                      key={child.id}
+                      page={child}
+                      isFirst={j === 0}
+                      isLast={j === children.length - 1}
+                      indent
+                    />
+                  ))}
+                </Fragment>
+              )
+            })}
           </ul>
         )}
       </Panel>
@@ -80,13 +97,26 @@ export function NavManager({ pages, links }: { pages: Page[]; links: QuickLink[]
   )
 }
 
-function PageRow({ page, isFirst, isLast }: { page: Page; isFirst: boolean; isLast: boolean }) {
+function PageRow({
+  page,
+  isFirst,
+  isLast,
+  indent,
+}: {
+  page: Page
+  isFirst: boolean
+  isLast: boolean
+  indent?: boolean
+}) {
   const toggle = useAction(setPageInNav)
   const move = useAction(movePage)
   const busy = toggle.pending || move.pending
 
   return (
-    <li className="flex items-center gap-3 py-2.5" data-pending={busy || undefined}>
+    <li
+      className={`flex items-center gap-3 py-2.5${indent ? " pl-5" : ""}`}
+      data-pending={busy || undefined}
+    >
       <Reorder
         isFirst={isFirst}
         isLast={isLast}
@@ -96,7 +126,14 @@ function PageRow({ page, isFirst, isLast }: { page: Page; isFirst: boolean; isLa
       />
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-gray-900">{page.title}</p>
+        <p className="truncate text-sm font-medium text-gray-900">
+          {indent && (
+            <span className="mr-1 select-none text-gray-300" aria-hidden>
+              └{" "}
+            </span>
+          )}
+          {page.title}
+        </p>
         <p className="truncate font-mono text-xs text-gray-400">/pages/{page.slug}</p>
       </div>
 

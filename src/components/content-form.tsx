@@ -20,10 +20,18 @@ export interface ContentFormValues {
   excerpt?: string | null
   body: object
   published: boolean
+  commentsEnabled?: boolean
   categoryId?: string
+  coverImage?: string | null
   eventDate?: Date | null
   eventEndDate?: Date | null
   eventLocation?: string | null
+  parentId?: string | null
+}
+
+interface ParentPage {
+  id: string
+  title: string
 }
 
 interface Props {
@@ -31,6 +39,7 @@ interface Props {
   kind: "article" | "page"
   values?: ContentFormValues
   categories?: Category[]
+  parentPages?: ParentPage[]
   action: (formData: FormData) => Promise<ActionResult<{ id: string }>>
   /**
    * URL template to navigate to after a successful create. Use `{id}` as a
@@ -46,6 +55,7 @@ export function ContentForm({
   kind,
   values,
   categories = [],
+  parentPages,
   action,
   redirectAfterCreate,
 }: Props) {
@@ -54,7 +64,9 @@ export function ContentForm({
 
   const [body, setBody] = useState<object>(values?.body ?? EMPTY_DOC)
   const [published, setPublished] = useState(values?.published ?? false)
+  const [commentsEnabled, setCommentsEnabled] = useState(values?.commentsEnabled ?? true)
   const [dirty, setDirty] = useState(false)
+  const [coverImageUrl, setCoverImageUrl] = useState(values?.coverImage ?? "")
   const [savedAt, setSavedAt] = useState<string | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const label = kind === "article" ? "Article" : "Page"
@@ -80,8 +92,9 @@ export function ContentForm({
     const formData = new FormData(form)
     formData.set("body", JSON.stringify(body))
     formData.set("published", String(published))
+    formData.set("commentsEnabled", String(commentsEnabled))
     run(formData)
-  }, [body, published, run])
+  }, [body, published, commentsEnabled, run])
 
   // Ctrl/Cmd+S is muscle memory in any editor; without it the browser opens a
   // save-page dialog over the app.
@@ -156,6 +169,25 @@ export function ContentForm({
           <section className="rounded-xl border border-gray-200 bg-white p-4">
             <h2 className="mb-3 text-sm font-semibold text-gray-900">Publishing</h2>
 
+            {kind === "article" && (
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <span className="text-sm text-gray-600">Comments</span>
+                <button
+                  type="button"
+                  onClick={() => { setCommentsEnabled((v) => !v); setDirty(true) }}
+                  aria-pressed={commentsEnabled}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs
+                    font-semibold transition ${
+                      commentsEnabled
+                        ? "bg-brand/10 text-brand hover:bg-brand/20"
+                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                    }`}
+                >
+                  {commentsEnabled ? "On" : "Off"}
+                </button>
+              </div>
+            )}
+
             <div className="mb-3 flex items-center justify-between gap-2">
               <span className="text-sm text-gray-600">Visibility</span>
               <button
@@ -208,6 +240,44 @@ export function ContentForm({
               )}
             </p>
           </section>
+
+          {kind === "page" && parentPages && parentPages.length > 0 && (
+            <section className="rounded-xl border border-gray-200 bg-white p-4">
+              <h2 className="mb-2.5 text-sm font-semibold text-gray-900">Parent page</h2>
+              <select
+                name="parentId"
+                defaultValue={values?.parentId ?? ""}
+                className="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-700
+                  outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+              >
+                <option value="">None (top-level)</option>
+                {parentPages.map((p) => (
+                  <option key={p.id} value={p.id}>{p.title}</option>
+                ))}
+              </select>
+            </section>
+          )}
+
+          {kind === "article" && (
+            <section className="rounded-xl border border-gray-200 bg-white p-4">
+              <h2 className="mb-2.5 text-sm font-semibold text-gray-900">Cover image</h2>
+              {coverImageUrl && (
+                <div className="mb-2.5 overflow-hidden rounded-lg">
+                  <img src={coverImageUrl} alt="" className="aspect-video w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }} />
+                </div>
+              )}
+              <input
+                name="coverImage"
+                type="url"
+                value={coverImageUrl}
+                onChange={(e) => { setCoverImageUrl(e.target.value); setDirty(true) }}
+                placeholder="https://…"
+                aria-label="Cover image URL"
+                className="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-700 outline-none placeholder:text-gray-300 focus:border-brand focus:ring-1 focus:ring-brand"
+              />
+              <p className="mt-1.5 text-[11px] text-gray-400">Paste an image URL.</p>
+            </section>
+          )}
 
           {kind === "article" && (
             <section className="rounded-xl border border-gray-200 bg-white p-4">

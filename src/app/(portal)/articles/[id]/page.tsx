@@ -1,10 +1,18 @@
 import { notFound } from "next/navigation"
 import { db } from "@/lib/db"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 import { ArticleBody } from "@/components/article-body"
 import Link from "next/link"
-import { ArrowLeft, CalendarDays, MapPin } from "lucide-react"
+import { ArrowLeft, CalendarDays, Eye, MapPin, MessageSquare } from "lucide-react"
+import { SidebarBlocks } from "@/components/sidebar-blocks"
+import { getCurrentUser, hasRole } from "@/lib/rbac"
+import { LikeButton } from "@/components/like-button"
+import { CommentForm } from "@/components/comment-form"
+import { DeleteCommentButton } from "@/components/delete-comment-button"
+import { getQuickLinks, getUpcomingEvents } from "@/lib/nav"
+import { getSettings } from "@/lib/settings"
+import { parseModules } from "@/lib/modules"
+import { recordView } from "@/lib/views"
 
 interface Props {
   params: Promise<{ id: string }>
@@ -13,22 +21,51 @@ interface Props {
 export default async function ArticlePage({ params }: Props) {
   const { id } = await params
 
-  const article = await db.article.findFirst({
-    where: { id, published: true },
-    select: {
-      id: true,
-      title: true,
-      body: true,
-      publishedAt: true,
-      eventDate: true,
-      eventEndDate: true,
-      eventLocation: true,
-      author: { select: { name: true } },
-      categories: { include: { category: true } },
-    },
-  })
+  const [article, user, settings, quickLinks, upcomingEvents, categories] = await Promise.all([
+    db.article.findFirst({
+      where: { id, published: true },
+      select: {
+        id: true,
+        title: true,
+        body: true,
+        publishedAt: true,
+        coverImage: true,
+        eventDate: true,
+        eventEndDate: true,
+        eventLocation: true,
+        commentsEnabled: true,
+        author: { select: { name: true } },
+        categories: { include: { category: true } },
+        _count: { select: { reactions: true, views: true } },
+        comments: {
+          select: {
+            id: true,
+            body: true,
+            createdAt: true,
+            author: { select: { id: true, name: true } },
+          },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    }),
+    getCurrentUser(),
+    getSettings(),
+    getQuickLinks(),
+    getUpcomingEvents(),
+    db.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, slug: true } }),
+  ])
 
   if (!article) notFound()
+
+  if (user) {
+    await recordView(article.id, user.id)
+  }
+
+  const liked = user
+    ? !!(await db.articleReaction.findUnique({
+        where: { articleId_userId: { articleId: article.id, userId: user.id } },
+      }))
+    : false
 
   const category = article.categories[0]?.category
   const initials = article.author.name
@@ -42,8 +79,17 @@ export default async function ArticlePage({ params }: Props) {
   const eventEnd = article.eventEndDate ? new Date(article.eventEndDate) : null
   const sameDay = eventStart && eventEnd && eventStart.toDateString() === eventEnd.toDateString()
 
-  return (
-    <div className="max-w-3xl mx-auto">
+  const articleLayout = settings.articleLayout ?? "sidebar-right"
+  const eventsEnabled = parseModules(settings.enabledModules).has("events")
+  const rightBlocks = settings.sidebarOrder?.split(",").filter(Boolean) ?? ["quickLinks", "browseByTopic", "upcomingEvents"]
+  const leftBlocks  = settings.leftSidebarOrder?.split(",").filter(Boolean) ?? []
+  const showLeft  = articleLayout === "sidebar-left"  || articleLayout === "sidebar-both"
+  const showRight = articleLayout === "sidebar-right" || articleLayout === "sidebar-both"
+
+  const canModerate = hasRole(user, "EDITOR")
+
+  const content = (
+    <div>
       <div className="mb-4 flex items-center gap-3">
         <Link
           href="/"
@@ -54,36 +100,22 @@ export default async function ArticlePage({ params }: Props) {
         </Link>
 
         {category && (
-          <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-0">
+          <span className="rounded-full border border-brand/30 px-2.5 py-1 text-xs font-semibold text-brand">
             {category.name}
-          </Badge>
+          </span>
         )}
       </div>
 
+      {article.coverImage && (
+        <div className="mb-4 overflow-hidden rounded-2xl">
+          <img src={article.coverImage} alt="" className="aspect-[21/9] w-full object-cover" />
+        </div>
+      )}
+
       <div className="rounded-2xl border border-gray-100 bg-white p-8">
-        <h1 className="text-3xl font-bold text-gray-900 leading-tight mb-4">
+        <h1 className="text-3xl font-bold text-gray-900 leading-tight mb-6">
           {article.title}
         </h1>
-
-        <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
-          <Avatar className="w-10 h-10">
-            <AvatarFallback className="bg-blue-100 text-blue-700 font-semibold text-sm">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="text-sm font-medium text-gray-900">{article.author.name}</p>
-            <p className="text-xs text-gray-500">
-              {article.publishedAt
-                ? new Date(article.publishedAt).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })
-                : "Draft"}
-            </p>
-          </div>
-        </div>
 
         {eventStart && (
           <div className="mb-8 flex flex-wrap items-center gap-x-5 gap-y-1.5 rounded-xl bg-brand/5
@@ -115,7 +147,131 @@ export default async function ArticlePage({ params }: Props) {
         )}
 
         <ArticleBody body={article.body} />
+
+        <div className="mt-8 flex items-center justify-between border-t border-gray-100 pt-6">
+          <div className="flex items-center gap-3">
+            <Avatar className="size-9">
+              <AvatarFallback className="bg-gray-100 text-gray-600 font-semibold text-sm">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="text-sm font-medium text-gray-900">{article.author.name}</p>
+              <p className="text-xs text-gray-400">
+                {article.publishedAt
+                  ? new Date(article.publishedAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : "Draft"}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1 text-sm text-gray-400">
+              <Eye className="size-4" aria-hidden />
+              {article._count.views}
+            </span>
+            <LikeButton
+              articleId={article.id}
+              initialCount={article._count.reactions}
+              initialLiked={liked}
+              isLoggedIn={!!user}
+            />
+          </div>
+        </div>
       </div>
+
+      {article.commentsEnabled && (
+        <div className="mt-4 rounded-2xl border border-gray-100 bg-white p-8">
+          <h2 className="mb-5 flex items-center gap-2 text-base font-semibold text-gray-900">
+            <MessageSquare className="size-4 text-gray-400" aria-hidden />
+            Comments
+            {article.comments.length > 0 && (
+              <span className="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">
+                {article.comments.length}
+              </span>
+            )}
+          </h2>
+
+          {article.comments.length > 0 ? (
+            <ul className="mb-6 space-y-5">
+              {article.comments.map((comment) => {
+                const commentInitials = (comment.author.name ?? "?")
+                  .split(/\s+/)
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2)
+                const canDelete = user?.id === comment.author.id || canModerate
+                return (
+                  <li key={comment.id} className="flex gap-3">
+                    <span
+                      aria-hidden
+                      className="grid size-8 shrink-0 place-items-center rounded-full bg-gray-100
+                        text-[11px] font-bold text-gray-600"
+                    >
+                      {commentInitials}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-gray-900">
+                          {comment.author.name}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {new Date(comment.createdAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </span>
+                        {canDelete && <DeleteCommentButton id={comment.id} />}
+                      </div>
+                      <p className="mt-1 text-sm leading-relaxed text-gray-700 whitespace-pre-line">
+                        {comment.body}
+                      </p>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          ) : (
+            <p className="mb-6 text-sm text-gray-400">No comments yet.</p>
+          )}
+
+          {user ? (
+            <CommentForm articleId={article.id} />
+          ) : (
+            <p className="text-sm text-gray-500">
+              <Link href="/login" className="font-medium text-brand hover:underline">
+                Sign in
+              </Link>{" "}
+              to leave a comment.
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+
+  if (!showLeft && !showRight) {
+    return <div className="max-w-3xl mx-auto">{content}</div>
+  }
+
+  return (
+    <div className="flex items-start gap-8">
+      {showLeft && (
+        <aside className="sticky top-20 hidden w-52 shrink-0 space-y-4 lg:block">
+          <SidebarBlocks blocks={leftBlocks} eventsEnabled={eventsEnabled} quickLinks={quickLinks} categories={categories} upcomingEvents={upcomingEvents} />
+        </aside>
+      )}
+      <div className="min-w-0 flex-1">{content}</div>
+
+      {showRight && <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
+        <SidebarBlocks blocks={rightBlocks} eventsEnabled={eventsEnabled} quickLinks={quickLinks} categories={categories} upcomingEvents={upcomingEvents} />
+      </aside>}
     </div>
   )
 }
+

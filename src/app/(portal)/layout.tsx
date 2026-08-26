@@ -1,4 +1,7 @@
 import { Header } from "@/components/header"
+import { AnnouncementBanner } from "@/components/announcement-banner"
+import { getSettings } from "@/lib/settings"
+import { PortalWidthProvider, PortalMain, WidthToggle } from "@/components/portal-width"
 
 /**
  * Chrome for the reader-facing side of the portal.
@@ -7,9 +10,11 @@ import { Header } from "@/components/header"
  * free of the public header: admin brings its own sidebar, and a login page with
  * a "Sign in" link in its own header is nonsense.
  */
-export default function PortalLayout({ children }: { children: React.ReactNode }) {
+export default async function PortalLayout({ children }: { children: React.ReactNode }) {
+  const settings = await getSettings()
+
   return (
-    <>
+    <PortalWidthProvider defaultWidth={settings.portalWidth ?? "default"}>
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[60]
@@ -18,10 +23,9 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       >
         Skip to content
       </a>
-      <Header />
-      <main id="main" className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        {children}
-      </main>
-    </>
+      <AnnouncementBanner />
+      <Header widthToggle={<WidthToggle />} />
+      <PortalMain>{children}</PortalMain>
+    </PortalWidthProvider>
   )
 }
