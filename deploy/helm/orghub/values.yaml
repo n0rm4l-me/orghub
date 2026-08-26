@@ -1,0 +1,38 @@
+image:
+  repository: YOUR_REGISTRY/orghub
+  tag: "latest"
+  pullPolicy: Always
+
+replicaCount: 1
+
+app:
+  # Required: random string for Auth.js session signing
+  # Generate: openssl rand -base64 32
+  authSecret: ""
+  # Set after first deploy once the Gateway IP is known, e.g. http://34.x.x.x
+  # Used for AUTH_TRUST_HOST (always true in k8s behind LB)
+  baseUrl: ""
+
+postgres:
+  enabled: true
+  image: postgres:16-alpine
+  storageSize: 10Gi
+  storageClass: ""   # leave empty to use cluster default
+  password: ""       # Required: set via --set postgres.password=...
+  database: orghub
+  user: orghub
+
+gateway:
+  enabled: true
+  # gke-l7-regional-external-managed  — regional external LB (cheaper, lower latency)
+  # gke-l7-global-external-managed    — global anycast LB
+  gatewayClass: gke-l7-regional-external-managed
+  # Optional: set a hostname for the HTTPRoute match. Leave empty to match all traffic.
+  hostname: ""
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    memory: 1Gi
