@@ -35,6 +35,8 @@ export type AuditAction =
   | "settings.navigation"
   | "settings.modules"
   | "settings.layout"
+  | "settings.localAuth"
+  | "settings.gravatars"
 
 interface LogInput {
   userId: string

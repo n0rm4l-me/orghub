@@ -207,6 +207,10 @@ model SiteSettings {
   feedPageSize     Int    @default(15)
   /// Feed card style: "compact" | "default" | "preview"
   feedCardStyle    String @default("preview")
+  /// When false, the email/password login form is hidden and the local Credentials provider rejects all attempts.
+  localAuthEnabled Boolean @default(true)
+  /// When false, Gravatar requests are skipped and only initials are shown.
+  gravatarsEnabled Boolean @default(true)
 }
 
 model Comment {

@@ -19,7 +19,11 @@ export async function generateMetadata() {
 export default async function LoginPage({ searchParams }: Props) {
   const [settings, params] = await Promise.all([getSettings(), searchParams])
   const oktaEnabled = Boolean(process.env.AUTH_OKTA_ID)
+  const ldapEnabled = Boolean(process.env.LDAP_URL) || process.env.LDAP_DEV_MODE === "true"
   const isDev = process.env.NODE_ENV === "development"
+  // In dev mode local auth is always available so the seed account is accessible
+  // regardless of the localAuthEnabled setting.
+  const localEnabled = settings.localAuthEnabled || isDev
 
   async function handleCredentials(formData: FormData) {
     "use server"
@@ -27,11 +31,23 @@ export default async function LoginPage({ searchParams }: Props) {
       await signIn("credentials", {
         email: formData.get("email"),
         password: formData.get("password"),
-        redirectTo: "/admin",
+        redirectTo: "/",
       })
     } catch (error) {
-      // The message is deliberately vague about which half was wrong, so the form
-      // cannot be used to enumerate valid addresses.
+      if (error instanceof AuthError) redirect("/login?error=invalid")
+      throw error
+    }
+  }
+
+  async function handleLdap(formData: FormData) {
+    "use server"
+    try {
+      await signIn("ldap", {
+        username: formData.get("username"),
+        password: formData.get("password"),
+        redirectTo: "/",
+      })
+    } catch (error) {
       if (error instanceof AuthError) redirect("/login?error=invalid")
       throw error
     }
@@ -60,7 +76,7 @@ export default async function LoginPage({ searchParams }: Props) {
                 text-red-700"
             >
               <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
-              That email and password combination did not match an active account.
+              Invalid credentials. Please check your details and try again.
             </p>
           )}
 
@@ -69,7 +85,7 @@ export default async function LoginPage({ searchParams }: Props) {
               <form
                 action={async () => {
                   "use server"
-                  await signIn("okta", { redirectTo: "/admin" })
+                  await signIn("okta", { redirectTo: "/" })
                 }}
               >
                 <SubmitButton
@@ -89,60 +105,109 @@ export default async function LoginPage({ searchParams }: Props) {
                   Continue with Okta SSO
                 </SubmitButton>
               </form>
-              <div className="relative mb-6">
-                <div className="absolute inset-0 flex items-center" aria-hidden>
-                  <div className="w-full border-t border-gray-100" />
+              {(localEnabled || ldapEnabled) && (
+                <div className="relative mb-6">
+                  <div className="absolute inset-0 flex items-center" aria-hidden>
+                    <div className="w-full border-t border-gray-100" />
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="bg-white px-2 text-xs text-gray-400">
+                      {localEnabled ? "or use your email" : "or sign in with Active Directory"}
+                    </span>
+                  </div>
                 </div>
-                <div className="relative flex justify-center">
-                  <span className="bg-white px-2 text-xs text-gray-400">or use your email</span>
-                </div>
-              </div>
+              )}
             </>
           )}
 
-          <form action={handleCredentials} className="space-y-4">
-            <div className="space-y-1.5">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="username"
-                required
-                autoFocus
-                placeholder="you@company.com"
-                className={inputClass}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                placeholder="••••••••"
-                className={inputClass}
-              />
-            </div>
-            <SubmitButton pendingLabel="Signing in…" className="w-full">
-              Sign in
-            </SubmitButton>
-          </form>
-
-          {/* Seed credentials are named, never prefilled: a filled-in password box
-              on a production login screen is a live credential leak. */}
-          {isDev && (
-            <p className="mt-5 rounded-lg bg-gray-50 px-3 py-2 text-center text-xs text-gray-400">
-              Dev seed: <span className="font-mono">admin@orghub.dev</span> /{" "}
-              <span className="font-mono">admin</span>
-            </p>
+          {localEnabled && (
+            <form action={handleCredentials} className="space-y-4">
+              <div className="space-y-1.5">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="username"
+                  required
+                  autoFocus
+                  placeholder="you@company.com"
+                  className={inputClass}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  placeholder="••••••••"
+                  className={inputClass}
+                />
+              </div>
+              <SubmitButton pendingLabel="Signing in…" className="w-full">
+                Sign in
+              </SubmitButton>
+            </form>
           )}
+
+          {ldapEnabled && (
+            <>
+              {localEnabled && (
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center" aria-hidden>
+                    <div className="w-full border-t border-gray-100" />
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="bg-white px-2 text-xs text-gray-400">
+                      or sign in with Active Directory
+                    </span>
+                  </div>
+                </div>
+              )}
+              <form action={handleLdap} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                    AD Username
+                  </label>
+                  <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    autoComplete="username"
+                    required
+                    placeholder="yourname"
+                    className={inputClass}
+                    spellCheck={false}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="ad-password" className="block text-sm font-medium text-gray-700">
+                    Password
+                  </label>
+                  <input
+                    id="ad-password"
+                    name="password"
+                    type="password"
+                    autoComplete="current-password"
+                    required
+                    placeholder="••••••••"
+                    className={inputClass}
+                  />
+                </div>
+                <SubmitButton pendingLabel="Signing in…" className="w-full">
+                  Sign in with AD
+                </SubmitButton>
+              </form>
+            </>
+          )}
+
         </div>
 
         <p className="mt-6 text-center text-xs text-gray-400">

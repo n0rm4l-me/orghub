@@ -7,6 +7,9 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { AdminFilters } from "@/components/admin-filters"
 import { TablePagination } from "@/components/ui/table-pagination"
 import { UserRoleSelect, UserActiveToggle } from "@/components/user-row-actions"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { gravatarUrl } from "@/lib/gravatar"
+import { getSettings } from "@/lib/settings"
 
 export const metadata = { title: "Users" }
 
@@ -32,7 +35,7 @@ export default async function UsersPage({ searchParams }: Props) {
       }
     : {}
 
-  const [users, total, admins] = await Promise.all([
+  const [users, total, admins, settings] = await Promise.all([
     db.user.findMany({
       where,
       orderBy: [{ role: "desc" }, { createdAt: "asc" }],
@@ -50,6 +53,7 @@ export default async function UsersPage({ searchParams }: Props) {
     }),
     db.user.count({ where }),
     db.user.count({ where: { role: "ADMIN", active: true } }),
+    getSettings(),
   ])
 
   return (
@@ -118,13 +122,12 @@ export default async function UsersPage({ searchParams }: Props) {
                   <tr key={user.id} className="transition-colors hover:bg-gray-50/70">
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
-                        <span
-                          aria-hidden
-                          className="grid size-8 shrink-0 place-items-center rounded-full bg-brand/10
-                            text-[11px] font-bold text-brand"
-                        >
-                          {initials}
-                        </span>
+                        <Avatar className="size-8 shrink-0">
+                          {settings.gravatarsEnabled && <AvatarImage src={gravatarUrl(user.email, 32)} alt="" />}
+                          <AvatarFallback className="bg-brand/10 text-[11px] font-bold text-brand">
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium text-gray-900">
                             {user.name ?? user.email}

@@ -4,6 +4,7 @@ import Credentials from "next-auth/providers/credentials"
 import Okta from "next-auth/providers/okta"
 import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
+import { authenticateLdap } from "@/lib/ldap"
 
 /**
  * A valid bcrypt hash of a value nothing will ever match.
@@ -27,6 +28,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
+
+        const settings = await db.siteSettings.findUnique({ where: { id: "singleton" } })
+        if (settings && !settings.localAuthEnabled) return null
 
         const user = await db.user.findUnique({
           where: { email: credentials.email as string },
@@ -52,6 +56,49 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return { id: user.id, email: user.email, name: user.name, role: user.role }
       },
     }),
+    ...(process.env.LDAP_URL || process.env.LDAP_DEV_MODE === "true"
+      ? [
+          Credentials({
+            id: "ldap",
+            name: "Active Directory",
+            credentials: {
+              username: { label: "AD Username", type: "text" },
+              password: { label: "Password", type: "password" },
+            },
+            async authorize(credentials) {
+              if (!credentials?.username || !credentials?.password) return null
+
+              const ldapUser = await authenticateLdap(
+                credentials.username as string,
+                credentials.password as string,
+              )
+              if (!ldapUser) return null
+
+              const user = await db.user.upsert({
+                where: { email: ldapUser.email },
+                create: {
+                  email: ldapUser.email,
+                  name: ldapUser.name,
+                  department: ldapUser.department ?? null,
+                  role: "VIEWER",
+                  provider: "ldap",
+                  active: true,
+                },
+                update: {
+                  name: ldapUser.name,
+                  ...(ldapUser.department ? { department: ldapUser.department } : {}),
+                  provider: "ldap",
+                },
+                select: { id: true, email: true, name: true, role: true, active: true },
+              })
+
+              if (!user.active) return null
+
+              return { id: user.id, email: user.email, name: user.name, role: user.role }
+            },
+          }),
+        ]
+      : []),
     ...(process.env.AUTH_OKTA_ID
       ? [
           Okta({

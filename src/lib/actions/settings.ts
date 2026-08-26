@@ -156,6 +156,58 @@ export async function saveLayout(formData: FormData): Promise<ActionResult> {
   return ok("Layout saved.")
 }
 
+export async function toggleGravatars(enabled: boolean): Promise<ActionResult> {
+  const user = await requireRole("ADMIN")
+
+  await db.siteSettings.upsert({
+    where: { id: "singleton" },
+    create: { id: "singleton", gravatarsEnabled: enabled },
+    update: { gravatarsEnabled: enabled },
+  })
+
+  await logAudit({
+    userId: user.id,
+    action: "settings.gravatars",
+    resourceType: "SiteSettings",
+    metadata: { gravatarsEnabled: enabled },
+  })
+
+  revalidatePath("/", "layout")
+  return ok(enabled ? "Gravatar enabled." : "Gravatar disabled.")
+}
+
+export async function toggleLocalAuth(enabled: boolean): Promise<ActionResult> {
+  const user = await requireRole("ADMIN")
+
+  if (!enabled) {
+    const hasOtherProvider =
+      Boolean(process.env.LDAP_URL || process.env.LDAP_DEV_MODE === "true") ||
+      Boolean(process.env.AUTH_OKTA_ID)
+    if (!hasOtherProvider) {
+      return fail(
+        "Cannot disable password login while no other authentication provider is configured. " +
+          "Set up LDAP or Okta first.",
+      )
+    }
+  }
+
+  await db.siteSettings.upsert({
+    where: { id: "singleton" },
+    create: { id: "singleton", localAuthEnabled: enabled },
+    update: { localAuthEnabled: enabled },
+  })
+
+  await logAudit({
+    userId: user.id,
+    action: "settings.localAuth",
+    resourceType: "SiteSettings",
+    metadata: { localAuthEnabled: enabled },
+  })
+
+  revalidatePath("/login")
+  return ok(enabled ? "Password login enabled." : "Password login disabled.")
+}
+
 export async function saveTheme(formData: FormData): Promise<ActionResult> {
   const user = await requireRole("ADMIN")
 

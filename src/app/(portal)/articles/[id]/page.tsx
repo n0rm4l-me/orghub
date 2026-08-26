@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { db } from "@/lib/db"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { gravatarUrl } from "@/lib/gravatar"
 import { ArticleBody } from "@/components/article-body"
 import Link from "next/link"
 import { ArrowLeft, CalendarDays, Eye, MapPin, MessageSquare } from "lucide-react"
@@ -34,7 +35,7 @@ export default async function ArticlePage({ params }: Props) {
         eventEndDate: true,
         eventLocation: true,
         commentsEnabled: true,
-        author: { select: { name: true } },
+        author: { select: { name: true, email: true } },
         categories: { include: { category: true } },
         _count: { select: { reactions: true, views: true } },
         comments: {
@@ -42,7 +43,7 @@ export default async function ArticlePage({ params }: Props) {
             id: true,
             body: true,
             createdAt: true,
-            author: { select: { id: true, name: true } },
+            author: { select: { id: true, name: true, email: true } },
           },
           orderBy: { createdAt: "asc" },
         },
@@ -151,6 +152,7 @@ export default async function ArticlePage({ params }: Props) {
         <div className="mt-8 flex items-center justify-between border-t border-gray-100 pt-6">
           <div className="flex items-center gap-3">
             <Avatar className="size-9">
+              {settings.gravatarsEnabled && <AvatarImage src={gravatarUrl(article.author.email, 36)} alt="" />}
               <AvatarFallback className="bg-gray-100 text-gray-600 font-semibold text-sm">
                 {initials}
               </AvatarFallback>
@@ -207,13 +209,12 @@ export default async function ArticlePage({ params }: Props) {
                 const canDelete = user?.id === comment.author.id || canModerate
                 return (
                   <li key={comment.id} className="flex gap-3">
-                    <span
-                      aria-hidden
-                      className="grid size-8 shrink-0 place-items-center rounded-full bg-gray-100
-                        text-[11px] font-bold text-gray-600"
-                    >
-                      {commentInitials}
-                    </span>
+                    <Avatar className="size-8 shrink-0">
+                      {settings.gravatarsEnabled && <AvatarImage src={gravatarUrl(comment.author.email, 32)} alt="" />}
+                      <AvatarFallback className="bg-gray-100 text-[11px] font-bold text-gray-600">
+                        {commentInitials}
+                      </AvatarFallback>
+                    </Avatar>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-gray-900">
@@ -256,7 +257,7 @@ export default async function ArticlePage({ params }: Props) {
   )
 
   if (!showLeft && !showRight) {
-    return <div className="max-w-3xl mx-auto">{content}</div>
+    return <>{content}</>
   }
 
   return (

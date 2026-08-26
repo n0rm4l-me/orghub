@@ -6,6 +6,8 @@ import { requireRole, can } from "@/lib/rbac"
 import { AdminNav } from "@/components/admin-nav"
 import { BrandLogo } from "@/components/brand-logo"
 import { parseModules } from "@/lib/modules"
+import { gravatarUrl } from "@/lib/gravatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Anyone below EDITOR has nothing to do in here; requireRole redirects them.
@@ -51,13 +53,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </Link>
 
           <div className="flex items-center gap-2.5 rounded-lg px-3 py-2">
-            <span
-              aria-hidden
-              className="grid size-7 shrink-0 place-items-center rounded-full bg-brand text-[11px]
-                font-semibold text-white"
-            >
-              {initials}
-            </span>
+            <Avatar className="size-7 shrink-0">
+              {settings.gravatarsEnabled && <AvatarImage src={gravatarUrl(user.email, 28)} alt="" />}
+              <AvatarFallback className="bg-brand text-[11px] font-semibold text-white">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-medium text-white">{user.name ?? user.email}</p>
               <p className="text-[11px] text-gray-500 capitalize">{user.role.toLowerCase()}</p>

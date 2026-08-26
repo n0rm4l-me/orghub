@@ -3,15 +3,17 @@
 import { useRef, useState, useEffect } from "react"
 import Link from "next/link"
 import { LayoutDashboard, LogOut, ChevronDown } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface Props {
   initials: string
+  gravatarUrl?: string
   name: string
   canAdmin: boolean
   signOutAction: () => Promise<void>
 }
 
-export function UserMenu({ initials, name, canAdmin, signOutAction }: Props) {
+export function UserMenu({ initials, gravatarUrl, name, canAdmin, signOutAction }: Props) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -32,13 +34,12 @@ export function UserMenu({ initials, name, canAdmin, signOutAction }: Props) {
         aria-haspopup="true"
         className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-white/10"
       >
-        <span
-          aria-hidden
-          className="grid size-7 shrink-0 place-items-center rounded-full bg-white/20
-            text-[11px] font-semibold text-white"
-        >
-          {initials}
-        </span>
+        <Avatar className="size-7 shrink-0">
+          {gravatarUrl && <AvatarImage src={gravatarUrl} alt="" />}
+          <AvatarFallback className="bg-white/20 text-[11px] font-semibold text-white">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
         <span className="hidden max-w-[130px] truncate text-sm text-white/85 lg:block">{name}</span>
         <ChevronDown
           className={`hidden size-3.5 text-white/60 transition-transform lg:block ${open ? "rotate-180" : ""}`}

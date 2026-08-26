@@ -10,6 +10,7 @@ import { HeaderNav } from "@/components/header-nav"
 import { UserMenu } from "@/components/user-menu"
 import { HeaderContainer } from "@/components/portal-width"
 import { signOut } from "@/auth"
+import { gravatarUrl } from "@/lib/gravatar"
 
 export async function Header({ widthToggle }: { widthToggle?: React.ReactNode } = {}) {
   const [settings, user, pages] = await Promise.all([
@@ -99,6 +100,7 @@ export async function Header({ widthToggle }: { widthToggle?: React.ReactNode } 
           {user ? (
             <UserMenu
               initials={initials}
+              gravatarUrl={settings.gravatarsEnabled ? gravatarUrl(user.email, 28) : undefined}
               name={user.name ?? user.email ?? ""}
               canAdmin={can.manageContent(user)}
               signOutAction={async () => {

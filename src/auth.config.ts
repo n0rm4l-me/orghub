@@ -14,7 +14,7 @@ export const authConfig: NextAuthConfig = {
         return Response.redirect(new URL("/login", nextUrl))
       }
       if (isLoginPage && isLoggedIn) {
-        return Response.redirect(new URL("/admin", nextUrl))
+        return Response.redirect(new URL("/", nextUrl))
       }
       return true
     },

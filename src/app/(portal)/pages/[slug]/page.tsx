@@ -89,7 +89,7 @@ export default async function PublicPagePage({ params }: Props) {
   )
 
   if (!showLeft && !showRight) {
-    return <div className="max-w-3xl mx-auto">{content}</div>
+    return <>{content}</>
   }
 
   return (

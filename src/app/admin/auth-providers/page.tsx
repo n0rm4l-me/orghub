@@ -3,10 +3,20 @@ import { ShieldCheck, KeyRound, CheckCircle2, XCircle } from "lucide-react"
 import { requireRole } from "@/lib/rbac"
 import { PageHeader } from "@/components/ui/page-header"
 import { Panel } from "@/components/ui/field"
+import { getSettings } from "@/lib/settings"
+import { LocalAuthToggle } from "@/components/local-auth-toggle"
 
 export const metadata = { title: "Authentication" }
 
 const OKTA_VARS = ["AUTH_OKTA_ID", "AUTH_OKTA_ISSUER", "AUTH_OKTA_SECRET"] as const
+const LDAP_VARS = [
+  "LDAP_URL",
+  "LDAP_BIND_DN",
+  "LDAP_BIND_PASSWORD",
+  "LDAP_USER_SEARCH_BASE",
+  "LDAP_USER_SEARCH_FILTER",
+  "LDAP_TIMEOUT",
+] as const
 
 export default async function AuthProvidersPage() {
   await requireRole("ADMIN")
@@ -14,10 +24,15 @@ export default async function AuthProvidersPage() {
   const oktaConfigured = Boolean(
     process.env.AUTH_OKTA_ID && process.env.AUTH_OKTA_SECRET && process.env.AUTH_OKTA_ISSUER
   )
+  const ldapConfigured = Boolean(
+    process.env.LDAP_URL && process.env.LDAP_BIND_DN && process.env.LDAP_BIND_PASSWORD
+  )
+  const ldapDevMode = process.env.LDAP_DEV_MODE === "true"
 
-  const [withPassword, ssoOnly] = await Promise.all([
+  const [withPassword, ssoOnly, settings] = await Promise.all([
     db.user.count({ where: { active: true, passwordHash: { not: null } } }),
     db.user.count({ where: { active: true, passwordHash: null } }),
+    getSettings(),
   ])
 
   return (
@@ -37,12 +52,19 @@ export default async function AuthProvidersPage() {
               <div>
                 <p className="text-sm font-semibold text-gray-900">Email and password</p>
                 <p className="mt-0.5 text-xs text-gray-500">
-                  Passwords are stored as bcrypt hashes. Always available as a fallback.
+                  Passwords are stored as bcrypt hashes. Disable once all users are on SSO or AD.
                 </p>
               </div>
             </div>
-            <Badge active>Active</Badge>
+            <LocalAuthToggle initialEnabled={settings.localAuthEnabled} />
           </div>
+
+          {!settings.localAuthEnabled && process.env.NODE_ENV === "development" && (
+            <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-700">
+              Password login is disabled, but the sign-in form remains visible in development mode
+              to prevent lockouts. It will be hidden in production.
+            </p>
+          )}
 
           <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-gray-100 pt-4">
             <div>
@@ -112,6 +134,66 @@ export default async function AuthProvidersPage() {
             <p className="mt-4 rounded-lg bg-gray-50 px-3 py-2 text-xs leading-relaxed text-gray-500">
               Set all three variables in your environment and restart the app. The Okta button then
               appears on the sign-in page automatically.
+            </p>
+          )}
+        </Panel>
+
+        <Panel>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand/10">
+                <ShieldCheck className="size-4 text-brand" aria-hidden />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Active Directory / LDAP</p>
+                <p className="mt-0.5 text-xs text-gray-500">
+                  Corporate directory authentication via service-account bind and user verify.
+                </p>
+              </div>
+            </div>
+            <Badge active={ldapConfigured || ldapDevMode}>
+              {ldapDevMode ? "Dev mode" : ldapConfigured ? "Active" : "Not configured"}
+            </Badge>
+          </div>
+
+          <ul className="mt-4 space-y-2 border-t border-gray-100 pt-4">
+            {LDAP_VARS.map((name) => {
+              const raw = process.env[name]
+              const shown = !raw
+                ? null
+                : name === "LDAP_BIND_PASSWORD"
+                  ? "••••••••"
+                  : raw
+
+              return (
+                <li key={name} className="flex items-center gap-3 text-xs">
+                  <span className="w-52 shrink-0 font-mono text-gray-500">{name}</span>
+                  {shown ? (
+                    <span className="truncate rounded bg-gray-50 px-2 py-0.5 font-mono text-gray-800">
+                      {shown}
+                    </span>
+                  ) : (
+                    <span className="text-amber-600">not set</span>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+
+          {!ldapConfigured && !ldapDevMode && (
+            <p className="mt-4 rounded-lg bg-gray-50 px-3 py-2 text-xs leading-relaxed text-gray-500">
+              Set <code className="rounded bg-white px-1 font-mono">LDAP_URL</code>,{" "}
+              <code className="rounded bg-white px-1 font-mono">LDAP_BIND_DN</code>, and{" "}
+              <code className="rounded bg-white px-1 font-mono">LDAP_BIND_PASSWORD</code> in your
+              environment. The AD login form appears on the sign-in page automatically.
+            </p>
+          )}
+          {ldapDevMode && (
+            <p className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-700">
+              Dev mode is on — real LDAP is bypassed. Any username with password{" "}
+              <code className="rounded bg-white px-1 font-mono">devpass</code> will sign in.
+              Set <code className="rounded bg-white px-1 font-mono">LDAP_DEV_MODE=false</code> in
+              production.
             </p>
           )}
         </Panel>
