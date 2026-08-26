@@ -40,7 +40,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* Blocking script: sets .dark on <html> before first paint to prevent FOUC */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){var t=localStorage.getItem('theme'),d=window.matchMedia('(prefers-color-scheme:dark)').matches;if(t==='dark'||(t!=='light'&&d))document.documentElement.classList.add('dark');var f=localStorage.getItem('fontSize');if(f==='sm')document.documentElement.classList.add('font-sm');else if(f==='lg')document.documentElement.classList.add('font-lg')})()` }} />
       </head>
-      <body className={`${geist.className} h-full bg-gray-50 antialiased`}>
+      <body className={`${geist.className} h-full bg-gray-50 dark:bg-gray-950 antialiased`}>
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>

@@ -23,7 +23,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       .slice(0, 2) || "?"
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <aside className="fixed inset-y-0 left-0 flex w-60 flex-col bg-gray-900">
         {/* px-6 rather than the strip's own padding: it puts the logo on the same
             24px optical line as every nav icon below, which is the column the eye
