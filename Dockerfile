@@ -3,6 +3,11 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
+FROM node:22-alpine AS prod-deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
 FROM node:22-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
@@ -23,11 +28,9 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
-# Prisma CLI + engines (needed for init container running migrate deploy)
+# Prisma migrations (init container) - needs full prod node_modules for effect + engine
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=prod-deps /app/node_modules ./node_modules
 
 EXPOSE 3000
 ENV PORT=3000
