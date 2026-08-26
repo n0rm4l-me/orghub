@@ -12,7 +12,7 @@ import { HeaderContainer } from "@/components/portal-width"
 import { signOut } from "@/auth"
 import { gravatarUrl } from "@/lib/gravatar"
 
-export async function Header({ widthToggle }: { widthToggle?: React.ReactNode } = {}) {
+export async function Header() {
   const [settings, user, pages] = await Promise.all([
     getSettings(),
     getCurrentUser(),
@@ -96,7 +96,6 @@ export async function Header({ widthToggle }: { widthToggle?: React.ReactNode } 
         </form>
 
         <div className="flex shrink-0 items-center gap-1 ml-auto sm:ml-0">
-          {widthToggle}
           {user ? (
             <UserMenu
               initials={initials}

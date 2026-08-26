@@ -1,7 +1,7 @@
 import { Header } from "@/components/header"
 import { AnnouncementBanner } from "@/components/announcement-banner"
 import { getSettings } from "@/lib/settings"
-import { PortalWidthProvider, PortalMain, WidthToggle } from "@/components/portal-width"
+import { PortalWidthProvider, PortalMain } from "@/components/portal-width"
 
 /**
  * Chrome for the reader-facing side of the portal.
@@ -25,7 +25,7 @@ export default async function PortalLayout({ children }: { children: React.React
         Skip to content
       </a>
       <AnnouncementBanner />
-      <Header widthToggle={<WidthToggle />} />
+      <Header />
       <PortalMain>{children}</PortalMain>
     </PortalWidthProvider>
   )
