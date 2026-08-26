@@ -59,7 +59,7 @@ export async function saveSettings(formData: FormData): Promise<ActionResult> {
 
 import { MODULES, type ModuleId } from "@/lib/modules"
 
-const SIDEBAR_BLOCK_IDS = new Set(["quickLinks", "browseByTopic", "upcomingEvents"])
+const SIDEBAR_BLOCK_IDS = new Set(["quickLinks", "browseByTopic", "upcomingEvents", "activePolls"])
 const VALID_MODULE_IDS = new Set(Object.keys(MODULES) as ModuleId[])
 
 export async function saveSidebarWidgets(
@@ -87,6 +87,54 @@ export async function saveSidebarWidgets(
 
   revalidatePath("/", "layout")
   return ok("Sidebar widgets saved.")
+}
+
+const NAV_ITEM_IDS = new Set(["events", "polls"])
+
+async function getCurrentNavOrder(): Promise<string[]> {
+  const s = await db.siteSettings.findUnique({ where: { id: "singleton" }, select: { navOrder: true } })
+  return (s?.navOrder ?? "events,polls").split(",").filter((id) => NAV_ITEM_IDS.has(id))
+}
+
+async function persistNavOrder(user: { id: string }, order: string[]): Promise<void> {
+  await db.siteSettings.upsert({
+    where: { id: "singleton" },
+    create: { id: "singleton", navOrder: order.join(",") },
+    update: { navOrder: order.join(",") },
+  })
+  await logAudit({ userId: user.id, action: "settings.navigation", resourceType: "SiteSettings", metadata: { navOrder: order } })
+  revalidatePath("/", "layout")
+}
+
+export async function saveNavOrder(order: string[]): Promise<ActionResult> {
+  const user = await requireRole("EDITOR")
+  if (!order.every((id) => NAV_ITEM_IDS.has(id)) || new Set(order).size !== order.length)
+    return fail("Invalid nav item.")
+  await persistNavOrder(user, order)
+  return ok("Navigation saved.")
+}
+
+export async function toggleNavItem(id: string): Promise<ActionResult> {
+  const user = await requireRole("EDITOR")
+  if (!NAV_ITEM_IDS.has(id)) return fail("Invalid nav item.")
+  const order = await getCurrentNavOrder()
+  const next = order.includes(id) ? order.filter((x) => x !== id) : [...order, id]
+  await persistNavOrder(user, next)
+  return ok()
+}
+
+export async function moveNavItem(id: string, direction: "up" | "down"): Promise<ActionResult> {
+  const user = await requireRole("EDITOR")
+  if (!NAV_ITEM_IDS.has(id)) return fail("Invalid nav item.")
+  const order = await getCurrentNavOrder()
+  const i = order.indexOf(id)
+  if (i === -1) return ok()
+  const j = direction === "up" ? i - 1 : i + 1
+  if (j < 0 || j >= order.length) return ok()
+  const next = [...order]
+  ;[next[i], next[j]] = [next[j], next[i]]
+  await persistNavOrder(user, next)
+  return ok()
 }
 
 export async function saveEnabledModules(modules: string[]): Promise<ActionResult> {

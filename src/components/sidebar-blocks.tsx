@@ -1,5 +1,7 @@
 import Link from "next/link"
-import { Zap, ExternalLink, CalendarDays, MapPin } from "lucide-react"
+import { Zap, ExternalLink, CalendarDays, MapPin, Tag } from "lucide-react"
+import { PollCard } from "@/components/poll-card"
+import type { PollCardPoll, PollOption } from "@/components/poll-card"
 
 interface QuickLink {
   id: string
@@ -20,6 +22,13 @@ interface UpcomingEvent {
   eventLocation: string | null
 }
 
+export interface ActivePollData {
+  poll: PollCardPoll
+  options: PollOption[]
+  totalVotes: number
+  votedOptionIds: string[]
+}
+
 interface Props {
   blocks: string[]
   eventsEnabled: boolean
@@ -27,6 +36,7 @@ interface Props {
   categories: Category[]
   upcomingEvents: UpcomingEvent[]
   activeCategory?: string
+  activePoll?: ActivePollData | null
 }
 
 export function SidebarBlocks({
@@ -36,6 +46,7 @@ export function SidebarBlocks({
   categories,
   upcomingEvents,
   activeCategory,
+  activePoll,
 }: Props) {
   return (
     <>
@@ -83,7 +94,10 @@ export function SidebarBlocks({
           if (categories.length === 0) return null
           return (
             <section key="browseByTopic" className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900">
-              <h2 className="mb-3 text-sm font-semibold text-gray-900 dark:text-gray-100">Browse by topic</h2>
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                <Tag className="size-4 text-brand" aria-hidden />
+                Browse by topic
+              </h2>
               <ul className="flex flex-wrap gap-1.5">
                 {categories.map((cat) => (
                   <li key={cat.id}>
@@ -157,6 +171,20 @@ export function SidebarBlocks({
                 View full calendar →
               </Link>
             </section>
+          )
+        }
+
+        if (blockId === "activePolls") {
+          if (!activePoll) return null
+          return (
+            <PollCard
+              key="activePolls"
+              poll={activePoll.poll}
+              options={activePoll.options}
+              totalVotes={activePoll.totalVotes}
+              initialVotedOptionIds={activePoll.votedOptionIds}
+              compact
+            />
           )
         }
 

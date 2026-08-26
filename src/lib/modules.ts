@@ -9,6 +9,11 @@ export const MODULES = {
     label: "Pages",
     description: "Static wiki-style pages accessible from the main navigation.",
   },
+  polls: {
+    id: "polls" as const,
+    label: "Polls",
+    description: "Interactive polls: anonymous, multi-choice, with customizable result visibility.",
+  },
 } as const
 
 export type ModuleId = keyof typeof MODULES

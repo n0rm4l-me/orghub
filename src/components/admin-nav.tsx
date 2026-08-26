@@ -15,6 +15,7 @@ import {
   CalendarDays,
   LayoutGrid,
   Megaphone,
+  BarChart2,
   type LucideIcon,
 } from "lucide-react"
 
@@ -34,6 +35,7 @@ const BASE_CONTENT: Item[] = [
 ]
 
 const EVENTS_ITEM: Item = { href: "/admin/events", label: "Events", icon: CalendarDays }
+const POLLS_ITEM: Item = { href: "/admin/polls", label: "Polls", icon: BarChart2 }
 
 const ADMINISTRATION: Item[] = [
   { href: "/admin/users", label: "Users", icon: Users },
@@ -55,15 +57,21 @@ function isActive(pathname: string, href: string): boolean {
 export function AdminNav({
   canAdminister,
   eventsEnabled,
+  pollsEnabled,
 }: {
   canAdminister: boolean
   eventsEnabled: boolean
+  pollsEnabled: boolean
 }) {
   const pathname = usePathname()
 
-  const content = eventsEnabled
-    ? [BASE_CONTENT[0], BASE_CONTENT[1], EVENTS_ITEM, ...BASE_CONTENT.slice(2)]
-    : BASE_CONTENT
+  const content = [
+    BASE_CONTENT[0],
+    BASE_CONTENT[1],
+    ...(eventsEnabled ? [EVENTS_ITEM] : []),
+    ...(pollsEnabled ? [POLLS_ITEM] : []),
+    ...BASE_CONTENT.slice(2),
+  ]
 
   return (
     <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-4" aria-label="Admin">

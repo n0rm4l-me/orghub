@@ -93,7 +93,7 @@ export default async function AdminEventsPage({ searchParams }: Props) {
             icon={CalendarDays}
             title="No events yet"
             description="Create an article and fill in the Event section to add it to the calendar."
-            action={{ label: "Create first event", href: "/admin/articles/new" }}
+            action={{ label: "Create first event", href: "/admin/articles/new?kind=event" }}
           />
         )
       ) : (

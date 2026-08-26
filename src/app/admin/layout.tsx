@@ -40,6 +40,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <AdminNav
           canAdminister={can.manageUsers(user)}
           eventsEnabled={parseModules(settings.enabledModules).has("events")}
+          pollsEnabled={parseModules(settings.enabledModules).has("polls")}
         />
 
         <div className="shrink-0 border-t border-white/5 p-3">

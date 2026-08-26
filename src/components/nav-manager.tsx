@@ -4,10 +4,18 @@ import { Fragment, useRef } from "react"
 import Link from "next/link"
 import { ChevronUp, ChevronDown, ExternalLink, Loader2, Plus } from "lucide-react"
 import { setPageInNav, movePage, createQuickLink, deleteQuickLink, moveQuickLink } from "@/lib/actions/nav"
+import { toggleNavItem, moveNavItem } from "@/lib/actions/settings"
 import { useAction } from "@/lib/use-action"
 import { DeleteButton } from "@/components/ui/delete-button"
 import { Panel, inputClass } from "@/components/ui/field"
 import { EmptyState } from "@/components/ui/empty-state"
+import type { ModuleId } from "@/lib/modules"
+
+interface ModuleNavItem {
+  id: string
+  label: string
+  visible: boolean
+}
 
 interface Page {
   id: string
@@ -24,34 +32,58 @@ interface QuickLink {
   url: string
 }
 
-export function NavManager({ pages, links }: { pages: Page[]; links: QuickLink[] }) {
+interface Props {
+  moduleItems: ModuleNavItem[]
+  pages: Page[]
+  links: QuickLink[]
+}
+
+export function NavManager({ moduleItems, pages, links }: Props) {
   const topLevel = pages.filter((p) => !p.parentId)
   const childrenOf = (id: string) => pages.filter((p) => p.parentId === id)
+  const hasModuleItems = moduleItems.length > 0
 
   return (
     <div className="space-y-6">
       <Panel
         title="Main menu"
-        description="Published pages listed here appear in the portal header, in this order."
+        description="Header navigation order. Feed is always first."
       >
-        {pages.length === 0 ? (
-          <p className="py-4 text-center text-sm text-gray-400">
-            No pages yet.{" "}
-            <Link href="/admin/pages/new" className="font-medium text-brand hover:underline">
-              Create one
-            </Link>
-          </p>
-        ) : (
-          <ul className="divide-y divide-gray-100">
-            {topLevel.map((page, i) => {
+        <ul className="divide-y divide-gray-100">
+          {/* Static Feed item */}
+          <li className="flex items-center gap-3 py-2.5 opacity-40 select-none">
+            <div className="flex shrink-0 flex-col">
+              <div className="grid size-5 place-items-center" />
+              <div className="grid size-5 place-items-center" />
+            </div>
+            <span className="flex-1 text-sm font-medium text-gray-900">Feed</span>
+            <Toggle checked disabled />
+          </li>
+
+          {/* Module items: Calendar, Polls */}
+          {moduleItems.map((item, i) => (
+            <ModuleRow
+              key={item.id}
+              item={item}
+              isFirst={i === 0}
+              isLast={i === moduleItems.length - 1}
+            />
+          ))}
+
+          {/* Pages */}
+          {!hasModuleItems && pages.length === 0 ? (
+            <li className="py-4 text-center text-sm text-gray-400">
+              No pages yet.{" "}
+              <Link href="/admin/pages/new" className="font-medium text-brand hover:underline">
+                Create one
+              </Link>
+            </li>
+          ) : (
+            topLevel.map((page, i) => {
               const children = childrenOf(page.id)
               return (
                 <Fragment key={page.id}>
-                  <PageRow
-                    page={page}
-                    isFirst={i === 0}
-                    isLast={i === topLevel.length - 1}
-                  />
+                  <PageRow page={page} isFirst={i === 0} isLast={i === topLevel.length - 1} />
                   {children.map((child, j) => (
                     <PageRow
                       key={child.id}
@@ -63,9 +95,9 @@ export function NavManager({ pages, links }: { pages: Page[]; links: QuickLink[]
                   ))}
                 </Fragment>
               )
-            })}
-          </ul>
-        )}
+            })
+          )}
+        </ul>
       </Panel>
 
       <Panel
@@ -97,6 +129,44 @@ export function NavManager({ pages, links }: { pages: Page[]; links: QuickLink[]
   )
 }
 
+function ModuleRow({
+  item,
+  isFirst,
+  isLast,
+}: {
+  item: ModuleNavItem
+  isFirst: boolean
+  isLast: boolean
+}) {
+  const toggle = useAction(toggleNavItem)
+  const move = useAction(moveNavItem)
+  const busy = toggle.pending || move.pending
+
+  return (
+    <li className="flex items-center gap-3 py-2.5" data-pending={busy || undefined}>
+      <Reorder
+        isFirst={isFirst}
+        isLast={isLast}
+        pending={move.pending}
+        onMove={(dir) => move.run(item.id, dir)}
+        label={item.label}
+      />
+
+      <span className="flex-1 text-sm font-medium text-gray-900">{item.label}</span>
+
+      <span className="shrink-0 rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-medium text-brand">
+        module
+      </span>
+
+      <Toggle
+        checked={item.visible}
+        disabled={busy}
+        onChange={() => toggle.run(item.id)}
+      />
+    </li>
+  )
+}
+
 function PageRow({
   page,
   isFirst,
@@ -123,6 +193,7 @@ function PageRow({
         pending={move.pending}
         onMove={(dir) => move.run(page.id, dir)}
         label={page.title}
+        hide={indent}
       />
 
       <div className="min-w-0 flex-1">
@@ -143,17 +214,42 @@ function PageRow({
         </span>
       )}
 
-      <label className="flex shrink-0 items-center gap-2 text-xs text-gray-500">
-        <input
-          type="checkbox"
-          checked={page.showInNav}
-          disabled={busy}
-          onChange={(e) => toggle.run(page.id, e.target.checked)}
-          className="size-4 rounded border-gray-300 accent-[var(--brand)]"
-        />
-        In menu
-      </label>
+      <Toggle
+        checked={page.showInNav}
+        disabled={busy}
+        onChange={(checked) => toggle.run(page.id, checked)}
+      />
     </li>
+  )
+}
+
+function Toggle({
+  checked,
+  disabled,
+  onChange,
+}: {
+  checked: boolean
+  disabled?: boolean
+  onChange?: (checked: boolean) => void
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onChange?.(!checked)}
+      className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent
+        transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand
+        focus-visible:ring-offset-2 disabled:opacity-50
+        ${checked ? "bg-brand" : "bg-gray-200"}`}
+    >
+      <span
+        className={`pointer-events-none inline-block size-4 transform rounded-full bg-white
+          shadow ring-0 transition duration-200 ease-in-out
+          ${checked ? "translate-x-4" : "translate-x-0"}`}
+      />
+    </button>
   )
 }
 
@@ -233,20 +329,25 @@ function QuickLinkForm() {
   )
 }
 
-/** Up/down pair with both buttons always present, so rows never change width. */
 function Reorder({
   isFirst,
   isLast,
   pending,
   onMove,
   label,
+  hide,
 }: {
   isFirst: boolean
   isLast: boolean
   pending: boolean
   onMove: (direction: "up" | "down") => void
   label: string
+  hide?: boolean
 }) {
+  if (hide) {
+    return <div className="w-5 shrink-0" />
+  }
+
   const base =
     "grid size-5 place-items-center rounded text-gray-400 transition enabled:hover:bg-gray-100 " +
     "enabled:hover:text-gray-700 disabled:opacity-25"

@@ -34,6 +34,7 @@ Open-source self-hosted employee portal. News feed, events calendar, wiki pages,
 **Access and deployment**
 - Role-based access: admin, editor, viewer
 - Local password auth with bcrypt and timing-safe login
+- Active Directory / LDAP auth via service-account bind + user-bind verify
 - SSO via Okta, Google, or any OIDC provider
 - Self-hosted with Docker Compose
 - Health endpoint at `/api/health` for Kubernetes liveness/readiness probes

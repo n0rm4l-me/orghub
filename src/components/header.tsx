@@ -4,11 +4,12 @@ import { db } from "@/lib/db"
 import { getSettings } from "@/lib/settings"
 import { getNavPages } from "@/lib/nav"
 import { getCurrentUser, can } from "@/lib/rbac"
-import { parseModules } from "@/lib/modules"
+import { parseModules, type ModuleId } from "@/lib/modules"
 import { BrandLogo } from "@/components/brand-logo"
 import { HeaderNav } from "@/components/header-nav"
 import { UserMenu } from "@/components/user-menu"
 import { HeaderContainer } from "@/components/portal-width"
+import { MobileMenu } from "@/components/mobile-menu"
 import { signOut } from "@/auth"
 import { gravatarUrl } from "@/lib/gravatar"
 
@@ -47,9 +48,19 @@ export async function Header() {
     }
   }
 
+  const NAV_META: Record<string, { href: string; label: string; module: string }> = {
+    events: { href: "/events", label: "Calendar", module: "events" },
+    polls:  { href: "/polls",  label: "Polls",    module: "polls"  },
+  }
+  const navOrder = (settings.navOrder ?? "events,polls").split(",").filter(Boolean)
+
   const items = [
     { href: "/", label: "Feed", ...(feedUnread > 0 ? { badge: feedUnread } : {}) },
-    ...(enabled.has("events") ? [{ href: "/events", label: "Calendar" }] : []),
+    ...navOrder.flatMap((id) => {
+      const meta = NAV_META[id]
+      if (!meta || !enabled.has(meta.module as ModuleId)) return []
+      return [{ href: meta.href, label: meta.label }]
+    }),
     ...(enabled.has("pages")
       ? pages.map((page) => ({
           href: `/pages/${page.slug}`,
@@ -62,7 +73,7 @@ export async function Header() {
   ]
 
   return (
-    <header className="sticky top-0 z-50 bg-brand text-white">
+    <header className="sticky top-0 z-50 bg-brand text-white [transform:translateZ(0)]">
       {/* Fixed height: the bar never grows or shrinks as its contents load. */}
       <HeaderContainer>
         <Link
@@ -96,6 +107,7 @@ export async function Header() {
         </form>
 
         <div className="flex shrink-0 items-center gap-1 ml-auto sm:ml-0">
+          <MobileMenu items={items} />
           {user ? (
             <UserMenu
               initials={initials}

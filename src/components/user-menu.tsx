@@ -21,11 +21,11 @@ export function UserMenu({ initials, gravatarUrl, name, canAdmin, signOutAction 
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    function onClickOutside(e: MouseEvent) {
+    function onClickOutside(e: PointerEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
-    document.addEventListener("mousedown", onClickOutside)
-    return () => document.removeEventListener("mousedown", onClickOutside)
+    document.addEventListener("pointerdown", onClickOutside)
+    return () => document.removeEventListener("pointerdown", onClickOutside)
   }, [])
 
   return (
@@ -33,9 +33,10 @@ export function UserMenu({ initials, gravatarUrl, name, canAdmin, signOutAction 
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
+        onTouchEnd={(e) => { e.preventDefault(); setOpen((v) => !v) }}
         aria-expanded={open}
         aria-haspopup="true"
-        className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-white/10"
+        className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-white/10 touch-manipulation"
       >
         <Avatar className="size-7 shrink-0">
           {gravatarUrl && <AvatarImage src={gravatarUrl} alt="" />}

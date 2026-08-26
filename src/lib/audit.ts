@@ -37,6 +37,10 @@ export type AuditAction =
   | "settings.layout"
   | "settings.localAuth"
   | "settings.gravatars"
+  | "poll.create"
+  | "poll.update"
+  | "poll.delete"
+  | "poll.close"
 
 interface LogInput {
   userId: string

@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
@@ -8,13 +9,15 @@ import TextAlign from "@tiptap/extension-text-align"
 import Highlight from "@tiptap/extension-highlight"
 import Image from "@tiptap/extension-image"
 import Link from "@tiptap/extension-link"
+import { PollEmbed } from "@/components/poll-embed-extension"
+import { getActivePollsForInsert } from "@/lib/actions/polls"
 import {
   Bold, Italic, UnderlineIcon, Strikethrough,
   Heading1, Heading2, Heading3,
   List, ListOrdered, Quote, Code2, Minus,
   AlignLeft, AlignCenter, AlignRight,
   Highlighter, Link2, Image as ImageIcon,
-  Undo, Redo,
+  Undo, Redo, BarChart2,
 } from "lucide-react"
 
 interface Props {
@@ -22,16 +25,21 @@ interface Props {
   onChange: (json: object) => void
 }
 
+export const EDITOR_EXTENSIONS = [
+  StarterKit.configure({ link: false, underline: false }),
+  Underline,
+  Highlight,
+  TextAlign.configure({ types: ["heading", "paragraph"] }),
+  Image,
+  Link.configure({ openOnClick: false }),
+  PollEmbed,
+]
+
 export function Editor({ initialContent, onChange }: Props) {
   const editor = useEditor({
     extensions: [
-      StarterKit,
-      Underline,
-      Highlight,
-      TextAlign.configure({ types: ["heading", "paragraph"] }),
+      ...EDITOR_EXTENSIONS,
       Placeholder.configure({ placeholder: "Start writing your article..." }),
-      Image,
-      Link.configure({ openOnClick: false }),
     ],
     content: initialContent ?? { type: "doc", content: [{ type: "paragraph" }] },
     onUpdate: ({ editor }) => onChange(editor.getJSON()),
@@ -123,6 +131,66 @@ function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
       {divider}
       {btn(false, () => editor.chain().focus().undo().run(), Undo, "Undo")}
       {btn(false, () => editor.chain().focus().redo().run(), Redo, "Redo")}
+      {divider}
+      <InsertPollButton editor={editor} />
+    </div>
+  )
+}
+
+function InsertPollButton({ editor }: { editor: ReturnType<typeof useEditor> }) {
+  const [open, setOpen] = useState(false)
+  const [polls, setPolls] = useState<Array<{ id: string; question: string }> | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  async function handleOpen() {
+    if (open) { setOpen(false); return }
+    setOpen(true)
+    if (polls !== null) return
+    setLoading(true)
+    const result = await getActivePollsForInsert()
+    setPolls(result)
+    setLoading(false)
+  }
+
+  function insert(pollId: string) {
+    editor?.chain().focus().insertContent({ type: "pollEmbed", attrs: { pollId } }).run()
+    setOpen(false)
+  }
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={handleOpen}
+        title="Insert poll"
+        className="flex items-center gap-1 rounded px-1.5 py-1 text-gray-500 transition hover:bg-gray-100 hover:text-gray-800 text-xs"
+      >
+        <BarChart2 className="w-4 h-4" />
+        Poll
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full z-20 mt-1 min-w-[200px] max-w-xs overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+          {loading ? (
+            <p className="px-3 py-2 text-xs text-gray-400">Loading polls...</p>
+          ) : !polls?.length ? (
+            <p className="px-3 py-2 text-xs text-gray-400">No active polls found.</p>
+          ) : (
+            <ul>
+              {polls.map((p) => (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    onClick={() => insert(p.id)}
+                    className="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 line-clamp-2"
+                  >
+                    {p.question}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   )
 }

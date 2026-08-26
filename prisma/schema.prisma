@@ -31,13 +31,15 @@ model User {
 
   lastFeedVisitAt DateTime?
 
-  accounts  Account[]
-  sessions  Session[]
-  articles  Article[]
-  auditLogs AuditLog[]
-  reactions ArticleReaction[]
-  comments  Comment[]
-  views     ArticleView[]
+  accounts      Account[]
+  sessions      Session[]
+  articles      Article[]
+  auditLogs     AuditLog[]
+  reactions     ArticleReaction[]
+  comments      Comment[]
+  views         ArticleView[]
+  pollsAuthored Poll[]      @relation("PollAuthor")
+  pollVotes     PollVote[]  @relation("PollVoter")
 }
 
 model Account {
@@ -211,6 +213,8 @@ model SiteSettings {
   localAuthEnabled Boolean @default(true)
   /// When false, Gravatar requests are skipped and only initials are shown.
   gravatarsEnabled Boolean @default(true)
+  /// Comma-separated IDs of module nav items shown in the header, in display order.
+  navOrder         String  @default("events,polls")
 }
 
 model Comment {
@@ -268,4 +272,58 @@ model AuditLog {
   @@index([userId])
   @@index([action])
   @@index([createdAt])
+}
+
+enum PollStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+enum ResultsVisibility {
+  ALWAYS
+  AFTER_VOTE
+  AFTER_CLOSE
+  NEVER
+}
+
+model Poll {
+  id                String            @id @default(cuid())
+  question          String
+  status            PollStatus        @default(DRAFT)
+  anonymous         Boolean           @default(false)
+  multiChoice       Boolean           @default(false)
+  resultsVisibility ResultsVisibility @default(AFTER_VOTE)
+  endsAt            DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  authorId          String
+  author            User              @relation("PollAuthor", fields: [authorId], references: [id])
+  options           PollOption[]
+  votes             PollVote[]
+
+  @@index([status, createdAt])
+}
+
+model PollOption {
+  id     String     @id @default(cuid())
+  pollId String
+  poll   Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  text   String
+  order  Int
+  votes  PollVote[]
+}
+
+model PollVote {
+  id        String     @id @default(cuid())
+  pollId    String
+  poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  optionId  String
+  option    PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User       @relation("PollVoter", fields: [userId], references: [id])
+  createdAt DateTime   @default(now())
+
+  @@unique([pollId, userId, optionId])
+  @@index([pollId])
 }

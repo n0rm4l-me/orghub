@@ -2,7 +2,7 @@ import Link from "next/link"
 import { db } from "@/lib/db"
 import type { Prisma } from "@prisma/client"
 import { CalendarDays, Heart, Newspaper, Pin, SearchX, Star } from "lucide-react"
-import { SidebarBlocks } from "@/components/sidebar-blocks"
+import { SidebarBlocks, type ActivePollData } from "@/components/sidebar-blocks"
 import { CategoryFilter } from "@/components/category-filter"
 import { EmptyState } from "@/components/ui/empty-state"
 import { getQuickLinks, getUpcomingEvents } from "@/lib/nav"
@@ -194,6 +194,7 @@ export default async function FeedPage({ searchParams }: Props) {
 
   const settings = await getSettings()
   const PER_PAGE = settings.feedPageSize ?? 15
+  const pollsEnabled = parseModules(settings.enabledModules).has("polls")
 
   const [articles, total, categories, quickLinks, upcomingEvents, user, pinnedRaw] =
     await Promise.all([
@@ -266,9 +267,47 @@ export default async function FeedPage({ searchParams }: Props) {
   const totalPages = Math.ceil(total / PER_PAGE)
   const eventsEnabled = parseModules(settings.enabledModules).has("events")
   const feedLayout = settings.feedLayout ?? "sidebar-right"
+
+  const allBlocks = [
+    ...(settings.sidebarOrder?.split(",").filter(Boolean) ?? []),
+    ...(settings.leftSidebarOrder?.split(",").filter(Boolean) ?? []),
+  ]
+  let activePollData: ActivePollData | null = null
+  if (pollsEnabled && allBlocks.includes("activePolls")) {
+    const activePollRaw = await db.poll.findFirst({
+      where: { status: "ACTIVE" },
+      orderBy: { createdAt: "desc" },
+      include: {
+        options: { orderBy: { order: "asc" }, include: { _count: { select: { votes: true } } } },
+        _count: { select: { votes: true } },
+      },
+    })
+    if (activePollRaw) {
+      const userVotes = user
+        ? await db.pollVote.findMany({
+            where: { pollId: activePollRaw.id, userId: user.id },
+            select: { optionId: true },
+          })
+        : []
+      activePollData = {
+        poll: {
+          id: activePollRaw.id,
+          question: activePollRaw.question,
+          anonymous: activePollRaw.anonymous,
+          multiChoice: activePollRaw.multiChoice,
+          resultsVisibility: activePollRaw.resultsVisibility,
+          status: activePollRaw.status,
+          endsAt: activePollRaw.endsAt,
+        },
+        options: activePollRaw.options.map((o) => ({ id: o.id, text: o.text, voteCount: o._count.votes })),
+        totalVotes: activePollRaw._count.votes,
+        votedOptionIds: userVotes.map((v) => v.optionId),
+      }
+    }
+  }
   const cardStyle = (settings.feedCardStyle ?? "preview") as "compact" | "default" | "preview"
   const rightBlocks = settings.sidebarOrder?.split(",").filter(Boolean) ?? ["quickLinks", "browseByTopic", "upcomingEvents"]
-  const leftBlocks  = settings.leftSidebarOrder?.split(",").filter(Boolean) ?? []
+  const leftBlocks = settings.leftSidebarOrder?.split(",").filter(Boolean) ?? []
   const showLeft  = feedLayout === "sidebar-left"  || feedLayout === "sidebar-both"
   const showRight = feedLayout === "sidebar-right" || feedLayout === "sidebar-both"
 
@@ -286,6 +325,7 @@ export default async function FeedPage({ searchParams }: Props) {
               categories={categories}
               upcomingEvents={upcomingEvents}
               activeCategory={categorySlug}
+              activePoll={activePollData}
             />
           </aside>
         )}
@@ -426,6 +466,7 @@ export default async function FeedPage({ searchParams }: Props) {
               categories={categories}
               upcomingEvents={upcomingEvents}
               activeCategory={categorySlug}
+              activePoll={activePollData}
             />
           </aside>
         )}
