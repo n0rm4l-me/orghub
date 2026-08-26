@@ -28,8 +28,9 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
-# Prisma migrations (init container) - needs full prod node_modules for effect + engine
+# Prisma migrations (init container) - needs prisma.config.ts + prod node_modules
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=prod-deps /app/node_modules ./node_modules
 
 EXPOSE 3000
