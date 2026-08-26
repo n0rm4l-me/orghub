@@ -123,24 +123,24 @@ export function MobileMenu({ items }: Props) {
                   </div>
                 )
               })}
-            </nav>
 
-            <div className="border-t border-white/15 px-4 py-4">
-              <div className="rounded-xl bg-black/20 p-3 space-y-3">
-                <div>
-                  <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/50">Theme</p>
-                  <ThemeToggle />
-                </div>
-                <div>
-                  <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/50">Text size</p>
-                  <FontSizeToggle />
-                </div>
-                <div>
-                  <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/50">Page width</p>
-                  <PortalWidthPills />
+              <div className="mt-2 border-t border-white/15 pt-4 px-2 pb-2">
+                <div className="rounded-xl bg-black/20 p-3 space-y-3">
+                  <div>
+                    <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/50">Theme</p>
+                    <ThemeToggle />
+                  </div>
+                  <div>
+                    <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/50">Text size</p>
+                    <FontSizeToggle />
+                  </div>
+                  <div>
+                    <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/50">Page width</p>
+                    <PortalWidthPills />
+                  </div>
                 </div>
               </div>
-            </div>
+            </nav>
           </div>
         </>
       )}

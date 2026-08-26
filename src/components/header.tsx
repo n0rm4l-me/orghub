@@ -108,7 +108,7 @@ export async function Header() {
         </form>
 
         <div className="flex shrink-0 items-center gap-1 ml-auto sm:ml-0">
-          <CustomizeMenu />
+          <div className="hidden md:block"><CustomizeMenu /></div>
           <MobileMenu items={items} />
           {user ? (
             <UserMenu

@@ -4,9 +4,6 @@ import { useRef, useState, useEffect } from "react"
 import Link from "next/link"
 import { LayoutDashboard, LogOut, ChevronDown } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { FontSizeToggle } from "@/components/font-size-toggle"
-import { PortalWidthPills } from "@/components/portal-width"
 
 interface Props {
   initials: string
@@ -67,18 +64,6 @@ export function UserMenu({ initials, gravatarUrl, name, canAdmin, signOutAction 
               Admin panel
             </Link>
           )}
-          <div className="border-t border-gray-100 px-3 py-2.5 dark:border-gray-700">
-            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Theme</p>
-            <ThemeToggle />
-          </div>
-          <div className="border-t border-gray-100 px-3 py-2.5 dark:border-gray-700">
-            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Size</p>
-            <FontSizeToggle />
-          </div>
-          <div className="border-t border-gray-100 px-3 py-2.5 dark:border-gray-700">
-            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Width</p>
-            <PortalWidthPills />
-          </div>
           <form action={signOutAction} className="border-t border-gray-100 dark:border-gray-700">
             <button
               type="submit"

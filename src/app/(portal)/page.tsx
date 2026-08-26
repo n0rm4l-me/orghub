@@ -446,6 +446,20 @@ export default async function FeedPage({ searchParams }: Props) {
         {totalPages > 1 && (
           <Pagination page={page} totalPages={totalPages} params={params} />
         )}
+
+        {(showLeft || showRight) && (
+          <section className="mt-6 space-y-4 lg:hidden">
+            <SidebarBlocks
+              blocks={[...leftBlocks, ...rightBlocks]}
+              eventsEnabled={eventsEnabled}
+              quickLinks={quickLinks}
+              categories={categories}
+              upcomingEvents={upcomingEvents}
+              activeCategory={categorySlug}
+              activePoll={activePollData}
+            />
+          </section>
+        )}
       </div>
 
         {showRight && (
