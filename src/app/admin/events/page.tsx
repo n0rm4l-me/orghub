@@ -157,9 +157,9 @@ export default async function AdminEventsPage({ searchParams }: Props) {
                     </td>
                     <td className="px-5 py-3">
                       {ev.eventLocation ? (
-                        <span className="flex items-center gap-1 truncate text-xs text-gray-500">
+                        <span className="flex min-w-0 items-center gap-1 text-xs text-gray-500">
                           <MapPin className="size-3 shrink-0 text-gray-400" aria-hidden />
-                          {ev.eventLocation}
+                          <span className="truncate" title={ev.eventLocation}>{ev.eventLocation}</span>
                         </span>
                       ) : (
                         <span className="text-xs text-gray-300">—</span>

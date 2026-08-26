@@ -149,7 +149,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
               {articles.map((article) => (
                 <tr key={article.id} className="group transition-colors hover:bg-gray-50/70">
                   <td className="px-5 py-3">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex min-w-0 items-center gap-1.5">
                       <Link
                         href={`/admin/articles/${article.id}/edit`}
                         className="truncate text-sm font-medium text-gray-900 transition-colors
