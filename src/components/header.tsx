@@ -10,6 +10,7 @@ import { HeaderNav } from "@/components/header-nav"
 import { UserMenu } from "@/components/user-menu"
 import { HeaderContainer } from "@/components/portal-width"
 import { MobileMenu } from "@/components/mobile-menu"
+import { CustomizeMenu } from "@/components/customize-menu"
 import { signOut } from "@/auth"
 import { gravatarUrl } from "@/lib/gravatar"
 
@@ -107,6 +108,7 @@ export async function Header() {
         </form>
 
         <div className="flex shrink-0 items-center gap-1 ml-auto sm:ml-0">
+          <CustomizeMenu />
           <MobileMenu items={items} />
           {user ? (
             <UserMenu
