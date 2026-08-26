@@ -85,7 +85,7 @@ function FeaturedCard({
   pinned?: boolean
 }) {
   return (
-    <article className={`group mb-3 overflow-hidden rounded-2xl border transition-shadow hover:shadow-md ${article.important ? "border-amber-200 bg-amber-50/40" : "border-gray-200 bg-white"}`}>
+    <article className={`group mb-3 overflow-hidden rounded-2xl border transition-shadow hover:shadow-md ${article.important ? "border-amber-200 bg-amber-50/40 dark:border-amber-900/50 dark:bg-amber-950/20" : "border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900"}`}>
       <Link href={`/articles/${article.id}`} className="block">
         {article.coverImage ? (
           <div className="relative h-48 overflow-hidden">
@@ -127,11 +127,11 @@ function FeaturedCard({
               </span>
             )}
           </div>
-          <h2 className="mb-2 text-2xl leading-snug font-bold text-gray-900 transition-colors group-hover:text-brand">
+          <h2 className="mb-2 text-2xl leading-snug font-bold text-gray-900 transition-colors group-hover:text-brand dark:text-gray-100">
             {article.title}
           </h2>
           {article.excerpt && (
-            <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-gray-500">
+            <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
               {article.excerpt}
             </p>
           )}
@@ -292,9 +292,9 @@ export default async function FeedPage({ searchParams }: Props) {
         <div className="min-w-0 flex-1">
 
         {query && (
-          <p className="mb-4 text-sm text-gray-500">
+          <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
             {total} result{total === 1 ? "" : "s"} for{" "}
-            <span className="font-medium text-gray-900">“{query}”</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100">"{query}"</span>
             {" · "}
             <Link href="/" className="font-medium text-brand hover:underline">
               Clear
@@ -309,7 +309,7 @@ export default async function FeedPage({ searchParams }: Props) {
               title="Nothing matched"
               description={
                 query
-                  ? `No published article mentions “${query}”. Try a shorter phrase.`
+                  ? `No published article mentions "${query}". Try a shorter phrase.`
                   : "This category has no published articles yet."
               }
               action={{ label: "Back to all news", href: "/" }}
@@ -338,8 +338,8 @@ export default async function FeedPage({ searchParams }: Props) {
                 <article
                   className={`group overflow-hidden rounded-xl border transition hover:shadow-sm ${
                     article.important
-                      ? "border-amber-200 bg-amber-50/40 hover:border-amber-300"
-                      : "border-gray-200 bg-white hover:border-gray-300"
+                      ? "border-amber-200 bg-amber-50/40 hover:border-amber-300 dark:border-amber-900/50 dark:bg-amber-950/20 dark:hover:border-amber-800/60"
+                      : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-600"
                   }`}
                 >
                   <Link
@@ -360,7 +360,7 @@ export default async function FeedPage({ searchParams }: Props) {
                             NEW
                           </span>
                         )}
-                        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-gray-900 transition-colors group-hover:text-brand">
+                        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-gray-900 transition-colors group-hover:text-brand dark:text-gray-100">
                           {article.title}
                         </h3>
                       </div>
@@ -372,7 +372,7 @@ export default async function FeedPage({ searchParams }: Props) {
                       )}
                     </div>
                   </Link>
-                  <div className="flex items-center gap-2 px-4 pb-3 text-[11px] text-gray-400">
+                  <div className="flex items-center gap-2 px-4 pb-3 text-[11px] text-gray-400 dark:text-gray-500">
                     {article.category && (
                       <span className="rounded-full border border-brand/30 px-2 py-0.5 font-medium text-brand">
                         {article.category.name}
@@ -455,12 +455,13 @@ function Pagination({
 
   const base =
     "rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium transition " +
-    "hover:border-gray-300 hover:bg-gray-50"
+    "hover:border-gray-300 hover:bg-gray-50 " +
+    "dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-600 dark:hover:bg-gray-800"
 
   return (
     <nav className="mt-6 flex items-center justify-between" aria-label="Pagination">
       {page > 1 ? (
-        <Link href={href(page - 1)} className={`${base} text-gray-700`} rel="prev">
+        <Link href={href(page - 1)} className={`${base} text-gray-700 dark:text-gray-300`} rel="prev">
           ← Previous
         </Link>
       ) : (
@@ -474,7 +475,7 @@ function Pagination({
       </span>
 
       {page < totalPages ? (
-        <Link href={href(page + 1)} className={`${base} text-gray-700`} rel="next">
+        <Link href={href(page + 1)} className={`${base} text-gray-700 dark:text-gray-300`} rel="next">
           Next →
         </Link>
       ) : (

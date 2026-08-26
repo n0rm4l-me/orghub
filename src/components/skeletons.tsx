@@ -14,7 +14,7 @@ export function FeedSkeleton() {
       <div className="flex items-start gap-8">
         <div className="min-w-0 flex-1">
           {/* Featured card with cover image area */}
-          <div className="mb-3 overflow-hidden rounded-2xl border border-gray-200 bg-white">
+          <div className="mb-3 overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
             <Skeleton className="h-48 w-full rounded-none" />
             <div className="p-6">
               <div className="mb-3 flex gap-2">
@@ -33,7 +33,7 @@ export function FeedSkeleton() {
           {/* List */}
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex items-start gap-4 rounded-xl border border-gray-200 bg-white px-5 py-4">
+              <div key={i} className="flex items-start gap-4 rounded-xl border border-gray-200 bg-white px-5 py-4 dark:border-gray-700 dark:bg-gray-900">
                 <Skeleton className="h-12 w-1 rounded-full" />
                 <div className="min-w-0 flex-1">
                   <Skeleton className="mb-1.5 h-2.5 w-20" />
@@ -51,7 +51,7 @@ export function FeedSkeleton() {
 
         <aside className="hidden w-64 shrink-0 space-y-4 lg:block">
           {[3, 5].map((rows, card) => (
-            <div key={card} className="rounded-xl border border-gray-200 bg-white p-5">
+            <div key={card} className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900">
               <Skeleton className="mb-4 h-4 w-32" />
               <div className="space-y-3">
                 {Array.from({ length: rows }).map((_, i) => (
@@ -108,7 +108,7 @@ export function ArticleSkeleton() {
       {/* Cover image placeholder */}
       <Skeleton className="mb-4 h-52 w-full rounded-2xl" />
       {/* White content card */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-8">
+      <div className="rounded-2xl border border-gray-200 bg-white p-8 dark:border-gray-700 dark:bg-gray-900">
         <Skeleton className="mb-3 h-9 w-11/12" />
         <Skeleton className="mb-6 h-9 w-2/3" />
         <div className="mb-4 flex items-center gap-3 border-b border-gray-100 pb-4">

@@ -4,6 +4,8 @@ import { useRef, useState, useEffect } from "react"
 import Link from "next/link"
 import { LayoutDashboard, LogOut, ChevronDown } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { FontSizeToggle } from "@/components/font-size-toggle"
 
 interface Props {
   initials: string
@@ -49,28 +51,33 @@ export function UserMenu({ initials, gravatarUrl, name, canAdmin, signOutAction 
 
       {open && (
         <div
-          className="absolute right-0 top-full mt-1.5 w-48 overflow-hidden rounded-xl border
-            border-gray-200 bg-white shadow-lg"
+          className="absolute right-0 top-full mt-1.5 w-56 overflow-hidden rounded-xl border
+            border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800"
         >
           {canAdmin && (
             <Link
               href="/admin"
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700
-                transition-colors hover:bg-gray-50"
+                transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700"
             >
               <LayoutDashboard className="size-4 text-gray-400" aria-hidden />
               Admin panel
             </Link>
           )}
-          <form
-            action={signOutAction}
-            className={canAdmin ? "border-t border-gray-100" : ""}
-          >
+          <div className="border-t border-gray-100 px-3 py-2.5 dark:border-gray-700">
+            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Theme</p>
+            <ThemeToggle />
+          </div>
+          <div className="border-t border-gray-100 px-3 py-2.5 dark:border-gray-700">
+            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Size</p>
+            <FontSizeToggle />
+          </div>
+          <form action={signOutAction} className="border-t border-gray-100 dark:border-gray-700">
             <button
               type="submit"
               className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700
-                transition-colors hover:bg-gray-50"
+                transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700"
             >
               <LogOut className="size-4 text-gray-400" aria-hidden />
               Sign out

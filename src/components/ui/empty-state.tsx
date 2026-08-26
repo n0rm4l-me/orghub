@@ -15,12 +15,12 @@ interface Props {
 export function EmptyState({ icon: Icon, title, description, action }: Props) {
   return (
     <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
-        <Icon className="h-6 w-6 text-gray-400" strokeWidth={1.5} />
+      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+        <Icon className="h-6 w-6 text-gray-400 dark:text-gray-500" strokeWidth={1.5} />
       </div>
-      <p className="text-sm font-semibold text-gray-900">{title}</p>
+      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{title}</p>
       {description && (
-        <p className="mt-1 max-w-sm text-sm text-gray-500">{description}</p>
+        <p className="mt-1 max-w-sm text-sm text-gray-500 dark:text-gray-400">{description}</p>
       )}
       {action && (
         <Link

@@ -50,35 +50,36 @@ export default async function PublicPagePage({ params }: Props) {
   const content = (
     <>
       {page.parent && (
-        <nav className="mb-4 flex items-center gap-1.5 text-sm text-gray-500" aria-label="Breadcrumb">
-          <Link href="/" className="hover:text-gray-700 transition">Home</Link>
+        <nav className="mb-4 flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400" aria-label="Breadcrumb">
+          <Link href="/" className="hover:text-gray-700 transition dark:hover:text-gray-200">Home</Link>
           <ChevronRight className="size-3.5 shrink-0" aria-hidden />
-          <Link href={`/pages/${page.parent.slug}`} className="hover:text-gray-700 transition">
+          <Link href={`/pages/${page.parent.slug}`} className="hover:text-gray-700 transition dark:hover:text-gray-200">
             {page.parent.title}
           </Link>
           <ChevronRight className="size-3.5 shrink-0" aria-hidden />
-          <span className="text-gray-800">{page.title}</span>
+          <span className="text-gray-800 dark:text-gray-200">{page.title}</span>
         </nav>
       )}
 
-      <h1 className="text-4xl font-bold text-gray-900 mb-8">{page.title}</h1>
+      <h1 className="text-4xl font-bold text-gray-900 mb-8 dark:text-gray-100">{page.title}</h1>
 
-      <div className="bg-white rounded-2xl p-8 border border-gray-100">
+      <div className="bg-white rounded-2xl p-8 border border-gray-100 dark:bg-gray-900 dark:border-gray-700">
         <ArticleBody body={page.body as object} />
       </div>
 
       {page.children.length > 0 && (
         <div className="mt-8">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">In this section</h2>
+          <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">In this section</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             {page.children.map((child) => (
               <Link
                 key={child.id}
                 href={`/pages/${child.slug}`}
                 className="flex items-center justify-between gap-3 rounded-xl border border-gray-200
-                  bg-white px-4 py-3.5 transition hover:border-gray-300 hover:shadow-sm"
+                  bg-white px-4 py-3.5 transition hover:border-gray-300 hover:shadow-sm
+                  dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-600"
               >
-                <span className="text-sm font-medium text-gray-800">{child.title}</span>
+                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{child.title}</span>
                 <ChevronRight className="size-4 shrink-0 text-gray-400" aria-hidden />
               </Link>
             ))}

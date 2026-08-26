@@ -187,6 +187,15 @@
   }
 }
 
+/* Body dark mode override must be outside @layer to beat utility specificity */
+.dark body {
+  background-color: oklch(0.13 0 0);
+  color: oklch(0.94 0 0);
+}
+
+html.font-sm { font-size: 14px; }
+html.font-lg { font-size: 18px; }
+
 @layer utilities {
   /* Fades content in once its data or image has arrived, instead of popping. */
   @keyframes orghub-fade-in {

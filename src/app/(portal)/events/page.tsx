@@ -93,23 +93,25 @@ export default async function EventsPage({ searchParams }: Props) {
     <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Calendar</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Calendar</h1>
         <div className="flex items-center gap-2">
           <Link
             href={`/events?month=${monthKey(prev.year, prev.month)}`}
             className="grid size-8 place-items-center rounded-lg border border-gray-200 bg-white
-              text-gray-500 transition hover:bg-gray-50 hover:text-gray-800"
+              text-gray-500 transition hover:bg-gray-50 hover:text-gray-800
+              dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
             aria-label="Previous month"
           >
             <ChevronLeft className="size-4" />
           </Link>
-          <span className="min-w-[10rem] text-center text-sm font-semibold text-gray-900">
+          <span className="min-w-[10rem] text-center text-sm font-semibold text-gray-900 dark:text-gray-100">
             {MONTH_NAMES[month - 1]} {year}
           </span>
           <Link
             href={`/events?month=${monthKey(next.year, next.month)}`}
             className="grid size-8 place-items-center rounded-lg border border-gray-200 bg-white
-              text-gray-500 transition hover:bg-gray-50 hover:text-gray-800"
+              text-gray-500 transition hover:bg-gray-50 hover:text-gray-800
+              dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
             aria-label="Next month"
           >
             <ChevronRight className="size-4" />
@@ -118,9 +120,9 @@ export default async function EventsPage({ searchParams }: Props) {
       </div>
 
       {/* Calendar grid */}
-      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
         {/* Day-of-week header */}
-        <div className="grid grid-cols-7 border-b border-gray-100">
+        <div className="grid grid-cols-7 border-b border-gray-100 dark:border-gray-700">
           {DAY_LABELS.map((d) => (
             <div key={d} className="py-2 text-center text-xs font-semibold uppercase tracking-wide text-gray-400">
               {d}
@@ -138,15 +140,15 @@ export default async function EventsPage({ searchParams }: Props) {
             return (
               <div
                 key={idx}
-                className={`min-h-[80px] border-b border-r border-gray-100 p-1.5
+                className={`min-h-[80px] border-b border-r border-gray-100 p-1.5 dark:border-gray-700
                   ${isLast ? "border-b-0" : ""}
                   ${idx % 7 === 6 ? "border-r-0" : ""}
-                  ${!day ? "bg-gray-50/50" : ""}`}
+                  ${!day ? "bg-gray-50/50 dark:bg-gray-800/50" : ""}`}
               >
                 {day && (
                   <>
                     <div className={`mb-1 flex size-6 items-center justify-center rounded-full text-xs font-medium
-                      ${isToday ? "bg-brand text-white" : "text-gray-700"}`}>
+                      ${isToday ? "bg-brand text-white" : "text-gray-700 dark:text-gray-300"}`}>
                       {day}
                     </div>
                     <div className="space-y-0.5">
@@ -175,15 +177,15 @@ export default async function EventsPage({ searchParams }: Props) {
 
       {/* Event list */}
       <div>
-        <h2 className="mb-4 text-base font-semibold text-gray-900">
+        <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">
           {events.length > 0
             ? `${events.length} event${events.length === 1 ? "" : "s"} in ${MONTH_NAMES[month - 1]}`
             : `No events in ${MONTH_NAMES[month - 1]}`}
         </h2>
 
         {events.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-200 py-16 text-center">
-            <CalendarDays className="mx-auto mb-3 size-8 text-gray-300" />
+          <div className="rounded-2xl border border-dashed border-gray-200 py-16 text-center dark:border-gray-700">
+            <CalendarDays className="mx-auto mb-3 size-8 text-gray-300 dark:text-gray-600" />
             <p className="text-sm text-gray-400">No events scheduled this month.</p>
           </div>
         ) : (
@@ -215,20 +217,21 @@ export default async function EventsPage({ searchParams }: Props) {
                   key={ev.id}
                   href={`/articles/${ev.id}`}
                   className="group flex items-start gap-4 rounded-xl border border-gray-200 bg-white px-5 py-4
-                    transition hover:border-brand/30 hover:bg-brand/5"
+                    transition hover:border-brand/30 hover:bg-brand/5
+                    dark:border-gray-700 dark:bg-gray-900 dark:hover:border-brand/40"
                 >
                   {/* Date badge */}
                   <div className="shrink-0 w-12 text-center">
                     <p className="text-[10px] font-semibold uppercase tracking-wide text-brand">
                       {start.toLocaleDateString("en-US", { month: "short" })}
                     </p>
-                    <p className="text-2xl font-bold leading-none text-gray-900">
+                    <p className="text-2xl font-bold leading-none text-gray-900 dark:text-gray-100">
                       {start.getDate()}
                     </p>
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-gray-900 group-hover:text-brand transition">
+                    <p className="font-medium text-gray-900 group-hover:text-brand transition dark:text-gray-100">
                       {ev.title}
                     </p>
                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-gray-500">
