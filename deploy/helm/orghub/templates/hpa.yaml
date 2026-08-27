@@ -1,0 +1,31 @@
+{{- if .Values.autoscaling.enabled }}
+{{/*
+Scales the app tier on CPU. Safe because the app holds no local state: no file writes,
+no in-memory caches, no background jobs.
+
+The Deployment omits `replicas` when this is enabled, so `helm upgrade` does not reset
+the replica count the HPA just chose.
+*/}}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "orghub.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "orghub.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "orghub.name" . }}
+  minReplicas: {{ .Values.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          # Percentage of resources.requests.cpu, which must be set for this to work.
+          averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}

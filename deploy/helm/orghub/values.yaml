@@ -1,9 +1,48 @@
 image:
   repository: YOUR_REGISTRY/orghub
-  tag: "latest"
-  pullPolicy: Always
+  # Required: an immutable tag, e.g. the git SHA. Intentionally empty so a deploy that
+  # forgets it fails at template time instead of quietly pulling a moving `latest`.
+  tag: ""
+  # Safe with immutable tags, and avoids a re-pull on every pod restart.
+  pullPolicy: IfNotPresent
 
+# Ignored when autoscaling.enabled is true, so that Helm upgrades do not fight the HPA.
 replicaCount: 1
+
+# Max Postgres connections held per pod. Cluster-wide usage is replicaCount x dbPoolMax
+# (or maxReplicas x dbPoolMax under autoscaling), and Postgres accepts 100 by default.
+# Enable pgbouncer below before pushing either number up.
+dbPoolMax: 5
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  # The app is stateless: no local file writes, no in-memory caches, no background jobs,
+  # so scaling horizontally is safe. Check the connection maths above before raising
+  # maxReplicas.
+  targetCPUUtilizationPercentage: 70
+
+pgbouncer:
+  enabled: false
+  # Pinned on purpose: max_prepared_statements only defaults to 200 from PgBouncer 1.24
+  # onwards. On older versions it defaults to 0, which breaks Prisma's prepared
+  # statements under transaction pooling. maxPreparedStatements below sets it explicitly
+  # so this does not depend on the image default either.
+  image: edoburu/pgbouncer:1.25.2
+  replicaCount: 1
+  # transaction mode is what makes pooling worthwhile. Verified against this app: it
+  # issues no interactive transactions and no session-level state.
+  poolMode: transaction
+  maxClientConn: 200
+  defaultPoolSize: 25
+  maxPreparedStatements: 200
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      memory: 128Mi
 
 app:
   # Required: random string for Auth.js session signing

@@ -1,0 +1,101 @@
+{{- if .Values.pgbouncer.enabled }}
+{{/*
+Connection pooler in front of Postgres.
+
+Without it, the cluster holds `replicas x dbPoolMax` connections open against Postgres,
+which caps replica count well below where the app itself would struggle. PgBouncer in
+transaction mode lets many app pods share a small number of real backends.
+
+Only the app pods route through here. The migrate initContainer connects directly,
+because `prisma migrate deploy` needs a session-level advisory lock.
+*/}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "orghub.pgbouncerHost" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "orghub.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pgbouncer
+spec:
+  replicas: {{ .Values.pgbouncer.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: orghub
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: pgbouncer
+  template:
+    metadata:
+      labels:
+        {{- include "orghub.labels" . | nindent 8 }}
+        app.kubernetes.io/component: pgbouncer
+    spec:
+      containers:
+        - name: pgbouncer
+          image: {{ .Values.pgbouncer.image }}
+          ports:
+            # The image listens on 5432 inside the container. The Service publishes the
+            # conventional 6432 and maps to it.
+            - name: pgbouncer
+              containerPort: 5432
+              protocol: TCP
+          env:
+            - name: DB_HOST
+              value: {{ include "orghub.postgresHost" . | quote }}
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: {{ .Values.postgres.database | quote }}
+            - name: DB_USER
+              value: {{ .Values.postgres.user | quote }}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "orghub.name" . }}
+                  key: postgres-password
+            - name: AUTH_TYPE
+              value: scram-sha-256
+            - name: POOL_MODE
+              value: {{ .Values.pgbouncer.poolMode | quote }}
+            - name: MAX_CLIENT_CONN
+              value: {{ .Values.pgbouncer.maxClientConn | quote }}
+            - name: DEFAULT_POOL_SIZE
+              value: {{ .Values.pgbouncer.defaultPoolSize | quote }}
+            # Load bearing under transaction pooling: Prisma uses prepared statements,
+            # and PgBouncer only tracks them when this is non-zero. Set explicitly rather
+            # than relying on the image's default, which is 0 before PgBouncer 1.24.
+            - name: MAX_PREPARED_STATEMENTS
+              value: {{ .Values.pgbouncer.maxPreparedStatements | quote }}
+          readinessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          resources:
+            {{- toYaml .Values.pgbouncer.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "orghub.pgbouncerHost" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "orghub.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pgbouncer
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: orghub
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: pgbouncer
+  ports:
+    - name: pgbouncer
+      port: 6432
+      targetPort: 5432
+      protocol: TCP
+{{- end }}

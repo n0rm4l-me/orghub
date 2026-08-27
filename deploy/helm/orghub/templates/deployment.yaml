@@ -6,22 +6,29 @@ metadata:
   labels:
     {{- include "orghub.labels" . | nindent 4 }}
 spec:
+  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       app.kubernetes.io/name: orghub
       app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: app
   template:
     metadata:
       labels:
         {{- include "orghub.labels" . | nindent 8 }}
+        app.kubernetes.io/component: app
     spec:
       initContainers:
         - name: migrate
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: {{ include "orghub.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["node_modules/.bin/prisma", "migrate", "deploy"]
           env:
+            # Direct, not pooled: `migrate deploy` takes a session-level advisory lock and
+            # needs the same backend for the whole run, which transaction pooling cannot
+            # promise.
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
@@ -29,7 +36,7 @@ spec:
                   key: database-url
       containers:
         - name: orghub
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: {{ include "orghub.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
@@ -40,7 +47,9 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ include "orghub.name" . }}
-                  key: database-url
+                  key: database-url-pooled
+            - name: DB_POOL_MAX
+              value: {{ .Values.dbPoolMax | quote }}
             - name: AUTH_SECRET
               valueFrom:
                 secretKeyRef:
