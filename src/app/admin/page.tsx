@@ -265,6 +265,11 @@ function greeting(): string {
 }
 
 function firstName(name: string | null, email: string): string {
-  if (name) return name.split(" ")[0]!
+  if (name) {
+    // AD stores displayName as "Lastname, Firstname" — take the part after the comma
+    const commaIdx = name.indexOf(",")
+    if (commaIdx !== -1) return name.slice(commaIdx + 1).trim().split(" ")[0]!
+    return name.split(" ")[0]!
+  }
   return email.split("@")[0]!
 }

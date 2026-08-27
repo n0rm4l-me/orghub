@@ -65,7 +65,7 @@ export function PollList({ polls }: { polls: Poll[] }) {
           <col className="w-24" />
           <col className="w-16" />
           <col className="w-36" />
-          <col className="w-28" />
+          <col className="w-36" />
         </colgroup>
         <thead>
           <tr className="border-b border-gray-100 text-xs font-semibold tracking-wide text-gray-400 uppercase">
@@ -73,7 +73,7 @@ export function PollList({ polls }: { polls: Poll[] }) {
             <th className="px-5 py-3 text-center">Status</th>
             <th className="px-5 py-3 text-center">Votes</th>
             <th className="px-5 py-3 text-center">Ends</th>
-            <th className="px-5 py-3 text-right">Actions</th>
+            <th className="px-5 py-3 text-center">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
