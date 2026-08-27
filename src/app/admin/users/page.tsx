@@ -206,7 +206,7 @@ export default async function UsersPage({ searchParams }: Props) {
           {...(query ? { action: { label: "Show all users", href: "/admin/users" } } : {})}
         />
       ) : (
-        <AdminTable columns={columns} rows={users} rowKey={(u) => u.id} />
+        <AdminTable columns={columns} rows={users} rowKey={(u) => u.id} rowAlign="middle" />
       )}
 
       {total > PER_PAGE && (

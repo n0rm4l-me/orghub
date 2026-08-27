@@ -35,10 +35,12 @@ export function AdminTable<T,>({
   columns,
   rows,
   rowKey,
+  rowAlign = "top",
 }: {
   columns: AdminTableCol<T>[]
   rows: T[]
   rowKey: (row: T) => string
+  rowAlign?: "top" | "middle"
 }) {
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
@@ -60,7 +62,7 @@ export function AdminTable<T,>({
             })}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100 [&_td]:align-top">
+        <tbody className={`divide-y divide-gray-100 ${rowAlign === "middle" ? "[&_td]:align-middle" : "[&_td]:align-top"}`}>
           {rows.map((row) => (
             <tr key={rowKey(row)} className="group transition-colors hover:bg-gray-50/70">
               {columns.map((col) => {
