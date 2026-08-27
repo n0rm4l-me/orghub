@@ -90,6 +90,7 @@ const columns: AdminTableCol<Poll>[] = [
     header: "Votes",
     width: "w-16",
     type: "number",
+    hideOnMobile: true,
     render: (poll) => poll._count.votes,
   },
   {
