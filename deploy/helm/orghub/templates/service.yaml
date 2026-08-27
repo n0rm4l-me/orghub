@@ -10,6 +10,7 @@ spec:
   selector:
     app.kubernetes.io/name: orghub
     app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: app
   ports:
     - name: http
       port: 80
