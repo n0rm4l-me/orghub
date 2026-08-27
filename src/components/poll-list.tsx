@@ -62,17 +62,17 @@ export function PollList({ polls }: { polls: Poll[] }) {
       <table className="w-full table-fixed">
         <colgroup>
           <col />
-          <col className="w-20" />
-          <col className="w-12" />
           <col className="w-24" />
-          <col className="w-24" />
+          <col className="w-16" />
+          <col className="w-36" />
+          <col className="w-28" />
         </colgroup>
         <thead>
           <tr className="border-b border-gray-100 text-xs font-semibold tracking-wide text-gray-400 uppercase">
             <th className="px-5 py-3 text-left">Question</th>
-            <th className="px-5 py-3 text-left">Status</th>
-            <th className="px-5 py-3 text-left">Votes</th>
-            <th className="px-5 py-3 text-left">Ends</th>
+            <th className="px-5 py-3 text-center">Status</th>
+            <th className="px-5 py-3 text-center">Votes</th>
+            <th className="px-5 py-3 text-center">Ends</th>
             <th className="px-5 py-3 text-right">Actions</th>
           </tr>
         </thead>
@@ -96,19 +96,20 @@ export function PollList({ polls }: { polls: Poll[] }) {
                   })}
                 </p>
               </td>
-              <td className="px-5 py-3">
+              <td className="px-5 py-3 text-center">
                 <span
                   className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[poll.status]}`}
                 >
                   {poll.status[0] + poll.status.slice(1).toLowerCase()}
                 </span>
               </td>
-              <td className="px-5 py-3 text-xs text-gray-400">{poll._count.votes}</td>
-              <td className="px-5 py-3 text-xs text-gray-500">
+              <td className="px-5 py-3 text-center text-xs text-gray-400">{poll._count.votes}</td>
+              <td className="px-5 py-3 text-center text-xs text-gray-500">
                 {poll.endsAt
                   ? new Date(poll.endsAt).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
+                      year: "numeric",
                     })
                   : <span className="text-gray-300">—</span>}
               </td>
