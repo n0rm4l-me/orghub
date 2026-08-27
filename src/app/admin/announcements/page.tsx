@@ -47,7 +47,13 @@ const columns: AdminTableCol<AnnouncementRow>[] = [
     type: "text",
     render: (a) => (
       <>
-        <p className="truncate text-sm font-medium text-gray-900">{a.message}</p>
+        <Link
+          href={`/admin/announcements/${a.id}/edit`}
+          className="block truncate text-sm font-medium text-gray-900 transition-colors hover:text-brand"
+          title={a.message}
+        >
+          {a.message}
+        </Link>
         {a.linkUrl && (
           <p className="mt-0.5 truncate text-xs text-gray-400">{a.linkUrl}</p>
         )}
