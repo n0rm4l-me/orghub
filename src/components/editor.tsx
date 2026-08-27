@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
@@ -141,10 +141,22 @@ function InsertPollButton({ editor }: { editor: ReturnType<typeof useEditor> }) 
   const [open, setOpen] = useState(false)
   const [polls, setPolls] = useState<Array<{ id: string; question: string }> | null>(null)
   const [loading, setLoading] = useState(false)
+  const [query, setQuery] = useState("")
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener("mousedown", handleClick)
+    return () => document.removeEventListener("mousedown", handleClick)
+  }, [open])
 
   async function handleOpen() {
     if (open) { setOpen(false); return }
     setOpen(true)
+    setQuery("")
     if (polls !== null) return
     setLoading(true)
     const result = await getActivePollsForInsert()
@@ -157,8 +169,12 @@ function InsertPollButton({ editor }: { editor: ReturnType<typeof useEditor> }) 
     setOpen(false)
   }
 
+  const filtered = polls?.filter((p) =>
+    p.question.toLowerCase().includes(query.toLowerCase())
+  ) ?? []
+
   return (
-    <div className="relative">
+    <div className="relative" ref={ref}>
       <button
         type="button"
         onClick={handleOpen}
@@ -169,25 +185,41 @@ function InsertPollButton({ editor }: { editor: ReturnType<typeof useEditor> }) 
         Poll
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-20 mt-1 min-w-[200px] max-w-xs overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+        <div className="absolute left-0 top-full z-20 mt-1 w-72 rounded-lg border border-gray-200 bg-white shadow-lg">
           {loading ? (
             <p className="px-3 py-2 text-xs text-gray-400">Loading polls...</p>
           ) : !polls?.length ? (
             <p className="px-3 py-2 text-xs text-gray-400">No active polls found.</p>
           ) : (
-            <ul>
-              {polls.map((p) => (
-                <li key={p.id}>
-                  <button
-                    type="button"
-                    onClick={() => insert(p.id)}
-                    className="w-full px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 line-clamp-2"
-                  >
-                    {p.question}
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <>
+              <div className="border-b border-gray-100 px-2 py-1.5">
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Search polls…"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="w-full rounded px-2 py-1 text-xs text-gray-700 outline-none placeholder:text-gray-400 focus:bg-gray-50"
+                />
+              </div>
+              {filtered.length === 0 ? (
+                <p className="px-3 py-2 text-xs text-gray-400">No matches.</p>
+              ) : (
+                <ul className="max-h-52 overflow-y-auto">
+                  {filtered.map((p) => (
+                    <li key={p.id}>
+                      <button
+                        type="button"
+                        onClick={() => insert(p.id)}
+                        className="w-full truncate px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50"
+                      >
+                        {p.question}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
           )}
         </div>
       )}
