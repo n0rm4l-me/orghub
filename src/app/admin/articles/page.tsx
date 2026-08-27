@@ -148,15 +148,17 @@ export default async function ArticlesPage({ searchParams }: Props) {
             <tbody className="divide-y divide-gray-100 [&_td]:align-top">
               {articles.map((article) => (
                 <tr key={article.id} className="group transition-colors hover:bg-gray-50/70">
-                  <td className="px-1 py-3 !align-middle text-center">
+                  <td className="px-0.5 py-3 !align-middle text-center">
                     {article.published && (
-                      <PinButton
-                        initialPinned={article.pinned}
-                        onPin={pinArticle.bind(null, article.id)}
-                      />
+                      <span className="inline-block translate-y-px">
+                        <PinButton
+                          initialPinned={article.pinned}
+                          onPin={pinArticle.bind(null, article.id)}
+                        />
+                      </span>
                     )}
                   </td>
-                  <td className="px-1 py-3 !align-middle text-center">
+                  <td className="px-0.5 py-3 !align-middle text-center">
                     {article.published && (
                       <ImportantButton
                         initialImportant={article.important}
