@@ -43,7 +43,7 @@ export default async function LoginPage({ searchParams }: Props) {
     "use server"
     try {
       await signIn("ldap", {
-        username: formData.get("username"),
+        email: formData.get("email"),
         password: formData.get("password"),
         redirectTo: "/",
       })
@@ -173,16 +173,16 @@ export default async function LoginPage({ searchParams }: Props) {
               )}
               <form action={handleLdap} className="space-y-4">
                 <div className="space-y-1.5">
-                  <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                    AD Username
+                  <label htmlFor="ad-email" className="block text-sm font-medium text-gray-700">
+                    Email
                   </label>
                   <input
-                    id="username"
-                    name="username"
-                    type="text"
-                    autoComplete="username"
+                    id="ad-email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
                     required
-                    placeholder="yourname"
+                    placeholder="you@example.com"
                     className={inputClass}
                     spellCheck={false}
                   />

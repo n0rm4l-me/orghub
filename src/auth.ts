@@ -62,14 +62,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             id: "ldap",
             name: "Active Directory",
             credentials: {
-              username: { label: "AD Username", type: "text" },
+              email: { label: "Email", type: "email" },
               password: { label: "Password", type: "password" },
             },
             async authorize(credentials) {
-              if (!credentials?.username || !credentials?.password) return null
+              if (!credentials?.email || !credentials?.password) return null
 
               const ldapUser = await authenticateLdap(
-                credentials.username as string,
+                credentials.email as string,
                 credentials.password as string,
               )
               if (!ldapUser) return null
