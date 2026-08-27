@@ -216,7 +216,7 @@ export default async function AdminEventsPage({ searchParams }: Props) {
           />
         )
       ) : (
-        <AdminTable columns={columns} rows={events} rowKey={(ev) => ev.id} />
+        <AdminTable columns={columns} rows={events} rowKey={(ev) => ev.id} rowAlign="middle" />
       )}
 
       {total > PER_PAGE && (
