@@ -79,7 +79,7 @@ export function PollForm({ poll, options: initialOptions }: Props) {
       <div className="flex flex-col items-start gap-6 lg:flex-row lg:gap-8">
 
         {/* Main column */}
-        <div className="min-w-0 flex-1 space-y-5 rounded-xl border border-gray-200 bg-white p-6">
+        <div className="min-w-0 w-full flex-1 space-y-5 rounded-xl border border-gray-200 bg-white p-6">
           <div>
             <label htmlFor="question" className={labelCls}>Question</label>
             <input

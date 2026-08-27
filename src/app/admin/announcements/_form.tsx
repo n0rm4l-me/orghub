@@ -57,7 +57,7 @@ export function AnnouncementForm({ values, action, redirectAfterSave }: Props) {
     <form ref={formRef} onSubmit={(e) => { e.preventDefault(); submit() }}>
       <div className="flex flex-col items-start gap-6 lg:flex-row lg:gap-8">
         {/* Main field */}
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 w-full flex-1">
           <div className="overflow-hidden rounded-xl border border-gray-200 bg-white p-6">
             <label htmlFor="message" className="mb-1.5 block text-sm font-semibold text-gray-900">
               Message <span className="text-red-500">*</span>
