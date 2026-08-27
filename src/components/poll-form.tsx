@@ -76,7 +76,7 @@ export function PollForm({ poll, options: initialOptions }: Props) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="flex items-start gap-8">
+      <div className="flex flex-col items-start gap-6 lg:flex-row lg:gap-8">
 
         {/* Main column */}
         <div className="min-w-0 flex-1 space-y-5 rounded-xl border border-gray-200 bg-white p-6">
@@ -154,7 +154,7 @@ export function PollForm({ poll, options: initialOptions }: Props) {
         </div>
 
         {/* Sidebar */}
-        <aside className="sticky top-8 w-64 shrink-0 space-y-4">
+        <aside className="w-full lg:sticky lg:top-8 lg:w-64 lg:shrink-0 space-y-4">
           <section className="rounded-xl border border-gray-200 bg-white p-4">
             <h2 className="mb-3 text-sm font-semibold text-gray-900">Settings</h2>
 
