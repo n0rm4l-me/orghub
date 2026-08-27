@@ -79,7 +79,7 @@ export function AdminFilters({
         />
         <input
           ref={inputRef}
-          type="search"
+          type="text"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => {
