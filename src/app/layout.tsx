@@ -34,7 +34,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const settings = await getSettings()
 
   return (
-    <html lang="en" className="h-full" style={{ backgroundColor: "var(--brand)" }} suppressHydrationWarning>
+    <html lang="en" className="h-full" suppressHydrationWarning>
       <head>
         <style>{`:root { --brand: ${settings.primaryColor}; }`}</style>
         {/* Blocking script: sets .dark on <html> before first paint to prevent FOUC */}

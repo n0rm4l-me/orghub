@@ -50,14 +50,24 @@ export function MobileMenu({ items }: Props) {
       </button>
 
       {open && (
-        <>
-          <div
-            className="fixed inset-0 top-14 z-30 bg-black/40 md:hidden"
-            onClick={() => setOpen(false)}
-            aria-hidden
-          />
-          <div className="fixed inset-x-0 top-14 z-40 bg-brand shadow-2xl md:hidden">
-            <form action="/" method="get" role="search" className="border-b border-white/15 p-4">
+        <div className="fixed inset-0 z-40 flex flex-col bg-brand md:hidden">
+          {/* Top bar — mirrors the header height */}
+          <div className="flex h-14 shrink-0 items-center justify-between px-4">
+            <span className="text-base font-semibold text-white">Menu</span>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="grid size-11 place-items-center rounded-lg text-white/70 transition
+                hover:bg-white/15 hover:text-white touch-manipulation"
+              aria-label="Close menu"
+            >
+              <X className="size-5" aria-hidden />
+            </button>
+          </div>
+
+          {/* Search */}
+          <div className="shrink-0 border-b border-white/15 px-4 pb-4">
+            <form action="/" method="get" role="search">
               <div className="relative">
                 <Search
                   className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-white/60"
@@ -74,75 +84,76 @@ export function MobileMenu({ items }: Props) {
                 />
               </div>
             </form>
+          </div>
 
-            <nav aria-label="Mobile" className="max-h-[calc(100dvh-112px)] overflow-y-auto p-2 pb-6">
-              {items.map((item) => {
-                const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
-                return (
-                  <div key={item.href}>
-                    <Link
-                      href={item.href}
-                      className={`flex items-center justify-between rounded-xl px-4 py-3 text-base
-                        font-medium transition
-                        ${active
-                          ? "bg-white/15 text-white"
-                          : "text-white/80 hover:bg-white/10 hover:text-white"
-                        }`}
-                    >
-                      <span className="flex items-center gap-2">
-                        {item.label}
-                        {item.badge ? (
-                          <span className="inline-flex items-center justify-center rounded-full
-                            bg-white/25 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
-                            {item.badge > 99 ? "99+" : item.badge}
-                          </span>
-                        ) : null}
-                      </span>
-                      {item.children?.length ? (
-                        <ChevronRight className="size-4 text-white/40" aria-hidden />
+          {/* Nav + settings — scrollable */}
+          <nav aria-label="Mobile" className="flex-1 overflow-y-auto p-2 pb-6">
+            {items.map((item) => {
+              const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
+              return (
+                <div key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={`flex items-center justify-between rounded-xl px-4 py-3.5 text-base
+                      font-medium transition
+                      ${active
+                        ? "bg-white/15 text-white"
+                        : "text-white/80 hover:bg-white/10 hover:text-white"
+                      }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      {item.label}
+                      {item.badge ? (
+                        <span className="inline-flex items-center justify-center rounded-full
+                          bg-white/25 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                          {item.badge > 99 ? "99+" : item.badge}
+                        </span>
                       ) : null}
-                    </Link>
+                    </span>
+                    {item.children?.length ? (
+                      <ChevronRight className="size-4 text-white/40" aria-hidden />
+                    ) : null}
+                  </Link>
 
-                    {item.children?.map((child) => {
-                      const childActive = pathname.startsWith(child.href)
-                      return (
-                        <Link
-                          key={child.href}
-                          href={child.href}
-                          className={`flex items-center rounded-xl py-2.5 pl-10 pr-4 text-sm
-                            transition
-                            ${childActive
-                              ? "font-medium text-white"
-                              : "text-white/60 hover:bg-white/10 hover:text-white/90"
-                            }`}
-                        >
-                          {child.label}
-                        </Link>
-                      )
-                    })}
-                  </div>
-                )
-              })}
+                  {item.children?.map((child) => {
+                    const childActive = pathname.startsWith(child.href)
+                    return (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        className={`flex items-center rounded-xl py-3 pl-10 pr-4 text-sm
+                          transition
+                          ${childActive
+                            ? "font-medium text-white"
+                            : "text-white/60 hover:bg-white/10 hover:text-white/90"
+                          }`}
+                      >
+                        {child.label}
+                      </Link>
+                    )
+                  })}
+                </div>
+              )
+            })}
 
-              <div className="mt-2 border-t border-white/15 pt-4 px-2 pb-2">
-                <div className="rounded-xl bg-black/20 p-3 space-y-3">
-                  <div>
-                    <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/50">Theme</p>
-                    <ThemeToggle />
-                  </div>
-                  <div>
-                    <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/50">Text size</p>
-                    <FontSizeToggle />
-                  </div>
-                  <div>
-                    <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/50">Page width</p>
-                    <PortalWidthPills />
-                  </div>
+            <div className="mt-2 border-t border-white/15 pt-4 px-2 pb-2">
+              <div className="rounded-xl bg-black/20 p-4 space-y-4">
+                <div>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-white/50">Theme</p>
+                  <ThemeToggle />
+                </div>
+                <div>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-white/50">Text size</p>
+                  <FontSizeToggle />
+                </div>
+                <div>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-white/50">Page width</p>
+                  <PortalWidthPills />
                 </div>
               </div>
-            </nav>
-          </div>
-        </>
+            </div>
+          </nav>
+        </div>
       )}
     </>
   )
