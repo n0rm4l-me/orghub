@@ -1,6 +1,7 @@
 import { signIn } from "@/auth"
 import { AuthError } from "next-auth"
 import { redirect } from "next/navigation"
+import { headers } from "next/headers"
 import { AlertCircle } from "lucide-react"
 import { getSettings } from "@/lib/settings"
 import { BrandLogo } from "@/components/brand-logo"
@@ -25,13 +26,22 @@ export default async function LoginPage({ searchParams }: Props) {
   // regardless of the localAuthEnabled setting.
   const localEnabled = settings.localAuthEnabled || isDev
 
+  async function getBaseUrl() {
+    "use server"
+    const hdrs = await headers()
+    const host = hdrs.get("x-forwarded-host") ?? hdrs.get("host") ?? "localhost:3000"
+    const proto = hdrs.get("x-forwarded-proto") ?? "http"
+    return `${proto}://${host}`
+  }
+
   async function handleCredentials(formData: FormData) {
     "use server"
+    const base = await getBaseUrl()
     try {
       await signIn("credentials", {
         email: formData.get("email"),
         password: formData.get("password"),
-        redirectTo: "/",
+        redirectTo: `${base}/`,
       })
     } catch (error) {
       if (error instanceof AuthError) redirect("/login?error=invalid")
@@ -41,11 +51,12 @@ export default async function LoginPage({ searchParams }: Props) {
 
   async function handleLdap(formData: FormData) {
     "use server"
+    const base = await getBaseUrl()
     try {
       await signIn("ldap", {
         email: formData.get("email"),
         password: formData.get("password"),
-        redirectTo: "/",
+        redirectTo: `${base}/`,
       })
     } catch (error) {
       if (error instanceof AuthError) redirect("/login?error=invalid")
@@ -85,7 +96,8 @@ export default async function LoginPage({ searchParams }: Props) {
               <form
                 action={async () => {
                   "use server"
-                  await signIn("okta", { redirectTo: "/" })
+                  const base = await getBaseUrl()
+                  await signIn("okta", { redirectTo: `${base}/` })
                 }}
               >
                 <SubmitButton
