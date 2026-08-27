@@ -118,12 +118,12 @@ const columns: AdminTableCol<ArticleRow>[] = [
     type: "actions",
     render: (a) => (
       <>
-        {a.published && (
+        <span className={a.published ? undefined : "invisible"}>
           <PinButton initialPinned={a.pinned} onPin={pinArticle.bind(null, a.id)} />
-        )}
-        {a.published && (
+        </span>
+        <span className={a.published ? undefined : "invisible"}>
           <ImportantButton initialImportant={a.important} onMark={markImportant.bind(null, a.id)} />
-        )}
+        </span>
         <Link
           href={`/admin/articles/${a.id}/edit`}
           aria-label="Edit article"
