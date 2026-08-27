@@ -45,8 +45,11 @@ export function PollCard({ poll, options, totalVotes, initialVotedOptionIds, com
   const shouldShowResults =
     voted ||
     isClosed ||
-    poll.resultsVisibility === "ALWAYS" ||
+    (poll.resultsVisibility === "ALWAYS" && !canVote) ||
     (poll.resultsVisibility === "AFTER_CLOSE" && isClosed)
+
+  // When ALWAYS and user can still vote: show voting form + results preview below
+  const showResultsPreview = canVote && poll.resultsVisibility === "ALWAYS"
 
   function toggleOption(id: string) {
     if (!canVote) return
@@ -180,11 +183,32 @@ export function PollCard({ poll, options, totalVotes, initialVotedOptionIds, com
         })}
       </div>
 
+      {showResultsPreview && (
+        <div className="mt-3 space-y-1.5">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">Current results</p>
+          {options.map((option) => {
+            const count = localCounts[option.id] ?? 0
+            const pct = localTotal > 0 ? Math.round((count / localTotal) * 100) : 0
+            return (
+              <div key={option.id} className="rounded-lg border border-gray-200 px-3 py-2 dark:border-gray-700">
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">{option.text}</span>
+                  <span className="shrink-0 text-xs font-medium text-gray-500">{pct}%</span>
+                </div>
+                <div className="h-1 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+                  <div className="h-full rounded-full bg-brand/40 transition-all duration-500" style={{ width: `${pct}%` }} />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
       {error && (
         <p className="mt-3 text-xs text-red-600 dark:text-red-400">{error}</p>
       )}
 
-      {canVote && !shouldShowResults ? (
+      {canVote && (!shouldShowResults || showResultsPreview) ? (
         <button
           type="button"
           disabled={!selected.size || pending}
