@@ -71,7 +71,7 @@ const columns: AdminTableCol<AuditRow>[] = [
   {
     id: "when",
     header: "When",
-    width: "w-44",
+    width: "w-40",
     type: "date",
     render: (entry) =>
       entry.createdAt.toLocaleString("en-US", {
