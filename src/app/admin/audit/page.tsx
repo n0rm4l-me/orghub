@@ -6,12 +6,13 @@ import { requireRole } from "@/lib/rbac"
 import { PageHeader } from "@/components/ui/page-header"
 import { EmptyState } from "@/components/ui/empty-state"
 import { TablePagination } from "@/components/ui/table-pagination"
+import { AdminTable } from "@/components/ui/admin-table"
+import type { AdminTableCol } from "@/components/ui/admin-table"
 
 export const metadata = { title: "Audit log" }
 
 const PER_PAGE = 50
 
-/** Human wording per action, so the table is readable without decoding slugs. */
 const VERB: Record<string, string> = {
   "article.create": "created article",
   "article.update": "edited article",
@@ -36,7 +37,6 @@ const VERB: Record<string, string> = {
   "settings.theme": "updated the theme",
 }
 
-/** Actions that changed access or configuration, highlighted as such. */
 const SENSITIVE = new Set([
   "user.role_change",
   "user.deactivate",
@@ -57,6 +57,88 @@ const PREFIXES: Record<string, string[]> = {
   users: ["user."],
   settings: ["settings."],
 }
+
+type AuditRow = {
+  id: string
+  action: string
+  metadata: Prisma.JsonValue
+  ip: string | null
+  createdAt: Date
+  user: { name: string | null; email: string } | null
+}
+
+const columns: AdminTableCol<AuditRow>[] = [
+  {
+    id: "when",
+    header: "When",
+    width: "w-44",
+    type: "date",
+    render: (entry) =>
+      entry.createdAt.toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+  },
+  {
+    id: "who",
+    header: "Who",
+    width: "w-48",
+    type: "text",
+    render: (entry) => (
+      <p className="truncate text-sm text-gray-700">
+        {entry.user?.name ?? entry.user?.email ?? "Deleted user"}
+      </p>
+    ),
+  },
+  {
+    id: "what",
+    header: "What",
+    type: "text",
+    render: (entry) => {
+      const meta = (entry.metadata ?? null) as Record<string, unknown> | null
+      const subject =
+        typeof meta?.title === "string"
+          ? meta.title
+          : typeof meta?.name === "string"
+            ? meta.name
+            : typeof meta?.email === "string"
+              ? meta.email
+              : null
+      const detail =
+        typeof meta?.from === "string" && typeof meta?.to === "string"
+          ? `${String(meta.from).toLowerCase()} → ${String(meta.to).toLowerCase()}`
+          : null
+      return (
+        <p>
+          <span
+            className={`text-sm ${
+              SENSITIVE.has(entry.action) ? "font-medium text-gray-900" : "text-gray-600"
+            }`}
+          >
+            {VERB[entry.action] ?? entry.action}
+          </span>
+          {subject && (
+            <span className="ml-1 text-sm text-gray-400">&ldquo;{subject}&rdquo;</span>
+          )}
+          {detail && (
+            <span className="ml-1.5 font-mono text-xs text-gray-400">{detail}</span>
+          )}
+        </p>
+      )
+    },
+  },
+  {
+    id: "from",
+    header: "From",
+    width: "w-32",
+    type: "center",
+    render: (entry) => (
+      <span className="font-mono text-xs text-gray-300">{entry.ip ?? "—"}</span>
+    ),
+  },
+]
 
 interface Props {
   searchParams: Promise<{ group?: string; page?: string }>
@@ -81,7 +163,6 @@ export default async function AuditPage({ searchParams }: Props) {
       select: {
         id: true,
         action: true,
-        resourceType: true,
         metadata: true,
         ip: true,
         createdAt: true,
@@ -128,82 +209,7 @@ export default async function AuditPage({ searchParams }: Props) {
           description="Entries appear here as soon as someone publishes, edits, or changes a setting."
         />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-          <table className="w-full table-fixed">
-            <colgroup>
-              <col className="w-44" />
-              <col className="w-48" />
-              <col />
-              <col className="w-32" />
-            </colgroup>
-            <thead>
-              <tr
-                className="border-b border-gray-100 text-xs font-semibold tracking-wide text-gray-400
-                  uppercase"
-              >
-                <th className="px-5 py-3 text-left">When</th>
-                <th className="px-5 py-3 text-left">Who</th>
-                <th className="px-5 py-3 text-left">What</th>
-                <th className="px-5 py-3 text-center">From</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 [&_td]:align-top">
-              {entries.map((entry) => {
-                const meta = (entry.metadata ?? null) as Record<string, unknown> | null
-                const subject =
-                  typeof meta?.title === "string"
-                    ? meta.title
-                    : typeof meta?.name === "string"
-                      ? meta.name
-                      : typeof meta?.email === "string"
-                        ? meta.email
-                        : null
-                const detail =
-                  typeof meta?.from === "string" && typeof meta?.to === "string"
-                    ? `${String(meta.from).toLowerCase()} → ${String(meta.to).toLowerCase()}`
-                    : null
-
-                return (
-                  <tr key={entry.id} className="transition-colors hover:bg-gray-50/70">
-                    <td className="px-5 py-3 text-xs whitespace-nowrap text-gray-400">
-                      {entry.createdAt.toLocaleString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </td>
-                    <td className="truncate px-5 py-3 text-sm text-gray-700">
-                      {entry.user?.name ?? entry.user?.email ?? "Deleted user"}
-                    </td>
-                    <td className="px-5 py-3">
-                      <span
-                        className={`text-sm ${
-                          SENSITIVE.has(entry.action)
-                            ? "font-medium text-gray-900"
-                            : "text-gray-600"
-                        }`}
-                      >
-                        {VERB[entry.action] ?? entry.action}
-                      </span>
-                      {subject && (
-                        <span className="ml-1 text-sm text-gray-400">
-                          &ldquo;{subject}&rdquo;
-                        </span>
-                      )}
-                      {detail && (
-                        <span className="ml-1.5 font-mono text-xs text-gray-400">{detail}</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3 text-center font-mono text-xs text-gray-300">
-                      {entry.ip ?? "—"}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+        <AdminTable columns={columns} rows={entries} rowKey={(e) => e.id} />
       )}
 
       {total > PER_PAGE && (
