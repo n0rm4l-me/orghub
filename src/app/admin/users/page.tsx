@@ -135,6 +135,7 @@ export default async function UsersPage({ searchParams }: Props) {
       header: "Status",
       width: "w-24",
       type: "center",
+      hideOnMobile: true,
       render: (user) => (
         <span
           className={`inline-flex items-center gap-1.5 text-xs font-medium ${
@@ -167,7 +168,7 @@ export default async function UsersPage({ searchParams }: Props) {
     {
       id: "actions",
       header: "Actions",
-      width: "w-24",
+      width: "w-32",
       type: "actions",
       render: (user) => (
         <UserActiveToggle
