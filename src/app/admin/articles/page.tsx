@@ -119,7 +119,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
               <col className="w-28" />
               <col className="w-24" />
               <col className="w-16" />
-              <col className="w-20" />
+              <col className="w-28" />
             </colgroup>
             <thead>
               <tr
@@ -143,14 +143,16 @@ export default async function ArticlesPage({ searchParams }: Props) {
                   <td className="px-5 py-3">
                     <div className="flex min-w-0 items-start gap-2">
                       {article.published && (
-                        <div className="flex shrink-0 items-center gap-0.5 pt-px">
+                        <div className="flex shrink-0 items-center gap-0 pt-px">
                           <PinButton
                             initialPinned={article.pinned}
                             onPin={pinArticle.bind(null, article.id)}
+                            compact
                           />
                           <ImportantButton
                             initialImportant={article.important}
                             onMark={markImportant.bind(null, article.id)}
+                            compact
                           />
                         </div>
                       )}

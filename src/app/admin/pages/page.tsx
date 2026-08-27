@@ -106,7 +106,7 @@ export default async function AdminPagesPage({ searchParams }: Props) {
               <col className="w-28" />
               <col className="w-28" />
               <col className="w-32" />
-              <col className="w-20" />
+              <col className="w-28" />
             </colgroup>
             <thead>
               <tr className="border-b border-gray-100 text-xs font-semibold tracking-wide text-gray-400 uppercase">

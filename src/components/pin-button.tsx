@@ -9,9 +9,10 @@ import type { ActionResult } from "@/lib/actions/types"
 interface Props {
   initialPinned: boolean
   onPin: () => Promise<ActionResult>
+  compact?: boolean
 }
 
-export function PinButton({ initialPinned, onPin }: Props) {
+export function PinButton({ initialPinned, onPin, compact }: Props) {
   const [pinned, setPinned] = useState(initialPinned)
   const router = useRouter()
   const { run, pending } = useAction(onPin, {
@@ -20,6 +21,28 @@ export function PinButton({ initialPinned, onPin }: Props) {
       router.refresh()
     },
   })
+
+  if (compact) {
+    return (
+      <button
+        type="button"
+        onClick={() => run()}
+        disabled={pending}
+        title={pinned ? "Unpin from feed" : "Pin as featured"}
+        className={`inline-flex items-center justify-center rounded p-0.5 transition-all disabled:opacity-40 ${
+          pinned
+            ? "text-brand"
+            : "text-gray-300 opacity-0 group-hover:opacity-100 hover:text-gray-400"
+        }`}
+      >
+        {pending ? (
+          <Loader2 className="size-3 animate-spin" aria-hidden />
+        ) : (
+          <Pin className={`size-3 ${pinned ? "fill-brand/20" : ""}`} aria-hidden />
+        )}
+      </button>
+    )
+  }
 
   return (
     <button
