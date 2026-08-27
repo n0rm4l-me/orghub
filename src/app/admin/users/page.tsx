@@ -10,10 +10,22 @@ import { UserRoleSelect, UserActiveToggle } from "@/components/user-row-actions"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { gravatarUrl } from "@/lib/gravatar"
 import { getSettings } from "@/lib/settings"
+import { AdminTable } from "@/components/ui/admin-table"
+import type { AdminTableCol } from "@/components/ui/admin-table"
 
 export const metadata = { title: "Users" }
 
 const PER_PAGE = 25
+
+type UserRow = {
+  id: string
+  name: string | null
+  email: string
+  role: "ADMIN" | "EDITOR" | "VIEWER"
+  active: boolean
+  provider: string | null
+  createdAt: Date
+}
 
 interface Props {
   searchParams: Promise<{ q?: string; page?: string }>
@@ -56,6 +68,116 @@ export default async function UsersPage({ searchParams }: Props) {
     getSettings(),
   ])
 
+  const columns: AdminTableCol<UserRow>[] = [
+    {
+      id: "user",
+      header: "User",
+      type: "text",
+      render: (user) => {
+        const label = user.name ?? user.email
+        const initials = label
+          .split(/[\s@.]+/)
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((part) => part[0]!.toUpperCase())
+          .join("")
+        const isSelf = user.id === actor.id
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar className="size-8 shrink-0">
+              {settings.gravatarsEnabled && (
+                <AvatarImage src={gravatarUrl(user.email, 32)} alt="" />
+              )}
+              <AvatarFallback className="bg-brand/10 text-[11px] font-bold text-brand">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-gray-900">
+                {user.name ?? user.email}
+                {isSelf && (
+                  <span className="ml-1.5 text-xs font-normal text-gray-400">you</span>
+                )}
+              </p>
+              <p className="truncate text-xs text-gray-400">{user.email}</p>
+            </div>
+          </div>
+        )
+      },
+    },
+    {
+      id: "role",
+      header: "Role",
+      width: "w-32",
+      type: "center",
+      render: (user) => (
+        <UserRoleSelect
+          userId={user.id}
+          role={user.role}
+          isSelf={user.id === actor.id}
+        />
+      ),
+    },
+    {
+      id: "signin",
+      header: "Sign-in",
+      width: "w-24",
+      type: "center",
+      render: (user) => (
+        <span className="text-sm text-gray-500 capitalize">
+          {user.provider ?? "password"}
+        </span>
+      ),
+    },
+    {
+      id: "status",
+      header: "Status",
+      width: "w-24",
+      type: "center",
+      render: (user) => (
+        <span
+          className={`inline-flex items-center gap-1.5 text-xs font-medium ${
+            user.active ? "text-gray-600" : "text-red-600"
+          }`}
+        >
+          <span
+            aria-hidden
+            className={`size-1.5 rounded-full ${
+              user.active ? "bg-emerald-500" : "bg-red-400"
+            }`}
+          />
+          {user.active ? "Active" : "Disabled"}
+        </span>
+      ),
+    },
+    {
+      id: "joined",
+      header: "Joined",
+      width: "w-28",
+      type: "date",
+      render: (user) =>
+        user.createdAt.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }),
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      width: "w-24",
+      type: "actions",
+      render: (user) => (
+        <UserActiveToggle
+          userId={user.id}
+          active={user.active}
+          name={user.name ?? user.email}
+          isSelf={user.id === actor.id}
+        />
+      ),
+    },
+  ]
+
   return (
     <div>
       <PageHeader
@@ -84,105 +206,7 @@ export default async function UsersPage({ searchParams }: Props) {
           {...(query ? { action: { label: "Show all users", href: "/admin/users" } } : {})}
         />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-          <table className="w-full table-fixed">
-            <colgroup>
-              <col />
-              <col className="w-32" />
-              <col className="w-24" />
-              <col className="w-24" />
-              <col className="w-28" />
-              <col className="w-24" />
-            </colgroup>
-            <thead>
-              <tr
-                className="border-b border-gray-100 text-xs font-semibold tracking-wide text-gray-400
-                  uppercase"
-              >
-                <th className="px-5 py-3 text-left">User</th>
-                <th className="px-5 py-3 text-center">Role</th>
-                <th className="px-5 py-3 text-center">Sign-in</th>
-                <th className="px-5 py-3 text-center">Status</th>
-                <th className="px-5 py-3 text-left">Joined</th>
-                <th className="px-5 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 [&_td]:align-top">
-              {users.map((user) => {
-                const label = user.name ?? user.email
-                const initials = label
-                  .split(/[\s@.]+/)
-                  .filter(Boolean)
-                  .slice(0, 2)
-                  .map((part) => part[0]!.toUpperCase())
-                  .join("")
-                const isSelf = user.id === actor.id
-
-                return (
-                  <tr key={user.id} className="transition-colors hover:bg-gray-50/70">
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="size-8 shrink-0">
-                          {settings.gravatarsEnabled && <AvatarImage src={gravatarUrl(user.email, 32)} alt="" />}
-                          <AvatarFallback className="bg-brand/10 text-[11px] font-bold text-brand">
-                            {initials}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-gray-900">
-                            {user.name ?? user.email}
-                            {isSelf && (
-                              <span className="ml-1.5 text-xs font-normal text-gray-400">you</span>
-                            )}
-                          </p>
-                          <p className="truncate text-xs text-gray-400">{user.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3 text-center">
-                      <UserRoleSelect userId={user.id} role={user.role} isSelf={isSelf} />
-                    </td>
-                    <td className="px-5 py-3 text-center text-sm text-gray-500 capitalize">
-                      {user.provider ?? "password"}
-                    </td>
-                    <td className="px-5 py-3 text-center">
-                      <span
-                        className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-                          user.active ? "text-gray-600" : "text-red-600"
-                        }`}
-                      >
-                        <span
-                          aria-hidden
-                          className={`size-1.5 rounded-full ${
-                            user.active ? "bg-emerald-500" : "bg-red-400"
-                          }`}
-                        />
-                        {user.active ? "Active" : "Disabled"}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3 text-xs whitespace-nowrap text-gray-400">
-                      {user.createdAt.toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </td>
-                    <td className="px-5 py-3">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <UserActiveToggle
-                          userId={user.id}
-                          active={user.active}
-                          name={label}
-                          isSelf={isSelf}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+        <AdminTable columns={columns} rows={users} rowKey={(u) => u.id} />
       )}
 
       {total > PER_PAGE && (
