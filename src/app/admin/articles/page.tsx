@@ -1,7 +1,7 @@
 import { db } from "@/lib/db"
 import type { Prisma } from "@prisma/client"
 import Link from "next/link"
-import { Plus, FileText, Pin, Star, Pencil, Eye } from "lucide-react"
+import { Plus, FileText, Pencil, Eye } from "lucide-react"
 import { requireRole } from "@/lib/rbac"
 import { togglePublish, deleteArticle, pinArticle, markImportant } from "@/lib/actions/articles"
 import { StatusToggle } from "@/components/ui/status-toggle"
@@ -37,28 +37,6 @@ type ArticleRow = {
 }
 
 const columns: AdminTableCol<ArticleRow>[] = [
-  {
-    id: "pin",
-    header: <Pin className="size-3.5 mx-auto" aria-hidden />,
-    headerTitle: "Pin as featured",
-    width: "w-9",
-    type: "icon",
-    render: (a) =>
-      a.published ? (
-        <PinButton initialPinned={a.pinned} onPin={pinArticle.bind(null, a.id)} />
-      ) : null,
-  },
-  {
-    id: "star",
-    header: <Star className="size-3.5 mx-auto" aria-hidden />,
-    headerTitle: "Mark as important",
-    width: "w-9",
-    type: "icon",
-    render: (a) =>
-      a.published ? (
-        <ImportantButton initialImportant={a.important} onMark={markImportant.bind(null, a.id)} />
-      ) : null,
-  },
   {
     id: "title",
     header: "Title",
@@ -136,10 +114,16 @@ const columns: AdminTableCol<ArticleRow>[] = [
   {
     id: "actions",
     header: "Actions",
-    width: "w-28",
+    width: "w-36",
     type: "actions",
     render: (a) => (
       <>
+        {a.published && (
+          <PinButton initialPinned={a.pinned} onPin={pinArticle.bind(null, a.id)} />
+        )}
+        {a.published && (
+          <ImportantButton initialImportant={a.important} onMark={markImportant.bind(null, a.id)} />
+        )}
         <Link
           href={`/admin/articles/${a.id}/edit`}
           aria-label="Edit article"
