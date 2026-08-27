@@ -97,6 +97,7 @@ const columns: AdminTableCol<Poll>[] = [
     header: "Ends",
     width: "w-36",
     type: "date",
+    hideOnMobile: true,
     render: (poll) =>
       poll.endsAt ? (
         new Date(poll.endsAt).toLocaleDateString("en-US", {

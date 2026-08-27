@@ -123,6 +123,7 @@ export default async function UsersPage({ searchParams }: Props) {
       header: "Sign-in",
       width: "w-24",
       type: "center",
+      hideOnMobile: true,
       render: (user) => (
         <span className="text-sm text-gray-500 capitalize">
           {user.provider ?? "password"}
@@ -155,6 +156,7 @@ export default async function UsersPage({ searchParams }: Props) {
       header: "Joined",
       width: "w-28",
       type: "date",
+      hideOnMobile: true,
       render: (user) =>
         user.createdAt.toLocaleDateString("en-US", {
           month: "short",

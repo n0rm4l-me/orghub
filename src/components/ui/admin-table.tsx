@@ -44,7 +44,7 @@ export function AdminTable<T,>({
   rowAlign?: "top" | "middle"
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
       <table className="w-full table-fixed">
         <thead>
           <tr className="border-b border-gray-100 text-xs font-semibold tracking-wide text-gray-400 uppercase">
