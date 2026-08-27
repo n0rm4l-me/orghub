@@ -41,12 +41,13 @@ export default async function LoginPage({ searchParams }: Props) {
       await signIn("credentials", {
         email: formData.get("email"),
         password: formData.get("password"),
-        redirectTo: `${base}/`,
+        redirect: false,
       })
     } catch (error) {
       if (error instanceof AuthError) redirect("/login?error=invalid")
       throw error
     }
+    redirect(`${base}/`)
   }
 
   async function handleLdap(formData: FormData) {
@@ -56,12 +57,13 @@ export default async function LoginPage({ searchParams }: Props) {
       await signIn("ldap", {
         email: formData.get("email"),
         password: formData.get("password"),
-        redirectTo: `${base}/`,
+        redirect: false,
       })
     } catch (error) {
       if (error instanceof AuthError) redirect("/login?error=invalid")
       throw error
     }
+    redirect(`${base}/`)
   }
 
   return (

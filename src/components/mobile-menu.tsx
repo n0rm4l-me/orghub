@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation"
 import { Menu, X, Search, ChevronRight } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { FontSizeToggle } from "@/components/font-size-toggle"
-import { PortalWidthPills } from "@/components/portal-width"
 
 interface ChildNavItem {
   href: string
@@ -146,10 +145,6 @@ export function MobileMenu({ items }: Props) {
                 <div>
                   <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-white/50">Text size</p>
                   <FontSizeToggle />
-                </div>
-                <div>
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-white/50">Page width</p>
-                  <PortalWidthPills />
                 </div>
               </div>
             </div>
