@@ -148,7 +148,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
             <tbody className="divide-y divide-gray-100 [&_td]:align-top">
               {articles.map((article) => (
                 <tr key={article.id} className="group transition-colors hover:bg-gray-50/70">
-                  <td className="px-1 py-3 text-center">
+                  <td className="px-1 py-3 !align-middle text-center">
                     {article.published && (
                       <PinButton
                         initialPinned={article.pinned}
@@ -156,7 +156,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
                       />
                     )}
                   </td>
-                  <td className="px-1 py-3 text-center">
+                  <td className="px-1 py-3 !align-middle text-center">
                     {article.published && (
                       <ImportantButton
                         initialImportant={article.important}
@@ -164,7 +164,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
                       />
                     )}
                   </td>
-                  <td className="px-5 py-3">
+                  <td className="py-3 pl-1 pr-5">
                     <Link
                       href={`/admin/articles/${article.id}/edit`}
                       className="block truncate text-sm font-medium text-gray-900 transition-colors
