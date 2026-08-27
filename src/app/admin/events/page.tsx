@@ -109,7 +109,7 @@ export default async function AdminEventsPage({ searchParams }: Props) {
             <thead>
               <tr className="border-b border-gray-100 text-xs font-semibold tracking-wide text-gray-400 uppercase">
                 <th className="px-5 py-3 text-left">Title</th>
-                <th className="px-5 py-3 text-center">Date</th>
+                <th className="px-5 py-3 text-left">Date</th>
                 <th className="px-5 py-3 text-center">Location</th>
                 <th className="px-5 py-3 text-center">Status</th>
                 <th className="px-5 py-3 text-right">Actions</th>
@@ -145,7 +145,7 @@ export default async function AdminEventsPage({ searchParams }: Props) {
                         {ev.author.name ?? ev.author.email}
                       </p>
                     </td>
-                    <td className="px-5 py-3 text-center">
+                    <td className="px-5 py-3">
                       <p className="text-xs font-medium text-gray-900">{dateLabel}</p>
                       <p className="mt-0.5 text-xs text-gray-400">
                         {timeLabel}
@@ -155,9 +155,9 @@ export default async function AdminEventsPage({ searchParams }: Props) {
                         )}
                       </p>
                     </td>
-                    <td className="px-5 py-3 text-center">
+                    <td className="px-5 py-3">
                       {ev.eventLocation ? (
-                        <span className="inline-flex min-w-0 items-center gap-1 text-xs text-gray-500">
+                        <span className="flex min-w-0 items-center gap-1 text-xs text-gray-500">
                           <MapPin className="size-3 shrink-0 text-gray-400" aria-hidden />
                           <span className="truncate" title={ev.eventLocation}>{ev.eventLocation}</span>
                         </span>

@@ -12,7 +12,8 @@ Reference for AI agents and contributors. Follow these patterns exactly — do n
 |---|---|---|
 | Primary text (title, message, name) | `text-left` | default (left) |
 | Descriptive text (What, Path) | `text-left` | default (left) |
-| Short metadata (status, date, category, role, provider, count) | `text-center` | `text-center` on `<td>` |
+| Dates (date, timestamp — may be multi-line) | `text-left` | default (left) |
+| Short metadata (status, category, role, provider, count, yes/no) | `text-center` | `text-center` on `<td>` |
 | Icon-only header (views, pin, star) | `text-center` + `mx-auto` on icon | `text-center` on `<td>` |
 | Actions | `text-right` | flex container (see below) |
 
@@ -28,6 +29,35 @@ Always use a flex container — never `text-right` directly on `<td>`:
     </Link>
     <DeleteButton entity="..." name={...} onDelete={...} variant="icon" />
   </div>
+</td>
+```
+
+### colgroup — every column must have a `<col>` entry
+
+With `table-fixed`, unspecified columns share remaining width with other auto columns. Always declare every column, including Actions:
+
+```tsx
+<colgroup>
+  <col />              {/* title — auto (takes remaining space) */}
+  <col className="w-44" />   {/* date */}
+  <col className="w-36" />   {/* location */}
+  <col className="w-28" />   {/* status */}
+  <col className="w-20" />   {/* actions */}
+</colgroup>
+```
+
+A missing `<col>` for the Actions column causes it to steal width from auto columns and makes the gap between the last data column and the action icons appear oversized.
+
+### Location / long text cells
+
+Use a block flex container so `truncate` has a fixed parent width to measure against. `inline-flex` is not constrained by the cell width and may not truncate reliably:
+
+```tsx
+<td className="px-5 py-3">
+  <span className="flex min-w-0 items-center gap-1 text-xs text-gray-500">
+    <Icon className="size-3 shrink-0" aria-hidden />
+    <span className="truncate" title={fullText}>{fullText}</span>
+  </span>
 </td>
 ```
 
