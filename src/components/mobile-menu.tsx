@@ -87,7 +87,7 @@ export function MobileMenu({ items }: Props) {
           </div>
 
           {/* Nav + settings — scrollable */}
-          <nav aria-label="Mobile" className="flex-1 overflow-y-auto p-2 pb-6">
+          <nav aria-label="Mobile" className="flex-1 overflow-y-auto bg-brand overscroll-contain p-2 pb-6">
             {items.map((item) => {
               const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
               return (
