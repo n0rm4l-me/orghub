@@ -7,6 +7,8 @@ import { PageHeader } from "@/components/ui/page-header"
 import { EmptyState } from "@/components/ui/empty-state"
 import { StatusToggle } from "@/components/ui/status-toggle"
 import { DeleteButton } from "@/components/ui/delete-button"
+import { AdminTable } from "@/components/ui/admin-table"
+import type { AdminTableCol } from "@/components/ui/admin-table"
 
 export const metadata = { title: "Announcements" }
 
@@ -16,6 +18,111 @@ const COLOR_DOT: Record<string, string> = {
   red:     "bg-red-500",
   emerald: "bg-emerald-500",
 }
+
+type AnnouncementRow = {
+  id: string
+  message: string
+  color: string
+  active: boolean
+  showFrom: Date | null
+  showUntil: Date | null
+  linkUrl: string | null
+}
+
+const fmtDate = (d: Date | null) =>
+  d
+    ? d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    : null
+
+const columns: AdminTableCol<AnnouncementRow>[] = [
+  {
+    id: "message",
+    header: "Message",
+    type: "text",
+    render: (a) => (
+      <>
+        <p className="truncate text-sm font-medium text-gray-900">{a.message}</p>
+        {a.linkUrl && (
+          <p className="mt-0.5 truncate text-xs text-gray-400">{a.linkUrl}</p>
+        )}
+      </>
+    ),
+  },
+  {
+    id: "color",
+    header: "Color",
+    width: "w-24",
+    type: "center",
+    render: (a) => (
+      <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 capitalize">
+        <span
+          className={`size-2.5 rounded-full ${COLOR_DOT[a.color] ?? "bg-gray-400"}`}
+          aria-hidden
+        />
+        {a.color}
+      </span>
+    ),
+  },
+  {
+    id: "schedule",
+    header: "Schedule",
+    width: "w-48",
+    type: "text",
+    render: (a) =>
+      a.showFrom || a.showUntil ? (
+        <div className="space-y-0.5 text-xs text-gray-500">
+          {a.showFrom && <p>From: {fmtDate(a.showFrom)}</p>}
+          {a.showUntil && <p>Until: {fmtDate(a.showUntil)}</p>}
+        </div>
+      ) : (
+        <span className="text-xs text-gray-300">Always</span>
+      ),
+  },
+  {
+    id: "status",
+    header: "Status",
+    width: "w-24",
+    type: "center",
+    render: (a) => (
+      <StatusToggle
+        published={a.active}
+        onToggle={toggleAnnouncementActive.bind(null, a.id)}
+        labelOn="Live"
+        labelOff="Off"
+      />
+    ),
+  },
+  {
+    id: "actions",
+    header: "Actions",
+    width: "w-28",
+    type: "actions",
+    render: (a) => (
+      <>
+        <Link
+          href={`/admin/announcements/${a.id}/edit`}
+          aria-label="Edit announcement"
+          className="grid size-7 place-items-center rounded-md text-gray-400 transition
+            hover:bg-gray-100 hover:text-gray-700"
+        >
+          <Pencil className="size-3.5" aria-hidden />
+        </Link>
+        <DeleteButton
+          entity="announcement"
+          name={a.message.slice(0, 40)}
+          onDelete={deleteAnnouncement.bind(null, a.id)}
+          variant="icon"
+        />
+      </>
+    ),
+  },
+]
 
 export default async function AnnouncementsPage() {
   await requireRole("EDITOR")
@@ -32,11 +139,6 @@ export default async function AnnouncementsPage() {
       linkUrl: true,
     },
   })
-
-  const fmtDate = (d: Date | null) =>
-    d
-      ? d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })
-      : null
 
   const active = announcements.filter((a) => a.active).length
 
@@ -65,80 +167,7 @@ export default async function AnnouncementsPage() {
           action={{ label: "Create announcement", href: "/admin/announcements/new" }}
         />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-          <table className="w-full table-fixed">
-            <colgroup>
-              <col />
-              <col className="w-24" />
-              <col className="w-48" />
-              <col className="w-24" />
-              <col className="w-28" />
-            </colgroup>
-            <thead>
-              <tr className="border-b border-gray-100 text-xs font-semibold tracking-wide text-gray-400 uppercase">
-                <th className="px-5 py-3 text-left">Message</th>
-                <th className="px-5 py-3 text-center">Color</th>
-                <th className="px-5 py-3 text-center">Schedule</th>
-                <th className="px-5 py-3 text-center">Status</th>
-                <th className="px-5 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 [&_td]:align-top">
-              {announcements.map((a) => (
-                <tr key={a.id} className="group transition-colors hover:bg-gray-50/70">
-                  <td className="px-5 py-3">
-                    <p className="truncate text-sm font-medium text-gray-900">{a.message}</p>
-                    {a.linkUrl && (
-                      <p className="mt-0.5 truncate text-xs text-gray-400">{a.linkUrl}</p>
-                    )}
-                  </td>
-                  <td className="px-5 py-3 text-center">
-                    <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 capitalize">
-                      <span className={`size-2.5 rounded-full ${COLOR_DOT[a.color] ?? "bg-gray-400"}`} aria-hidden />
-                      {a.color}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 text-center text-xs text-gray-500">
-                    {a.showFrom || a.showUntil ? (
-                      <div className="space-y-0.5">
-                        {a.showFrom && <p>From: {fmtDate(a.showFrom)}</p>}
-                        {a.showUntil && <p>Until: {fmtDate(a.showUntil)}</p>}
-                      </div>
-                    ) : (
-                      <span className="text-gray-300">Always</span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3 text-center">
-                    <StatusToggle
-                      published={a.active}
-                      onToggle={toggleAnnouncementActive.bind(null, a.id)}
-                      labelOn="Live"
-                      labelOff="Off"
-                    />
-                  </td>
-                  <td className="px-5 py-3">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <Link
-                        href={`/admin/announcements/${a.id}/edit`}
-                        aria-label="Edit announcement"
-                        className="grid size-7 place-items-center rounded-md text-gray-400 transition
-                          hover:bg-gray-100 hover:text-gray-700"
-                      >
-                        <Pencil className="size-3.5" aria-hidden />
-                      </Link>
-                      <DeleteButton
-                        entity="announcement"
-                        name={a.message.slice(0, 40)}
-                        onDelete={deleteAnnouncement.bind(null, a.id)}
-                        variant="icon"
-                      />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <AdminTable columns={columns} rows={announcements} rowKey={(a) => a.id} />
       )}
     </div>
   )

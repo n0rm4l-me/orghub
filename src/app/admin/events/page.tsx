@@ -54,7 +54,7 @@ const columns: AdminTableCol<EventRow>[] = [
   {
     id: "date",
     header: "Date",
-    width: "w-36",
+    width: "w-44",
     type: "text",
     render: (ev) => {
       const start = new Date(ev.eventDate!)
@@ -75,7 +75,7 @@ const columns: AdminTableCol<EventRow>[] = [
       return (
         <>
           <p className="text-xs font-medium text-gray-900">{dateLabel}</p>
-          <p className="mt-0.5 text-xs text-gray-400">
+          <p className="mt-0.5 text-xs text-gray-400 whitespace-nowrap">
             {timeLabel}
             {endTime && sameDay && ` – ${endTime}`}
             {end && !sameDay && (
