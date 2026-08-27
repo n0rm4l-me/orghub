@@ -10,9 +10,10 @@ interface Props {
   initialPinned: boolean
   onPin: () => Promise<ActionResult>
   compact?: boolean
+  className?: string
 }
 
-export function PinButton({ initialPinned, onPin, compact }: Props) {
+export function PinButton({ initialPinned, onPin, compact, className }: Props) {
   const [pinned, setPinned] = useState(initialPinned)
   const router = useRouter()
   const { run, pending } = useAction(onPin, {
@@ -52,7 +53,7 @@ export function PinButton({ initialPinned, onPin, compact }: Props) {
       title={pinned ? "Unpin from feed" : "Pin as featured"}
       className={`transition-colors disabled:opacity-40 ${
         pinned ? "text-brand" : "text-gray-300 hover:text-gray-500"
-      }`}
+      } ${className ?? ""}`}
     >
       {pending ? (
         <Loader2 className="size-4 animate-spin" aria-hidden />

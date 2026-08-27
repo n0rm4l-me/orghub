@@ -119,10 +119,18 @@ const columns: AdminTableCol<ArticleRow>[] = [
     render: (a) => (
       <>
         <span className={a.published ? undefined : "invisible"}>
-          <PinButton initialPinned={a.pinned} onPin={pinArticle.bind(null, a.id)} />
+          <PinButton
+            initialPinned={a.pinned}
+            onPin={pinArticle.bind(null, a.id)}
+            className="grid size-7 place-items-center rounded-md hover:bg-gray-100"
+          />
         </span>
         <span className={a.published ? undefined : "invisible"}>
-          <ImportantButton initialImportant={a.important} onMark={markImportant.bind(null, a.id)} />
+          <ImportantButton
+            initialImportant={a.important}
+            onMark={markImportant.bind(null, a.id)}
+            className="grid size-7 place-items-center rounded-md hover:bg-gray-100"
+          />
         </span>
         <Link
           href={`/admin/articles/${a.id}/edit`}

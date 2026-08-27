@@ -10,9 +10,10 @@ interface Props {
   initialImportant: boolean
   onMark: () => Promise<ActionResult>
   compact?: boolean
+  className?: string
 }
 
-export function ImportantButton({ initialImportant, onMark, compact }: Props) {
+export function ImportantButton({ initialImportant, onMark, compact, className }: Props) {
   const [important, setImportant] = useState(initialImportant)
   const router = useRouter()
   const { run, pending } = useAction(onMark, {
@@ -52,7 +53,7 @@ export function ImportantButton({ initialImportant, onMark, compact }: Props) {
       title={important ? "Remove important flag" : "Mark as important"}
       className={`transition-colors disabled:opacity-40 ${
         important ? "text-amber-500" : "text-gray-300 hover:text-gray-500"
-      }`}
+      } ${className ?? ""}`}
     >
       {pending ? (
         <Loader2 className="size-4 animate-spin" aria-hidden />
