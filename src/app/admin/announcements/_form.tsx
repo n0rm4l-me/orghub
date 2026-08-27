@@ -80,7 +80,7 @@ export function AnnouncementForm({ values, action, redirectAfterSave }: Props) {
         {/* Sidebar */}
         <aside className="flex w-full flex-col gap-4 lg:sticky lg:top-8 lg:w-64 lg:shrink-0">
           {/* Save */}
-          <section className="order-last rounded-xl border border-gray-200 bg-white p-4 lg:order-first">
+          <div className="order-last lg:order-first">
             <button
               type="submit"
               disabled={pending}
@@ -90,15 +90,13 @@ export function AnnouncementForm({ values, action, redirectAfterSave }: Props) {
               {pending && <Loader2 className="size-3.5 animate-spin" aria-hidden />}
               {pending ? "Saving…" : "Save"}
             </button>
-            <p className="mt-2 flex min-h-4 items-center justify-center gap-1 text-[11px] text-gray-400">
-              {savedAt ? (
-                <>
-                  <Check className="size-3 text-emerald-500" aria-hidden />
-                  Saved at {savedAt}
-                </>
-              ) : null}
-            </p>
-          </section>
+            {savedAt && (
+              <p className="mt-2 flex items-center justify-center gap-1 text-[11px] text-gray-400">
+                <Check className="size-3 text-emerald-500" aria-hidden />
+                Saved at {savedAt}
+              </p>
+            )}
+          </div>
 
           {/* Color */}
           <section className="rounded-xl border border-gray-200 bg-white p-4">

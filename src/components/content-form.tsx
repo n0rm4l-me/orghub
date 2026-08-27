@@ -236,7 +236,7 @@ export function ContentForm({
                   Saved at {savedAt}
                 </>
               ) : (
-                <kbd className="rounded border border-gray-200 bg-gray-50 px-1 font-sans">⌘S</kbd>
+                <kbd className="hidden rounded border border-gray-200 bg-gray-50 px-1 font-sans sm:inline">⌘S</kbd>
               )}
             </p>
           </section>
