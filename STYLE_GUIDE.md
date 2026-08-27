@@ -72,7 +72,7 @@ Use a block flex container so `truncate` has a fixed parent width to measure aga
         ...
       </tr>
     </thead>
-    <tbody className="divide-y divide-gray-100">
+    <tbody className="divide-y divide-gray-100 [&_td]:align-top">
       {items.map(item => (
         <tr key={item.id} className="group transition-colors hover:bg-gray-50/70">
           ...
@@ -82,6 +82,8 @@ Use a block flex container so `truncate` has a fixed parent width to measure aga
   </table>
 </div>
 ```
+
+`[&_td]:align-top` is required on every `<tbody>`. Without it, icon-only cells (pin, star, actions) in a multi-line row vertically center relative to the full row height, making them appear misaligned with the first line of text.
 
 ### Cell padding
 

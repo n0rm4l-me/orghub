@@ -1,7 +1,7 @@
 import { db } from "@/lib/db"
 import type { Prisma } from "@prisma/client"
 import Link from "next/link"
-import { Plus, FileText, Pin, Star, Pencil, Eye } from "lucide-react"
+import { Plus, FileText, Pencil, Eye } from "lucide-react"
 import { requireRole } from "@/lib/rbac"
 import { togglePublish, deleteArticle, pinArticle, markImportant } from "@/lib/actions/articles"
 import { StatusToggle } from "@/components/ui/status-toggle"
@@ -119,9 +119,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
               <col className="w-28" />
               <col className="w-24" />
               <col className="w-16" />
-              <col className="w-9" />
-              <col className="w-9" />
-              <col className="w-28" />
+              <col className="w-20" />
             </colgroup>
             <thead>
               <tr
@@ -136,35 +134,40 @@ export default async function ArticlesPage({ searchParams }: Props) {
                 <th className="px-5 py-3 text-center" title="Unique readers">
                   <Eye className="size-3.5 mx-auto" aria-hidden />
                 </th>
-                <th className="px-1 py-3 text-center" title="Pin as featured">
-                  <Pin className="size-3.5 mx-auto" aria-hidden />
-                </th>
-                <th className="px-1 py-3 text-center" title="Mark as important">
-                  <Star className="size-3.5 mx-auto" aria-hidden />
-                </th>
                 <th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 [&_td]:align-top">
               {articles.map((article) => (
                 <tr key={article.id} className="group transition-colors hover:bg-gray-50/70">
                   <td className="px-5 py-3">
-                    <div className="flex min-w-0 items-center gap-1.5">
-                      <Link
-                        href={`/admin/articles/${article.id}/edit`}
-                        className="truncate text-sm font-medium text-gray-900 transition-colors
-                          hover:text-brand"
-                        title={article.title}
-                      >
-                        {article.title}
-                      </Link>
-                      {article.pinned && (
-                        <Pin className="size-3 shrink-0 fill-brand/20 text-brand" aria-label="Pinned" />
+                    <div className="flex min-w-0 items-start gap-2">
+                      {article.published && (
+                        <div className="flex shrink-0 items-center gap-0.5 pt-px">
+                          <PinButton
+                            initialPinned={article.pinned}
+                            onPin={pinArticle.bind(null, article.id)}
+                          />
+                          <ImportantButton
+                            initialImportant={article.important}
+                            onMark={markImportant.bind(null, article.id)}
+                          />
+                        </div>
                       )}
+                      <div className="min-w-0">
+                        <Link
+                          href={`/admin/articles/${article.id}/edit`}
+                          className="block truncate text-sm font-medium text-gray-900 transition-colors
+                            hover:text-brand"
+                          title={article.title}
+                        >
+                          {article.title}
+                        </Link>
+                        {article.excerpt && (
+                          <p className="mt-0.5 truncate text-xs text-gray-400">{article.excerpt}</p>
+                        )}
+                      </div>
                     </div>
-                    {article.excerpt && (
-                      <p className="mt-0.5 truncate text-xs text-gray-400">{article.excerpt}</p>
-                    )}
                   </td>
                   <td className="px-5 py-3 text-center">
                     {article.categories[0] && (
@@ -197,22 +200,6 @@ export default async function ArticlesPage({ searchParams }: Props) {
                   </td>
                   <td className="px-5 py-3 text-center text-xs text-gray-400">
                     {article._count.views}
-                  </td>
-                  <td className="px-1 py-3 text-center">
-                    {article.published && (
-                      <PinButton
-                        initialPinned={article.pinned}
-                        onPin={pinArticle.bind(null, article.id)}
-                      />
-                    )}
-                  </td>
-                  <td className="px-1 py-3 text-center">
-                    {article.published && (
-                      <ImportantButton
-                        initialImportant={article.important}
-                        onMark={markImportant.bind(null, article.id)}
-                      />
-                    )}
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex items-center justify-end gap-1.5">

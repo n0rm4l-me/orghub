@@ -147,7 +147,7 @@ export default async function AuditPage({ searchParams }: Props) {
                 <th className="px-5 py-3 text-center">From</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 [&_td]:align-top">
               {entries.map((entry) => {
                 const meta = (entry.metadata ?? null) as Record<string, unknown> | null
                 const subject =

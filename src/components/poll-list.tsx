@@ -76,7 +76,7 @@ export function PollList({ polls }: { polls: Poll[] }) {
             <th className="px-5 py-3 text-center">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100">
+        <tbody className="divide-y divide-gray-100 [&_td]:align-top">
           {polls.map((poll) => (
             <tr key={poll.id} className="group transition-colors hover:bg-gray-50/70">
               <td className="px-5 py-3">

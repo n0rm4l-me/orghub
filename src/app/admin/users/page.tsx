@@ -107,7 +107,7 @@ export default async function UsersPage({ searchParams }: Props) {
                 <th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 [&_td]:align-top">
               {users.map((user) => {
                 const label = user.name ?? user.email
                 const initials = label

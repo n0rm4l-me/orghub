@@ -83,7 +83,7 @@ export default async function AnnouncementsPage() {
                 <th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 [&_td]:align-top">
               {announcements.map((a) => (
                 <tr key={a.id} className="group transition-colors hover:bg-gray-50/70">
                   <td className="px-5 py-3">

@@ -119,7 +119,7 @@ export default async function AdminPagesPage({ searchParams }: Props) {
                 <th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 [&_td]:align-top">
               {topLevel.map((page, i) => {
                 const children = filtering ? [] : childrenOf(page.id)
                 return (

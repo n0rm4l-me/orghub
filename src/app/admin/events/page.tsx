@@ -101,7 +101,7 @@ export default async function AdminEventsPage({ searchParams }: Props) {
           <table className="w-full table-fixed">
             <colgroup>
               <col />
-              <col className="w-44" />
+              <col className="w-36" />
               <col className="w-36" />
               <col className="w-28" />
               <col className="w-28" />
@@ -115,7 +115,7 @@ export default async function AdminEventsPage({ searchParams }: Props) {
                 <th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 [&_td]:align-top">
               {events.map((ev) => {
                 const start = new Date(ev.eventDate!)
                 const end = ev.eventEndDate ? new Date(ev.eventEndDate) : null
