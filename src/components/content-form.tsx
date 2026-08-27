@@ -165,8 +165,8 @@ export function ContentForm({
           />
         </div>
 
-        <aside className="w-full lg:sticky lg:top-8 lg:w-64 lg:shrink-0 space-y-4">
-          <section className="rounded-xl border border-gray-200 bg-white p-4">
+        <aside className="flex w-full flex-col gap-4 lg:sticky lg:top-8 lg:w-64 lg:shrink-0">
+          <section className="order-last rounded-xl border border-gray-200 bg-white p-4 lg:order-first">
             <h2 className="mb-3 text-sm font-semibold text-gray-900">Publishing</h2>
 
             {kind === "article" && (

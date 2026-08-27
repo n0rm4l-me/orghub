@@ -78,9 +78,9 @@ export function AnnouncementForm({ values, action, redirectAfterSave }: Props) {
         </div>
 
         {/* Sidebar */}
-        <aside className="w-full lg:sticky lg:top-8 lg:w-64 lg:shrink-0 space-y-4">
+        <aside className="flex w-full flex-col gap-4 lg:sticky lg:top-8 lg:w-64 lg:shrink-0">
           {/* Save */}
-          <section className="rounded-xl border border-gray-200 bg-white p-4">
+          <section className="order-last rounded-xl border border-gray-200 bg-white p-4 lg:order-first">
             <button
               type="submit"
               disabled={pending}
