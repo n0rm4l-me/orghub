@@ -72,13 +72,13 @@ const columns: AdminTableCol<AnnouncementRow>[] = [
   {
     id: "schedule",
     header: "Schedule",
-    width: "w-48",
+    width: "w-56",
     type: "text",
     render: (a) =>
       a.showFrom || a.showUntil ? (
         <div className="space-y-0.5 text-xs text-gray-500">
-          {a.showFrom && <p>From: {fmtDate(a.showFrom)}</p>}
-          {a.showUntil && <p>Until: {fmtDate(a.showUntil)}</p>}
+          {a.showFrom && <p className="whitespace-nowrap">From: {fmtDate(a.showFrom)}</p>}
+          {a.showUntil && <p className="whitespace-nowrap">Until: {fmtDate(a.showUntil)}</p>}
         </div>
       ) : (
         <span className="text-xs text-gray-300">Always</span>
