@@ -56,9 +56,9 @@ export function ImportantButton({ initialImportant, onMark, compact, className }
       } ${className ?? ""}`}
     >
       {pending ? (
-        <Loader2 className="size-4 animate-spin" aria-hidden />
+        <Loader2 className="size-3.5 animate-spin" aria-hidden />
       ) : (
-        <Star className={`size-4 ${important ? "fill-amber-100" : ""}`} aria-hidden />
+        <Star className={`size-3.5 ${important ? "fill-amber-100" : ""}`} aria-hidden />
       )}
     </button>
   )

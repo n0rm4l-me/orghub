@@ -56,9 +56,9 @@ export function PinButton({ initialPinned, onPin, compact, className }: Props) {
       } ${className ?? ""}`}
     >
       {pending ? (
-        <Loader2 className="size-4 animate-spin" aria-hidden />
+        <Loader2 className="size-3.5 animate-spin" aria-hidden />
       ) : (
-        <Pin className={`size-4 ${pinned ? "fill-brand/20" : ""}`} aria-hidden />
+        <Pin className={`size-3.5 ${pinned ? "fill-brand/20" : ""}`} aria-hidden />
       )}
     </button>
   )
