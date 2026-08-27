@@ -77,9 +77,9 @@ export default async function AnnouncementsPage() {
             <thead>
               <tr className="border-b border-gray-100 text-xs font-semibold tracking-wide text-gray-400 uppercase">
                 <th className="px-5 py-3 text-left">Message</th>
-                <th className="px-5 py-3 text-left">Color</th>
-                <th className="px-5 py-3 text-left">Schedule</th>
-                <th className="px-5 py-3 text-left">Status</th>
+                <th className="px-5 py-3 text-center">Color</th>
+                <th className="px-5 py-3 text-center">Schedule</th>
+                <th className="px-5 py-3 text-center">Status</th>
                 <th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -92,13 +92,13 @@ export default async function AnnouncementsPage() {
                       <p className="mt-0.5 truncate text-xs text-gray-400">{a.linkUrl}</p>
                     )}
                   </td>
-                  <td className="px-5 py-3">
+                  <td className="px-5 py-3 text-center">
                     <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 capitalize">
                       <span className={`size-2.5 rounded-full ${COLOR_DOT[a.color] ?? "bg-gray-400"}`} aria-hidden />
                       {a.color}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-xs text-gray-500">
+                  <td className="px-5 py-3 text-center text-xs text-gray-500">
                     {a.showFrom || a.showUntil ? (
                       <div className="space-y-0.5">
                         {a.showFrom && <p>From: {fmtDate(a.showFrom)}</p>}
@@ -108,7 +108,7 @@ export default async function AnnouncementsPage() {
                       <span className="text-gray-300">Always</span>
                     )}
                   </td>
-                  <td className="px-5 py-3">
+                  <td className="px-5 py-3 text-center">
                     <StatusToggle
                       published={a.active}
                       onToggle={toggleAnnouncementActive.bind(null, a.id)}

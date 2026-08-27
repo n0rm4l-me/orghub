@@ -37,7 +37,8 @@ export async function authenticateLdap(
   // that log users in by userPrincipalName should override this.
   const filterTemplate = process.env.LDAP_USER_SEARCH_FILTER ?? "(mail={{email}})"
   const timeout = Number(process.env.LDAP_TIMEOUT) || 5000
-  const searchFilter = filterTemplate.replace("{{email}}", email.replace(/[()\\*/\x00]/g, ""))
+  const sanitized = email.replace(/[()\\*/\x00]/g, "")
+  const searchFilter = filterTemplate.replace("{{email}}", sanitized).replace("{{username}}", sanitized)
 
   const svcClient = new Client({
     url,

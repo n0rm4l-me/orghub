@@ -20,7 +20,7 @@ export default async function AppearancePage() {
   const enabledModules = parseModules(settings.enabledModules)
 
   return (
-    <div className="space-y-10">
+    <div className="max-w-3xl space-y-10">
       <PageHeader
         title="Appearance"
         description="Branding, colours, layout, and sidebar widgets."
@@ -38,50 +38,49 @@ export default async function AppearancePage() {
         />
       </section>
 
-      <div className="max-w-2xl space-y-10">
-        <section>
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-400">
-            Layout
-          </h2>
-          <LayoutForm
-            feedLayout={settings.feedLayout}
-            articleLayout={settings.articleLayout}
-            pagesLayout={settings.pagesLayout}
-            portalWidth={settings.portalWidth ?? "default"}
-            feedPageSize={settings.feedPageSize ?? 15}
-            feedCardStyle={settings.feedCardStyle ?? "preview"}
-            enabledModules={enabledModules}
-          />
-        </section>
+      <section>
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-400">
+          Layout
+        </h2>
+        <LayoutForm
+          feedLayout={settings.feedLayout}
+          articleLayout={settings.articleLayout}
+          pagesLayout={settings.pagesLayout}
+          portalWidth={settings.portalWidth ?? "default"}
+          feedPageSize={settings.feedPageSize ?? 15}
+          feedCardStyle={settings.feedCardStyle ?? "preview"}
+          enabledModules={enabledModules}
+        />
+      </section>
 
-        <section>
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-400">
-            Sidebar widgets
-          </h2>
-          <SidebarWidgetsForm
-            rightOrder={rightOrder}
-            leftOrder={leftOrder}
-            enabledModules={enabledModules}
-          />
-        </section>
-        <section>
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-400">
-            Privacy
-          </h2>
-          <Panel>
-            <div className="flex items-center justify-between gap-6">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Gravatar avatars</p>
-                <p className="mt-0.5 text-xs text-gray-500">
-                  When enabled, user photo is loaded from gravatar.com using an MD5 hash of their
-                  email. Disable to keep email hashes off external servers and show initials only.
-                </p>
-              </div>
-              <GravatarToggle initialEnabled={settings.gravatarsEnabled} />
+      <section>
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-400">
+          Sidebar widgets
+        </h2>
+        <SidebarWidgetsForm
+          rightOrder={rightOrder}
+          leftOrder={leftOrder}
+          enabledModules={enabledModules}
+        />
+      </section>
+
+      <section>
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-400">
+          Avatars
+        </h2>
+        <Panel>
+          <div className="flex items-center justify-between gap-6">
+            <div>
+              <p className="text-sm font-medium text-gray-900">Gravatar avatars</p>
+              <p className="mt-0.5 text-xs text-gray-500">
+                When enabled, user photo is loaded from gravatar.com using an MD5 hash of their
+                email. Disable to keep email hashes off external servers and show initials only.
+              </p>
             </div>
-          </Panel>
-        </section>
-      </div>
+            <GravatarToggle initialEnabled={settings.gravatarsEnabled} />
+          </div>
+        </Panel>
+      </section>
     </div>
   )
 }

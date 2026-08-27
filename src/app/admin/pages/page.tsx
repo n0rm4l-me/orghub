@@ -112,9 +112,9 @@ export default async function AdminPagesPage({ searchParams }: Props) {
                 {!filtering && <th className="px-2 py-3" />}
                 <th className="px-5 py-3 text-left">Title</th>
                 <th className="px-5 py-3 text-left">Path</th>
-                <th className="px-5 py-3 text-left">Status</th>
-                <th className="px-5 py-3 text-left">In menu</th>
-                <th className="px-5 py-3 text-left">Updated</th>
+                <th className="px-5 py-3 text-center">Status</th>
+                <th className="px-5 py-3 text-center">In menu</th>
+                <th className="px-5 py-3 text-center">Updated</th>
                 <th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -199,20 +199,20 @@ function PageRow({
           /pages/{page.slug}
         </span>
       </td>
-      <td className="px-5 py-3">
+      <td className="px-5 py-3 text-center">
         <StatusToggle
           published={page.published}
           onToggle={togglePagePublish.bind(null, page.id)}
         />
       </td>
-      <td className="px-5 py-3">
+      <td className="px-5 py-3 text-center">
         {page.showInNav && page.published ? (
           <span className="text-xs font-medium text-gray-600">Yes</span>
         ) : (
           <span className="text-xs text-gray-300">No</span>
         )}
       </td>
-      <td className="px-5 py-3 text-xs text-gray-400">
+      <td className="px-5 py-3 text-center text-xs text-gray-400">
         {new Date(page.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
       </td>
       <td className="px-5 py-3">

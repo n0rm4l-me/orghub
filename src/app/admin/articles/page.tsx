@@ -129,12 +129,12 @@ export default async function ArticlesPage({ searchParams }: Props) {
                   uppercase"
               >
                 <th className="px-5 py-3 text-left">Title</th>
-                <th className="px-5 py-3 text-left">Category</th>
-                <th className="px-5 py-3 text-left">Author</th>
-                <th className="px-5 py-3 text-left">Status</th>
-                <th className="px-5 py-3 text-left">Updated</th>
-                <th className="px-5 py-3 text-right" title="Unique readers">
-                  <Eye className="size-3.5 ml-auto" aria-hidden />
+                <th className="px-5 py-3 text-center">Category</th>
+                <th className="px-5 py-3 text-center">Author</th>
+                <th className="px-5 py-3 text-center">Status</th>
+                <th className="px-5 py-3 text-center">Updated</th>
+                <th className="px-5 py-3 text-center" title="Unique readers">
+                  <Eye className="size-3.5 mx-auto" aria-hidden />
                 </th>
                 <th className="px-1 py-3 text-center" title="Pin as featured">
                   <Pin className="size-3.5 mx-auto" aria-hidden />
@@ -166,9 +166,9 @@ export default async function ArticlesPage({ searchParams }: Props) {
                       <p className="mt-0.5 truncate text-xs text-gray-400">{article.excerpt}</p>
                     )}
                   </td>
-                  <td className="px-5 py-3">
+                  <td className="px-5 py-3 text-center">
                     {article.categories[0] && (
-                      <div className="flex flex-wrap items-center gap-1">
+                      <div className="flex flex-wrap items-center justify-center gap-1">
                         <span className="inline-block max-w-full truncate rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
                           {article.categories[0].category.name}
                         </span>
@@ -180,22 +180,22 @@ export default async function ArticlesPage({ searchParams }: Props) {
                       </div>
                     )}
                   </td>
-                  <td className="truncate px-5 py-3 text-sm text-gray-500">
+                  <td className="truncate px-5 py-3 text-center text-sm text-gray-500">
                     {article.author.name ?? article.author.email}
                   </td>
-                  <td className="px-5 py-3">
+                  <td className="px-5 py-3 text-center">
                     <StatusToggle
                       published={article.published}
                       onToggle={togglePublish.bind(null, article.id)}
                     />
                   </td>
-                  <td className="px-5 py-3 text-xs whitespace-nowrap text-gray-400">
+                  <td className="px-5 py-3 text-center text-xs whitespace-nowrap text-gray-400">
                     {article.updatedAt.toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
                     })}
                   </td>
-                  <td className="px-5 py-3 text-right text-xs text-gray-400">
+                  <td className="px-5 py-3 text-center text-xs text-gray-400">
                     {article._count.views}
                   </td>
                   <td className="px-1 py-3 text-center">

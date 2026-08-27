@@ -100,10 +100,10 @@ export default async function UsersPage({ searchParams }: Props) {
                   uppercase"
               >
                 <th className="px-5 py-3 text-left">User</th>
-                <th className="px-5 py-3 text-left">Role</th>
-                <th className="px-5 py-3 text-left">Sign-in</th>
-                <th className="px-5 py-3 text-left">Status</th>
-                <th className="px-5 py-3 text-left">Joined</th>
+                <th className="px-5 py-3 text-center">Role</th>
+                <th className="px-5 py-3 text-center">Sign-in</th>
+                <th className="px-5 py-3 text-center">Status</th>
+                <th className="px-5 py-3 text-center">Joined</th>
                 <th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -139,13 +139,13 @@ export default async function UsersPage({ searchParams }: Props) {
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-3">
+                    <td className="px-5 py-3 text-center">
                       <UserRoleSelect userId={user.id} role={user.role} isSelf={isSelf} />
                     </td>
-                    <td className="px-5 py-3 text-sm text-gray-500 capitalize">
+                    <td className="px-5 py-3 text-center text-sm text-gray-500 capitalize">
                       {user.provider ?? "password"}
                     </td>
-                    <td className="px-5 py-3">
+                    <td className="px-5 py-3 text-center">
                       <span
                         className={`inline-flex items-center gap-1.5 text-xs font-medium ${
                           user.active ? "text-gray-600" : "text-red-600"
@@ -160,20 +160,22 @@ export default async function UsersPage({ searchParams }: Props) {
                         {user.active ? "Active" : "Disabled"}
                       </span>
                     </td>
-                    <td className="px-5 py-3 text-xs whitespace-nowrap text-gray-400">
+                    <td className="px-5 py-3 text-center text-xs whitespace-nowrap text-gray-400">
                       {user.createdAt.toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
                         year: "numeric",
                       })}
                     </td>
-                    <td className="px-5 py-3 text-right">
-                      <UserActiveToggle
-                        userId={user.id}
-                        active={user.active}
-                        name={label}
-                        isSelf={isSelf}
-                      />
+                    <td className="px-5 py-3">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <UserActiveToggle
+                          userId={user.id}
+                          active={user.active}
+                          name={label}
+                          isSelf={isSelf}
+                        />
+                      </div>
                     </td>
                   </tr>
                 )
