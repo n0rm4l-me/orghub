@@ -9,7 +9,7 @@ const HEADER_CLASS: Record<ColType, string> = {
   number:  "px-2 py-3 text-center",
   icon:    "px-1 py-3 text-center",
   reorder: "px-2 py-3",
-  actions: "px-5 py-3 text-right",
+  actions: "px-5 py-3 text-center",
 }
 
 const CELL_CLASS: Record<ColType, string> = {
@@ -71,7 +71,7 @@ export function AdminTable<T,>({
                 return (
                   <td key={col.id} className={CELL_CLASS[type]}>
                     {type === "actions" ? (
-                      <div className="flex items-center justify-end gap-1.5">{content}</div>
+                      <div className="flex items-center justify-center gap-1.5">{content}</div>
                     ) : (
                       content
                     )}
