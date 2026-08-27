@@ -20,6 +20,7 @@ const ALL_WIDGETS: Widget[] = [
   { id: "browseByTopic",   label: "Browse by topic" },
   { id: "upcomingEvents",  label: "Upcoming events", requiresModule: "events" },
   { id: "activePolls",     label: "Active poll",     requiresModule: "polls" },
+  { id: "topKudos",        label: "Top kudos",       requiresModule: "kudos" },
 ]
 
 interface WidgetRow {

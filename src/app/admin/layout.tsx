@@ -24,7 +24,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       .slice(0, 2) || "?"
 
   const eventsEnabled = parseModules(settings.enabledModules).has("events")
-  const pollsEnabled = parseModules(settings.enabledModules).has("polls")
+  const pollsEnabled  = parseModules(settings.enabledModules).has("polls")
+  const kudosEnabled  = parseModules(settings.enabledModules).has("kudos")
   const canAdminister = can.manageUsers(user)
 
   async function signOutAction() {
@@ -42,6 +43,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         canAdminister={canAdminister}
         eventsEnabled={eventsEnabled}
         pollsEnabled={pollsEnabled}
+        kudosEnabled={kudosEnabled}
         userName={user.name ?? user.email}
         userRole={user.role}
         gravatarUrl={settings.gravatarsEnabled ? gravatarUrl(user.email, 28) : undefined}
@@ -64,6 +66,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           canAdminister={canAdminister}
           eventsEnabled={eventsEnabled}
           pollsEnabled={pollsEnabled}
+          kudosEnabled={kudosEnabled}
         />
 
         <div className="shrink-0 border-t border-white/5 p-3">

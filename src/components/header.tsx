@@ -54,6 +54,7 @@ export async function Header() {
   const NAV_META: Record<string, { href: string; label: string; module: string }> = {
     events: { href: "/events", label: "Calendar", module: "events" },
     polls:  { href: "/polls",  label: "Polls",    module: "polls"  },
+    kudos:  { href: "/kudos",  label: "Kudos",    module: "kudos"  },
   }
   const navOrder = (settings.navOrder ?? "events,polls").split(",").filter(Boolean)
 

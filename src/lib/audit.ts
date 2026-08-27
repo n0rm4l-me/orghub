@@ -41,6 +41,10 @@ export type AuditAction =
   | "poll.update"
   | "poll.delete"
   | "poll.close"
+  | "kudos.send"
+  | "kudos.redeem"
+  | "kudos.delete"
+  | "settings.kudos"
 
 interface LogInput {
   userId: string

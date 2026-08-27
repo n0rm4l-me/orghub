@@ -1,7 +1,8 @@
 import Link from "next/link"
-import { Zap, ExternalLink, CalendarDays, MapPin, Tag } from "lucide-react"
+import { Zap, ExternalLink, CalendarDays, MapPin, Tag, Award } from "lucide-react"
 import { PollCard } from "@/components/poll-card"
 import type { PollCardPoll, PollOption } from "@/components/poll-card"
+import { gravatarUrl } from "@/lib/gravatar"
 
 interface QuickLink {
   id: string
@@ -22,6 +23,14 @@ interface UpcomingEvent {
   eventLocation: string | null
 }
 
+export interface TopKudosEntry {
+  userId: string
+  name: string | null
+  email: string
+  avatarUrl: string | null
+  total: number
+}
+
 export interface ActivePollData {
   poll: PollCardPoll
   options: PollOption[]
@@ -32,26 +41,33 @@ export interface ActivePollData {
 interface Props {
   blocks: string[]
   eventsEnabled: boolean
+  kudosEnabled?: boolean
   quickLinks: QuickLink[]
   categories: Category[]
   upcomingEvents: UpcomingEvent[]
   activeCategory?: string
   activePoll?: ActivePollData | null
+  topKudos?: TopKudosEntry[]
+  gravatarsEnabled?: boolean
 }
 
 export function SidebarBlocks({
   blocks,
   eventsEnabled,
+  kudosEnabled,
   quickLinks,
   categories,
   upcomingEvents,
   activeCategory,
   activePoll,
+  topKudos,
+  gravatarsEnabled = true,
 }: Props) {
   return (
     <>
       {blocks.map((blockId) => {
         if (blockId === "upcomingEvents" && !eventsEnabled) return null
+        if (blockId === "topKudos" && !kudosEnabled) return null
 
         if (blockId === "quickLinks") {
           if (quickLinks.length === 0) return null
@@ -185,6 +201,48 @@ export function SidebarBlocks({
               initialVotedOptionIds={activePoll.votedOptionIds}
               compact
             />
+          )
+        }
+
+        if (blockId === "topKudos") {
+          if (!topKudos || topKudos.length === 0) return null
+          return (
+            <section key="topKudos" className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900">
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                <Award className="size-4 text-brand" aria-hidden />
+                Top kudos this month
+              </h2>
+              <ul className="space-y-2">
+                {topKudos.map((entry, i) => {
+                  const initials = (entry.name ?? entry.email)
+                    .split(/[\s@.]+/).filter(Boolean)
+                    .map((p) => p[0]).join("").toUpperCase().slice(0, 2) || "?"
+                  const avatar = gravatarsEnabled ? gravatarUrl(entry.email, 32) : null
+                  return (
+                    <li key={entry.userId} className="flex items-center gap-2.5">
+                      <span className="w-4 shrink-0 text-[11px] font-semibold text-gray-400">{i + 1}</span>
+                      {avatar ? (
+                        <img src={avatar} alt="" className="size-7 shrink-0 rounded-full bg-gray-100" />
+                      ) : (
+                        <span className="grid size-7 shrink-0 place-items-center rounded-full bg-brand/10 text-[10px] font-bold text-brand">
+                          {initials}
+                        </span>
+                      )}
+                      <span className="min-w-0 flex-1 truncate text-xs font-medium text-gray-700 dark:text-gray-300">
+                        {entry.name ?? entry.email.split("@")[0]}
+                      </span>
+                      <span className="shrink-0 text-xs font-semibold text-brand">{entry.total}</span>
+                    </li>
+                  )
+                })}
+              </ul>
+              <Link
+                href="/kudos"
+                className="mt-3 block text-center text-xs font-medium text-brand hover:underline"
+              >
+                View kudos wall →
+              </Link>
+            </section>
           )
         }
 

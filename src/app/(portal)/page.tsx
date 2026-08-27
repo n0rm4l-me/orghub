@@ -2,7 +2,8 @@ import Link from "next/link"
 import { db } from "@/lib/db"
 import type { Prisma } from "@prisma/client"
 import { CalendarDays, Heart, Newspaper, Pin, SearchX, Star } from "lucide-react"
-import { SidebarBlocks, type ActivePollData } from "@/components/sidebar-blocks"
+import { SidebarBlocks, type ActivePollData, type TopKudosEntry } from "@/components/sidebar-blocks"
+import { getTopKudosRecipients } from "@/lib/actions/kudos"
 import { CategoryFilter } from "@/components/category-filter"
 import { EmptyState } from "@/components/ui/empty-state"
 import { getQuickLinks, getUpcomingEvents } from "@/lib/nav"
@@ -195,6 +196,7 @@ export default async function FeedPage({ searchParams }: Props) {
   const settings = await getSettings()
   const PER_PAGE = settings.feedPageSize ?? 15
   const pollsEnabled = parseModules(settings.enabledModules).has("polls")
+  const kudosEnabled = parseModules(settings.enabledModules).has("kudos")
 
   const [articles, total, categories, quickLinks, upcomingEvents, user, pinnedRaw] =
     await Promise.all([
@@ -305,6 +307,11 @@ export default async function FeedPage({ searchParams }: Props) {
       }
     }
   }
+  let topKudosData: TopKudosEntry[] = []
+  if (kudosEnabled && allBlocks.includes("topKudos")) {
+    topKudosData = await getTopKudosRecipients(5)
+  }
+
   const cardStyle = (settings.feedCardStyle ?? "preview") as "compact" | "default" | "preview"
   const rightBlocks = settings.sidebarOrder?.split(",").filter(Boolean) ?? ["quickLinks", "browseByTopic", "upcomingEvents"]
   const leftBlocks = settings.leftSidebarOrder?.split(",").filter(Boolean) ?? []
@@ -326,6 +333,9 @@ export default async function FeedPage({ searchParams }: Props) {
               upcomingEvents={upcomingEvents}
               activeCategory={categorySlug}
               activePoll={activePollData}
+              kudosEnabled={kudosEnabled}
+              topKudos={topKudosData}
+              gravatarsEnabled={settings.gravatarsEnabled}
             />
           </aside>
         )}
@@ -457,6 +467,9 @@ export default async function FeedPage({ searchParams }: Props) {
               upcomingEvents={upcomingEvents}
               activeCategory={categorySlug}
               activePoll={activePollData}
+              kudosEnabled={kudosEnabled}
+              topKudos={topKudosData}
+              gravatarsEnabled={settings.gravatarsEnabled}
             />
           </section>
         )}
@@ -481,6 +494,9 @@ export default async function FeedPage({ searchParams }: Props) {
               upcomingEvents={upcomingEvents}
               activeCategory={categorySlug}
               activePoll={activePollData}
+              kudosEnabled={kudosEnabled}
+              topKudos={topKudosData}
+              gravatarsEnabled={settings.gravatarsEnabled}
             />
           </aside>
         )}

@@ -16,6 +16,7 @@ import {
   LayoutGrid,
   Megaphone,
   BarChart2,
+  Award,
   type LucideIcon,
 } from "lucide-react"
 
@@ -35,7 +36,8 @@ const BASE_CONTENT: Item[] = [
 ]
 
 const EVENTS_ITEM: Item = { href: "/admin/events", label: "Events", icon: CalendarDays }
-const POLLS_ITEM: Item = { href: "/admin/polls", label: "Polls", icon: BarChart2 }
+const POLLS_ITEM: Item  = { href: "/admin/polls",  label: "Polls",  icon: BarChart2 }
+const KUDOS_ITEM: Item  = { href: "/admin/kudos",  label: "Kudos",  icon: Award }
 
 const ADMINISTRATION: Item[] = [
   { href: "/admin/users", label: "Users", icon: Users },
@@ -58,10 +60,12 @@ export function AdminNav({
   canAdminister,
   eventsEnabled,
   pollsEnabled,
+  kudosEnabled,
 }: {
   canAdminister: boolean
   eventsEnabled: boolean
   pollsEnabled: boolean
+  kudosEnabled?: boolean
 }) {
   const pathname = usePathname()
 
@@ -69,7 +73,8 @@ export function AdminNav({
     BASE_CONTENT[0],
     BASE_CONTENT[1],
     ...(eventsEnabled ? [EVENTS_ITEM] : []),
-    ...(pollsEnabled ? [POLLS_ITEM] : []),
+    ...(pollsEnabled  ? [POLLS_ITEM]  : []),
+    ...(kudosEnabled  ? [KUDOS_ITEM]  : []),
     ...BASE_CONTENT.slice(2),
   ]
 

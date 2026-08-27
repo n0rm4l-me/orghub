@@ -40,6 +40,9 @@ model User {
   views         ArticleView[]
   pollsAuthored Poll[]      @relation("PollAuthor")
   pollVotes     PollVote[]  @relation("PollVoter")
+  kudosSent     Kudos[]     @relation("KudosSender")
+  kudosReceived Kudos[]     @relation("KudosRecipient")
+  kudosRedemptions KudosRedemption[]
 }
 
 model Account {
@@ -215,6 +218,16 @@ model SiteSettings {
   gravatarsEnabled Boolean @default(true)
   /// Comma-separated IDs of module nav items shown in the header, in display order.
   navOrder         String  @default("events,polls")
+  /// Kudos: monthly coin budget per user (0 = unlimited).
+  kudosMonthlyBudget  Int     @default(100)
+  /// Kudos: comma-separated list of company values users can tag.
+  kudosValues         String  @default("Innovation,Teamwork,Quality,Customer Focus")
+  /// Kudos: enable the Redeem button on the user balance page.
+  kudosRedeemEnabled  Boolean @default(false)
+  /// Kudos: webhook URL called when a user redeems coins (POST with JSON body).
+  kudosRedeemWebhook  String?
+  /// Kudos: human-readable exchange rate label shown on the Redeem button.
+  kudosRedeemRateLabel String?
 }
 
 model Comment {
@@ -326,4 +339,40 @@ model PollVote {
 
   @@unique([pollId, userId, optionId])
   @@index([pollId])
+}
+
+model Kudos {
+  id          String   @id @default(cuid())
+  fromId      String
+  toId        String
+  amount      Int      @default(1)
+  message     String
+  value       String?
+  createdAt   DateTime @default(now())
+
+  from        User     @relation("KudosSender",    fields: [fromId], references: [id], onDelete: Cascade)
+  to          User     @relation("KudosRecipient", fields: [toId],   references: [id], onDelete: Cascade)
+
+  @@index([toId, createdAt])
+  @@index([fromId, createdAt])
+  @@index([createdAt])
+}
+
+enum RedemptionStatus {
+  PENDING
+  DONE
+  FAILED
+}
+
+model KudosRedemption {
+  id              String           @id @default(cuid())
+  userId          String
+  amount          Int
+  status          RedemptionStatus @default(PENDING)
+  webhookResponse String?
+  createdAt       DateTime         @default(now())
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }

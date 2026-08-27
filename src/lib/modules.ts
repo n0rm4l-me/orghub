@@ -14,6 +14,11 @@ export const MODULES = {
     label: "Polls",
     description: "Interactive polls: anonymous, multi-choice, with customizable result visibility.",
   },
+  kudos: {
+    id: "kudos" as const,
+    label: "Kudos",
+    description: "Let employees recognise each other with coins, company values, and a public wall.",
+  },
 } as const
 
 export type ModuleId = keyof typeof MODULES

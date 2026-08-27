@@ -5,6 +5,7 @@ import { requireRole } from "@/lib/rbac"
 import { getSettings } from "@/lib/settings"
 import { MODULES, parseModules, type ModuleId } from "@/lib/modules"
 import { ModuleToggle } from "@/components/module-toggle"
+import { KudosSettingsForm } from "@/components/kudos-settings-form"
 
 interface Props {
   params: Promise<{ id: string }>
@@ -98,6 +99,33 @@ export default async function ModuleSettingsPage({ params }: Props) {
               Manage events
             </Link>
           </div>
+        )}
+
+        {mod.id === "kudos" && (
+          <>
+            <KudosSettingsForm
+              monthlyBudget={settings.kudosMonthlyBudget}
+              values={settings.kudosValues}
+              redeemEnabled={settings.kudosRedeemEnabled}
+              redeemWebhook={settings.kudosRedeemWebhook ?? ""}
+              redeemRateLabel={settings.kudosRedeemRateLabel ?? ""}
+            />
+            <div className="rounded-xl border border-gray-200 bg-white px-5 py-5">
+              <h2 className="mb-3 text-sm font-semibold text-gray-900">History</h2>
+              <p className="mb-4 text-xs leading-relaxed text-gray-500">
+                Browse all kudos sent across the portal. Admins can delete individual entries.
+              </p>
+              <Link
+                href="/admin/kudos"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white
+                  px-3 py-2 text-sm font-medium text-gray-700 transition hover:border-gray-300
+                  hover:bg-gray-50"
+              >
+                <ExternalLink className="size-3.5 text-gray-400" aria-hidden />
+                View kudos log
+              </Link>
+            </div>
+          </>
         )}
       </div>
     </div>
