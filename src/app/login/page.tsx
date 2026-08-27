@@ -179,10 +179,10 @@ export default async function LoginPage({ searchParams }: Props) {
                   <input
                     id="ad-email"
                     name="email"
-                    type="email"
-                    autoComplete="email"
+                    type="text"
+                    autoComplete="username"
                     required
-                    placeholder="you@example.com"
+                    placeholder="you@example.com or username"
                     className={inputClass}
                     spellCheck={false}
                   />
