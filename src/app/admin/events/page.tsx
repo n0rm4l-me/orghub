@@ -10,6 +10,8 @@ import { PageHeader } from "@/components/ui/page-header"
 import { EmptyState } from "@/components/ui/empty-state"
 import { AdminFilters } from "@/components/admin-filters"
 import { TablePagination } from "@/components/ui/table-pagination"
+import { AdminTable } from "@/components/ui/admin-table"
+import type { AdminTableCol } from "@/components/ui/admin-table"
 
 export const metadata = { title: "Events" }
 
@@ -18,6 +20,123 @@ const PER_PAGE = 20
 interface Props {
   searchParams: Promise<{ q?: string; status?: string; page?: string }>
 }
+
+type EventRow = {
+  id: string
+  title: string
+  published: boolean
+  eventDate: Date | null
+  eventEndDate: Date | null
+  eventLocation: string | null
+  author: { name: string | null; email: string }
+}
+
+const columns: AdminTableCol<EventRow>[] = [
+  {
+    id: "title",
+    header: "Title",
+    type: "text",
+    render: (ev) => (
+      <>
+        <Link
+          href={`/admin/articles/${ev.id}/edit`}
+          className="block truncate text-sm font-medium text-gray-900 transition-colors hover:text-brand"
+          title={ev.title}
+        >
+          {ev.title}
+        </Link>
+        <p className="mt-0.5 truncate text-xs text-gray-400">
+          {ev.author.name ?? ev.author.email}
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "date",
+    header: "Date",
+    width: "w-36",
+    type: "text",
+    render: (ev) => {
+      const start = new Date(ev.eventDate!)
+      const end = ev.eventEndDate ? new Date(ev.eventEndDate) : null
+      const sameDay = end && start.toDateString() === end.toDateString()
+      const dateLabel = start.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+      const timeLabel = start.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+      })
+      const endTime = end
+        ? end.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+        : null
+      return (
+        <>
+          <p className="text-xs font-medium text-gray-900">{dateLabel}</p>
+          <p className="mt-0.5 text-xs text-gray-400">
+            {timeLabel}
+            {endTime && sameDay && ` – ${endTime}`}
+            {end && !sameDay && (
+              ` – ${end.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+            )}
+          </p>
+        </>
+      )
+    },
+  },
+  {
+    id: "location",
+    header: "Location",
+    width: "w-36",
+    type: "text",
+    render: (ev) =>
+      ev.eventLocation ? (
+        <span className="flex min-w-0 items-center gap-1 text-xs text-gray-500">
+          <MapPin className="size-3 shrink-0 text-gray-400" aria-hidden />
+          <span className="truncate" title={ev.eventLocation}>
+            {ev.eventLocation}
+          </span>
+        </span>
+      ) : (
+        <span className="text-xs text-gray-300">—</span>
+      ),
+  },
+  {
+    id: "status",
+    header: "Status",
+    width: "w-28",
+    type: "center",
+    render: (ev) => (
+      <StatusToggle published={ev.published} onToggle={togglePublish.bind(null, ev.id)} />
+    ),
+  },
+  {
+    id: "actions",
+    header: "Actions",
+    width: "w-28",
+    type: "actions",
+    render: (ev) => (
+      <>
+        <Link
+          href={`/admin/articles/${ev.id}/edit`}
+          aria-label="Edit event"
+          className="grid size-7 place-items-center rounded-md text-gray-400 transition
+            hover:bg-gray-100 hover:text-gray-700"
+        >
+          <Pencil className="size-3.5" aria-hidden />
+        </Link>
+        <DeleteButton
+          entity="event"
+          name={ev.title}
+          onDelete={deleteArticle.bind(null, ev.id)}
+          variant="icon"
+        />
+      </>
+    ),
+  },
+]
 
 export default async function AdminEventsPage({ searchParams }: Props) {
   await requireRole("EDITOR")
@@ -97,104 +216,7 @@ export default async function AdminEventsPage({ searchParams }: Props) {
           />
         )
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-          <table className="w-full table-fixed">
-            <colgroup>
-              <col />
-              <col className="w-36" />
-              <col className="w-36" />
-              <col className="w-28" />
-              <col className="w-28" />
-            </colgroup>
-            <thead>
-              <tr className="border-b border-gray-100 text-xs font-semibold tracking-wide text-gray-400 uppercase">
-                <th className="px-5 py-3 text-left">Title</th>
-                <th className="px-5 py-3 text-left">Date</th>
-                <th className="px-5 py-3 text-center">Location</th>
-                <th className="px-5 py-3 text-center">Status</th>
-                <th className="px-5 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 [&_td]:align-top">
-              {events.map((ev) => {
-                const start = new Date(ev.eventDate!)
-                const end = ev.eventEndDate ? new Date(ev.eventEndDate) : null
-                const sameDay = end && start.toDateString() === end.toDateString()
-                const dateLabel = start.toLocaleDateString("en-US", {
-                  month: "short", day: "numeric", year: "numeric",
-                })
-                const timeLabel = start.toLocaleTimeString("en-US", {
-                  hour: "numeric", minute: "2-digit",
-                })
-                const endTime = end
-                  ? end.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
-                  : null
-
-                return (
-                  <tr key={ev.id} className="group transition-colors hover:bg-gray-50/70">
-                    <td className="px-5 py-3">
-                      <Link
-                        href={`/admin/articles/${ev.id}/edit`}
-                        className="block truncate text-sm font-medium text-gray-900 transition-colors
-                          hover:text-brand"
-                        title={ev.title}
-                      >
-                        {ev.title}
-                      </Link>
-                      <p className="mt-0.5 truncate text-xs text-gray-400">
-                        {ev.author.name ?? ev.author.email}
-                      </p>
-                    </td>
-                    <td className="px-5 py-3">
-                      <p className="text-xs font-medium text-gray-900">{dateLabel}</p>
-                      <p className="mt-0.5 text-xs text-gray-400">
-                        {timeLabel}
-                        {endTime && sameDay && ` – ${endTime}`}
-                        {end && !sameDay && (
-                          ` – ${end.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
-                        )}
-                      </p>
-                    </td>
-                    <td className="px-5 py-3">
-                      {ev.eventLocation ? (
-                        <span className="flex min-w-0 items-center gap-1 text-xs text-gray-500">
-                          <MapPin className="size-3 shrink-0 text-gray-400" aria-hidden />
-                          <span className="truncate" title={ev.eventLocation}>{ev.eventLocation}</span>
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-300">—</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3 text-center">
-                      <StatusToggle
-                        published={ev.published}
-                        onToggle={togglePublish.bind(null, ev.id)}
-                      />
-                    </td>
-                    <td className="px-5 py-3">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Link
-                          href={`/admin/articles/${ev.id}/edit`}
-                          aria-label="Edit event"
-                          className="grid size-7 place-items-center rounded-md text-gray-400 transition
-                            hover:bg-gray-100 hover:text-gray-700"
-                        >
-                          <Pencil className="size-3.5" aria-hidden />
-                        </Link>
-                        <DeleteButton
-                          entity="event"
-                          name={ev.title}
-                          onDelete={deleteArticle.bind(null, ev.id)}
-                          variant="icon"
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+        <AdminTable columns={columns} rows={events} rowKey={(ev) => ev.id} />
       )}
 
       {total > PER_PAGE && (
