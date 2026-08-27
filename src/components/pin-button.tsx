@@ -7,18 +7,18 @@ import { useAction } from "@/lib/use-action"
 import type { ActionResult } from "@/lib/actions/types"
 
 interface Props {
-  initialBookmarkned: boolean
-  onBookmark: () => Promise<ActionResult>
+  initialPinned: boolean
+  onPin: () => Promise<ActionResult>
   compact?: boolean
   className?: string
 }
 
-export function BookmarkButton({ initialBookmarkned, onBookmark, compact, className }: Props) {
-  const [pinned, setBookmarkned] = useState(initialBookmarkned)
+export function PinButton({ initialPinned, onPin, compact, className }: Props) {
+  const [pinned, setPinned] = useState(initialPinned)
   const router = useRouter()
-  const { run, pending } = useAction(onBookmark, {
+  const { run, pending } = useAction(onPin, {
     onSuccess: () => {
-      setBookmarkned((v) => !v)
+      setPinned((v) => !v)
       router.refresh()
     },
   })
@@ -29,7 +29,7 @@ export function BookmarkButton({ initialBookmarkned, onBookmark, compact, classN
         type="button"
         onClick={() => run()}
         disabled={pending}
-        title={pinned ? "Unpin from feed" : "Bookmark as featured"}
+        title={pinned ? "Unpin from feed" : "Pin as featured"}
         className={`inline-flex items-center justify-center rounded p-0.5 transition-all disabled:opacity-40 ${
           pinned
             ? "text-brand"
@@ -50,7 +50,7 @@ export function BookmarkButton({ initialBookmarkned, onBookmark, compact, classN
       type="button"
       onClick={() => run()}
       disabled={pending}
-      title={pinned ? "Unpin from feed" : "Bookmark as featured"}
+      title={pinned ? "Unpin from feed" : "Pin as featured"}
       className={`transition-colors disabled:opacity-40 ${
         pinned ? "text-brand" : "text-gray-300 hover:text-gray-500"
       } ${className ?? ""}`}
