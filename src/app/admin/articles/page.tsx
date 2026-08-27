@@ -120,7 +120,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
               <col className="w-36" />
               <col className="w-28" />
               <col className="w-24" />
-              <col className="w-16" />
+              <col className="w-12" />
               <col className="w-28" />
             </colgroup>
             <thead>
@@ -139,7 +139,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
                 <th className="px-5 py-3 text-center">Author</th>
                 <th className="px-5 py-3 text-center">Status</th>
                 <th className="px-5 py-3 text-center">Updated</th>
-                <th className="px-5 py-3 text-center" title="Unique readers">
+                <th className="px-2 py-3 text-center" title="Unique readers">
                   <Eye className="size-3.5 mx-auto" aria-hidden />
                 </th>
                 <th className="px-5 py-3 text-right">Actions</th>
@@ -208,7 +208,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
                       day: "numeric",
                     })}
                   </td>
-                  <td className="px-5 py-3 text-center text-xs text-gray-400">
+                  <td className="px-2 py-3 text-center text-xs text-gray-400">
                     {article._count.views}
                   </td>
                   <td className="px-5 py-3">
