@@ -29,7 +29,7 @@ export default async function NewArticlePage({ searchParams }: Props) {
         kind="article"
         categories={categories}
         action={createArticle}
-        redirectAfterCreate="/admin/articles/{id}/edit"
+        redirectAfterCreate={isEvent ? "/admin/events/{id}/edit" : "/admin/articles/{id}/edit"}
       />
     </div>
   )

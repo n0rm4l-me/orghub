@@ -12,6 +12,8 @@ import { PageHeader } from "@/components/ui/page-header"
 import { EmptyState } from "@/components/ui/empty-state"
 import { AdminFilters } from "@/components/admin-filters"
 import { TablePagination } from "@/components/ui/table-pagination"
+import { AdminTable } from "@/components/ui/admin-table"
+import type { AdminTableCol } from "@/components/ui/admin-table"
 
 export const metadata = { title: "Articles" }
 
@@ -20,6 +22,142 @@ const PER_PAGE = 20
 interface Props {
   searchParams: Promise<{ q?: string; status?: string; page?: string }>
 }
+
+type ArticleRow = {
+  id: string
+  title: string
+  excerpt: string | null
+  published: boolean
+  pinned: boolean
+  important: boolean
+  updatedAt: Date
+  author: { name: string | null; email: string }
+  categories: { category: { name: string } }[]
+  _count: { views: number }
+}
+
+const columns: AdminTableCol<ArticleRow>[] = [
+  {
+    id: "pin",
+    header: <Pin className="size-3.5 mx-auto" aria-hidden />,
+    headerTitle: "Pin as featured",
+    width: "w-9",
+    type: "icon",
+    render: (a) =>
+      a.published ? (
+        <PinButton initialPinned={a.pinned} onPin={pinArticle.bind(null, a.id)} />
+      ) : null,
+  },
+  {
+    id: "star",
+    header: <Star className="size-3.5 mx-auto" aria-hidden />,
+    headerTitle: "Mark as important",
+    width: "w-9",
+    type: "icon",
+    render: (a) =>
+      a.published ? (
+        <ImportantButton initialImportant={a.important} onMark={markImportant.bind(null, a.id)} />
+      ) : null,
+  },
+  {
+    id: "title",
+    header: "Title",
+    type: "text",
+    render: (a) => (
+      <>
+        <Link
+          href={`/admin/articles/${a.id}/edit`}
+          className="block truncate text-sm font-medium text-gray-900 transition-colors hover:text-brand"
+          title={a.title}
+        >
+          {a.title}
+        </Link>
+        {a.excerpt && (
+          <p className="mt-0.5 truncate text-xs text-gray-400">{a.excerpt}</p>
+        )}
+      </>
+    ),
+  },
+  {
+    id: "category",
+    header: "Category",
+    width: "w-36",
+    type: "center",
+    render: (a) =>
+      a.categories[0] ? (
+        <div className="flex flex-wrap items-center justify-center gap-1">
+          <span className="inline-block max-w-full truncate rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+            {a.categories[0].category.name}
+          </span>
+          {a.categories.length > 1 && (
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-400">
+              +{a.categories.length - 1}
+            </span>
+          )}
+        </div>
+      ) : null,
+  },
+  {
+    id: "author",
+    header: "Author",
+    width: "w-36",
+    type: "center",
+    render: (a) => (
+      <span className="truncate text-sm text-gray-500">
+        {a.author.name ?? a.author.email}
+      </span>
+    ),
+  },
+  {
+    id: "status",
+    header: "Status",
+    width: "w-28",
+    type: "center",
+    render: (a) => (
+      <StatusToggle published={a.published} onToggle={togglePublish.bind(null, a.id)} />
+    ),
+  },
+  {
+    id: "updated",
+    header: "Updated",
+    width: "w-24",
+    type: "date",
+    render: (a) =>
+      a.updatedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+  },
+  {
+    id: "views",
+    header: <Eye className="size-3.5 mx-auto" aria-hidden />,
+    headerTitle: "Unique readers",
+    width: "w-12",
+    type: "number",
+    render: (a) => a._count.views,
+  },
+  {
+    id: "actions",
+    header: "Actions",
+    width: "w-28",
+    type: "actions",
+    render: (a) => (
+      <>
+        <Link
+          href={`/admin/articles/${a.id}/edit`}
+          aria-label="Edit article"
+          className="grid size-7 place-items-center rounded-md text-gray-400 transition
+            hover:bg-gray-100 hover:text-gray-700"
+        >
+          <Pencil className="size-3.5" aria-hidden />
+        </Link>
+        <DeleteButton
+          entity="article"
+          name={a.title}
+          onDelete={deleteArticle.bind(null, a.id)}
+          variant="icon"
+        />
+      </>
+    ),
+  },
+]
 
 export default async function ArticlesPage({ searchParams }: Props) {
   await requireRole("EDITOR")
@@ -110,130 +248,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
           />
         )
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-          <table className="w-full table-fixed">
-            <colgroup>
-              <col className="w-9" />
-              <col className="w-9" />
-              <col />
-              <col className="w-36" />
-              <col className="w-36" />
-              <col className="w-28" />
-              <col className="w-24" />
-              <col className="w-12" />
-              <col className="w-28" />
-            </colgroup>
-            <thead>
-              <tr
-                className="border-b border-gray-100 text-xs font-semibold tracking-wide text-gray-400
-                  uppercase"
-              >
-                <th className="px-1 py-3 text-center" title="Pin as featured">
-                  <Pin className="size-3.5 mx-auto" aria-hidden />
-                </th>
-                <th className="px-1 py-3 text-center" title="Mark as important">
-                  <Star className="size-3.5 mx-auto" aria-hidden />
-                </th>
-                <th className="px-5 py-3 text-left">Title</th>
-                <th className="px-5 py-3 text-center">Category</th>
-                <th className="px-5 py-3 text-center">Author</th>
-                <th className="px-5 py-3 text-center">Status</th>
-                <th className="px-5 py-3 text-left">Updated</th>
-                <th className="px-2 py-3 text-center" title="Unique readers">
-                  <Eye className="size-3.5 mx-auto" aria-hidden />
-                </th>
-                <th className="px-5 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 [&_td]:align-top">
-              {articles.map((article) => (
-                <tr key={article.id} className="group transition-colors hover:bg-gray-50/70">
-                  <td className="px-0.5 py-3 !align-middle text-center">
-                    {article.published && (
-                      <span className="inline-block translate-y-px">
-                        <PinButton
-                          initialPinned={article.pinned}
-                          onPin={pinArticle.bind(null, article.id)}
-                        />
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-0.5 py-3 !align-middle text-center">
-                    {article.published && (
-                      <ImportantButton
-                        initialImportant={article.important}
-                        onMark={markImportant.bind(null, article.id)}
-                      />
-                    )}
-                  </td>
-                  <td className="py-3 pl-1 pr-5">
-                    <Link
-                      href={`/admin/articles/${article.id}/edit`}
-                      className="block truncate text-sm font-medium text-gray-900 transition-colors
-                        hover:text-brand"
-                      title={article.title}
-                    >
-                      {article.title}
-                    </Link>
-                    {article.excerpt && (
-                      <p className="mt-0.5 truncate text-xs text-gray-400">{article.excerpt}</p>
-                    )}
-                  </td>
-                  <td className="px-5 py-3 text-center">
-                    {article.categories[0] && (
-                      <div className="flex flex-wrap items-center justify-center gap-1">
-                        <span className="inline-block max-w-full truncate rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
-                          {article.categories[0].category.name}
-                        </span>
-                        {article.categories.length > 1 && (
-                          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-400">
-                            +{article.categories.length - 1}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </td>
-                  <td className="truncate px-5 py-3 text-center text-sm text-gray-500">
-                    {article.author.name ?? article.author.email}
-                  </td>
-                  <td className="px-5 py-3 text-center">
-                    <StatusToggle
-                      published={article.published}
-                      onToggle={togglePublish.bind(null, article.id)}
-                    />
-                  </td>
-                  <td className="px-5 py-3 text-xs whitespace-nowrap text-gray-400">
-                    {article.updatedAt.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </td>
-                  <td className="px-2 py-3 text-center text-xs text-gray-400">
-                    {article._count.views}
-                  </td>
-                  <td className="px-5 py-3">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <Link
-                        href={`/admin/articles/${article.id}/edit`}
-                        aria-label="Edit article"
-                        className="grid size-7 place-items-center rounded-md text-gray-400 transition
-                          hover:bg-gray-100 hover:text-gray-700"
-                      >
-                        <Pencil className="size-3.5" aria-hidden />
-                      </Link>
-                      <DeleteButton
-                        entity="article"
-                        name={article.title}
-                        onDelete={deleteArticle.bind(null, article.id)}
-                        variant="icon"
-                      />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <AdminTable columns={columns} rows={articles} rowKey={(a) => a.id} />
       )}
 
       {total > PER_PAGE && (

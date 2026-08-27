@@ -6,96 +6,106 @@ Reference for AI agents and contributors. Follow these patterns exactly — do n
 
 ## Admin tables
 
-### Column alignment
+Use the `AdminTable` component (`src/components/ui/admin-table.tsx`) for all admin list tables. Do not write raw `<table>` markup in admin list pages.
 
-| Column type | Header | Cell |
-|---|---|---|
-| Primary text (title, message, name) | `text-left` | default (left) |
-| Descriptive text (What, Path) | `text-left` | default (left) |
-| Dates (date, timestamp — may be multi-line) | `text-left` | default (left) |
-| Short metadata (status, category, role, provider, count, yes/no) | `text-center` | `text-center` on `<td>` |
-| Icon-only header (views, pin, star) | `text-center` + `mx-auto` on icon | `text-center` on `<td>` |
-| Actions | `text-right` | flex container (see below) |
+### AdminTable usage
+
+```tsx
+import { AdminTable } from "@/components/ui/admin-table"
+import type { AdminTableCol } from "@/components/ui/admin-table"
+
+type Row = { id: string; title: string; updatedAt: Date }
+
+const columns: AdminTableCol<Row>[] = [
+  {
+    id: "title",
+    header: "Title",
+    type: "text",   // optional, defaults to "text"
+    render: (row) => <Link href={`/admin/.../${row.id}/edit`}>{row.title}</Link>,
+  },
+  {
+    id: "updated",
+    header: "Updated",
+    width: "w-24",
+    type: "date",
+    render: (row) => row.updatedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+  },
+  {
+    id: "actions",
+    header: "Actions",
+    width: "w-28",
+    type: "actions",       // auto-wraps content in flex items-center justify-center gap-1.5
+    render: (row) => <><EditLink id={row.id} /><DeleteButton ... /></>,
+  },
+]
+
+// rowAlign="top" (default) for variable-height rows; "middle" for single-line rows
+<AdminTable columns={columns} rows={rows} rowKey={(r) => r.id} rowAlign="middle" />
+```
+
+### Column types
+
+| `type` | Header align | Cell classes | When to use |
+|---|---|---|---|
+| `text` (default) | left | `px-5 py-3` | Title, message, name |
+| `date` | left | `px-5 py-3 text-xs whitespace-nowrap text-gray-400` | Dates, timestamps |
+| `center` | center | `px-5 py-3 text-center` | Status, category, role, yes/no |
+| `number` | center | `px-2 py-3 text-center text-xs text-gray-400` | Counts, numeric values |
+| `icon` | center | `px-0.5 py-3 !align-middle text-center` | Icon-only columns (pin, star) |
+| `reorder` | — | `px-1.5 py-2 !align-middle` | Drag handles |
+| `actions` | center | `px-5 py-3` + `flex justify-center` wrapper | Edit/delete buttons |
 
 ### Actions cell
 
-Always use a flex container — never `text-right` directly on `<td>`:
-
+The `actions` type automatically wraps rendered content in:
 ```tsx
-<td className="px-5 py-3">
-  <div className="flex items-center justify-end gap-1.5">
-    <Link href="..." aria-label="Edit ..." className="grid size-7 place-items-center rounded-md text-gray-400 transition hover:bg-gray-100 hover:text-gray-700">
-      <Pencil className="size-3.5" aria-hidden />
-    </Link>
-    <DeleteButton entity="..." name={...} onDelete={...} variant="icon" />
-  </div>
-</td>
+<div className="flex items-center justify-center gap-1.5">{content}</div>
 ```
 
-### colgroup — every column must have a `<col>` entry
+### Column widths (reference)
 
-With `table-fixed`, unspecified columns share remaining width with other auto columns. Always declare every column, including Actions:
+Date-only columns: `w-24`. Date+time or multi-line date: `w-36`–`w-56` depending on content. Actions: `w-28`. Status: `w-24`–`w-28`. Icon-only (pin, star): `w-9`. Title column: no width (auto, takes remaining space).
 
-```tsx
-<colgroup>
-  <col />              {/* title — auto (takes remaining space) */}
-  <col className="w-44" />   {/* date */}
-  <col className="w-36" />   {/* location */}
-  <col className="w-28" />   {/* status */}
-  <col className="w-20" />   {/* actions */}
-</colgroup>
-```
+### rowAlign
 
-A missing `<col>` for the Actions column causes it to steal width from auto columns and makes the gap between the last data column and the action icons appear oversized.
+Use `rowAlign="middle"` for tables where all rows are single-line (Events, Users, Polls). Use the default `"top"` for tables with variable-height rows (Articles, Announcements, Audit).
 
 ### Location / long text cells
 
-Use a block flex container so `truncate` has a fixed parent width to measure against. `inline-flex` is not constrained by the cell width and may not truncate reliably:
+Use a block flex container so `truncate` has a fixed parent width to measure against:
 
 ```tsx
-<td className="px-5 py-3">
-  <span className="flex min-w-0 items-center gap-1 text-xs text-gray-500">
-    <Icon className="size-3 shrink-0" aria-hidden />
-    <span className="truncate" title={fullText}>{fullText}</span>
-  </span>
-</td>
+<span className="flex min-w-0 items-center gap-1 text-xs text-gray-500">
+  <Icon className="size-3 shrink-0" aria-hidden />
+  <span className="truncate" title={fullText}>{fullText}</span>
+</span>
 ```
-
-### Table wrapper
-
-```tsx
-<div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-  <table className="w-full table-fixed">
-    <colgroup>...</colgroup>
-    <thead>
-      <tr className="border-b border-gray-100 text-xs font-semibold tracking-wide text-gray-400 uppercase">
-        ...
-      </tr>
-    </thead>
-    <tbody className="divide-y divide-gray-100 [&_td]:align-top">
-      {items.map(item => (
-        <tr key={item.id} className="group transition-colors hover:bg-gray-50/70">
-          ...
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
-```
-
-`[&_td]:align-top` is required on every `<tbody>`. Without it, icon-only cells (pin, star, actions) in a multi-line row vertically center relative to the full row height, making them appear misaligned with the first line of text.
-
-### Cell padding
-
-Standard: `px-5 py-3`. Icon-only columns (pin, star): `px-1 py-3`.
-
-### Status badges / StatusToggle
-
-`StatusToggle` is centered with `text-center` on the `<td>`. It renders as an inline element.
 
 ### Row hover
 
-Always `hover:bg-gray-50/70` on `<tr>` with `transition-colors`. Add `group` when child elements react to row hover.
+AdminTable adds `hover:bg-gray-50/70 transition-colors group` to every `<tr>` automatically.
+
+---
+
+## Editor pages (edit / new)
+
+All admin edit and new pages must use `EditorHeader` (never `PageHeader`):
+
+```tsx
+import { EditorHeader } from "@/components/editor-header"
+
+<EditorHeader
+  backHref="/admin/announcements"   // the list page
+  backLabel="Announcements"         // matches the nav item label
+  title="Edit announcement"
+  liveHref={published ? `/.../${id}` : undefined}  // optional "View live" link
+/>
+```
+
+Rules:
+- `backLabel` must match the sidebar nav item label exactly (e.g. "Articles", "Events", "Polls", "Announcements", "Pages")
+- Events are articles with `eventDate` set — their edit page lives at `/admin/events/[id]/edit` and uses `backHref="/admin/events"`
+- After creating a new event (`/admin/articles/new?kind=event`), redirect to `/admin/events/{id}/edit`
 
 ---
 
