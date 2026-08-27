@@ -39,7 +39,7 @@ const columns: AdminTableCol<EventRow>[] = [
     render: (ev) => (
       <>
         <Link
-          href={`/admin/articles/${ev.id}/edit`}
+          href={`/admin/events/${ev.id}/edit`}
           className="block truncate text-sm font-medium text-gray-900 transition-colors hover:text-brand"
           title={ev.title}
         >
@@ -120,7 +120,7 @@ const columns: AdminTableCol<EventRow>[] = [
     render: (ev) => (
       <>
         <Link
-          href={`/admin/articles/${ev.id}/edit`}
+          href={`/admin/events/${ev.id}/edit`}
           aria-label="Edit event"
           className="grid size-7 place-items-center rounded-md text-gray-400 transition
             hover:bg-gray-100 hover:text-gray-700"

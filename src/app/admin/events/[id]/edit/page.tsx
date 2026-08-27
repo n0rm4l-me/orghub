@@ -12,10 +12,10 @@ interface Props {
 export async function generateMetadata({ params }: Props) {
   const { id } = await params
   const article = await db.article.findUnique({ where: { id }, select: { title: true } })
-  return { title: article ? `Edit: ${article.title}` : "Edit article" }
+  return { title: article ? `Edit: ${article.title}` : "Edit event" }
 }
 
-export default async function EditArticlePage({ params }: Props) {
+export default async function EditEventPage({ params }: Props) {
   const { id } = await params
   await requireRole("EDITOR")
 
@@ -42,13 +42,13 @@ export default async function EditArticlePage({ params }: Props) {
     }),
   ])
 
-  if (!article) notFound()
+  if (!article || !article.eventDate) notFound()
 
   return (
     <div>
       <EditorHeader
-        backHref="/admin/articles"
-        backLabel="Articles"
+        backHref="/admin/events"
+        backLabel="Events"
         title={article.title}
         {...(article.published ? { liveHref: `/articles/${article.id}` } : {})}
       />
