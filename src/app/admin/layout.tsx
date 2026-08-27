@@ -1,16 +1,17 @@
+import { headers } from "next/headers"
 import { signOut } from "@/auth"
 import Link from "next/link"
 import { LogOut, ArrowUpRight } from "lucide-react"
 import { getSettings } from "@/lib/settings"
 import { requireRole, can } from "@/lib/rbac"
 import { AdminNav } from "@/components/admin-nav"
+import { AdminMobileSidebar } from "@/components/admin-mobile-sidebar"
 import { BrandLogo } from "@/components/brand-logo"
 import { parseModules } from "@/lib/modules"
 import { gravatarUrl } from "@/lib/gravatar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  // Anyone below EDITOR has nothing to do in here; requireRole redirects them.
   const [user, settings] = await Promise.all([requireRole("EDITOR"), getSettings()])
 
   const initials =
@@ -22,12 +23,34 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       .toUpperCase()
       .slice(0, 2) || "?"
 
+  const eventsEnabled = parseModules(settings.enabledModules).has("events")
+  const pollsEnabled = parseModules(settings.enabledModules).has("polls")
+  const canAdminister = can.manageUsers(user)
+
+  async function signOutAction() {
+    "use server"
+    const hdrs = await headers()
+    const host = hdrs.get("x-forwarded-host") ?? hdrs.get("host") ?? "localhost:3000"
+    const proto = hdrs.get("x-forwarded-proto") ?? "http"
+    await signOut({ redirectTo: `${proto}://${host}/` })
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <aside className="fixed inset-y-0 left-0 flex w-60 flex-col bg-gray-900">
-        {/* px-6 rather than the strip's own padding: it puts the logo on the same
-            24px optical line as every nav icon below, which is the column the eye
-            actually follows down the rail. */}
+      {/* Mobile top bar + drawer */}
+      <AdminMobileSidebar
+        canAdminister={canAdminister}
+        eventsEnabled={eventsEnabled}
+        pollsEnabled={pollsEnabled}
+        userName={user.name ?? user.email}
+        userRole={user.role}
+        gravatarUrl={settings.gravatarsEnabled ? gravatarUrl(user.email, 28) : undefined}
+        signOutAction={signOutAction}
+        siteName={settings.siteName}
+      />
+
+      {/* Desktop sidebar */}
+      <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col bg-gray-900 md:flex">
         <div className="flex h-16 shrink-0 items-center border-b border-white/5 px-6">
           <Link
             href="/admin"
@@ -38,9 +61,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
 
         <AdminNav
-          canAdminister={can.manageUsers(user)}
-          eventsEnabled={parseModules(settings.enabledModules).has("events")}
-          pollsEnabled={parseModules(settings.enabledModules).has("polls")}
+          canAdminister={canAdminister}
+          eventsEnabled={eventsEnabled}
+          pollsEnabled={pollsEnabled}
         />
 
         <div className="shrink-0 border-t border-white/5 p-3">
@@ -64,12 +87,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <p className="truncate text-xs font-medium text-white">{user.name ?? user.email}</p>
               <p className="text-[11px] text-gray-500 capitalize">{user.role.toLowerCase()}</p>
             </div>
-            <form
-              action={async () => {
-                "use server"
-                await signOut({ redirectTo: "/" })
-              }}
-            >
+            <form action={signOutAction}>
               <button
                 type="submit"
                 title="Sign out"
@@ -84,8 +102,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </aside>
 
-      <div className="ml-60">
-        <div className="mx-auto max-w-6xl px-8 py-8">{children}</div>
+      {/* Main content */}
+      <div className="md:ml-60">
+        <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8">{children}</div>
       </div>
     </div>
   )

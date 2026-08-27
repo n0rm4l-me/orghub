@@ -43,8 +43,8 @@ export function AdminTable<T,>({
   rowAlign?: "top" | "middle"
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-      <table className="w-full table-fixed">
+    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+      <table className="w-full table-fixed min-w-[600px]">
         <colgroup>
           {columns.map((col) => (
             <col key={col.id} className={col.width} />
