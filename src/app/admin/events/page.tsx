@@ -36,26 +36,31 @@ const columns: AdminTableCol<EventRow>[] = [
     id: "title",
     header: "Title",
     type: "text",
-    render: (ev) => (
-      <>
-        <Link
-          href={`/admin/events/${ev.id}/edit`}
-          className="block truncate text-sm font-medium text-gray-900 transition-colors hover:text-brand"
-          title={ev.title}
-        >
-          {ev.title}
-        </Link>
-        <p className="mt-0.5 truncate text-xs text-gray-400">
-          {ev.author.name ?? ev.author.email}
-        </p>
-      </>
-    ),
+    render: (ev) => {
+      const start = new Date(ev.eventDate!)
+      const dateShort = start.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+      return (
+        <>
+          <Link
+            href={`/admin/events/${ev.id}/edit`}
+            className="block truncate text-sm font-medium text-gray-900 transition-colors hover:text-brand"
+            title={ev.title}
+          >
+            {ev.title}
+          </Link>
+          <p className="mt-0.5 truncate text-xs text-gray-400">
+            {dateShort} · {ev.author.name ?? ev.author.email}
+          </p>
+        </>
+      )
+    },
   },
   {
     id: "date",
     header: "Date",
     width: "w-44",
     type: "text",
+    hideOnMobile: true,
     render: (ev) => {
       const start = new Date(ev.eventDate!)
       const end = ev.eventEndDate ? new Date(ev.eventEndDate) : null
