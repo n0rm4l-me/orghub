@@ -44,11 +44,13 @@ export default async function EditArticlePage({ params }: Props) {
 
   if (!article) notFound()
 
+  const isEvent = Boolean(article.eventDate)
+
   return (
     <div>
       <EditorHeader
-        backHref="/admin/articles"
-        backLabel="Articles"
+        backHref={isEvent ? "/admin/events" : "/admin/articles"}
+        backLabel={isEvent ? "Events" : "Articles"}
         title={article.title}
         {...(article.published ? { liveHref: `/articles/${article.id}` } : {})}
       />
