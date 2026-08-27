@@ -88,7 +88,7 @@ export async function Header() {
         <HeaderNav items={items} />
 
         {/* Plain GET form: search works with JavaScript disabled. */}
-        <form action="/" method="get" role="search" className="ml-auto hidden sm:block">
+        <form action="/" method="get" role="search" className="ml-auto hidden md:block">
           <div className="relative">
             <Search
               className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-white/60"
