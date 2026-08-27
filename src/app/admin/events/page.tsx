@@ -91,6 +91,7 @@ const columns: AdminTableCol<EventRow>[] = [
     header: "Location",
     width: "w-36",
     type: "text",
+    hideOnMobile: true,
     render: (ev) =>
       ev.eventLocation ? (
         <span className="flex min-w-0 items-center gap-1 text-xs text-gray-500">

@@ -86,6 +86,7 @@ const columns: AdminTableCol<AuditRow>[] = [
     header: "Who",
     width: "w-48",
     type: "text",
+    hideOnMobile: true,
     render: (entry) => (
       <p className="truncate text-sm text-gray-700">
         {entry.user?.name ?? entry.user?.email ?? "Deleted user"}
@@ -134,6 +135,7 @@ const columns: AdminTableCol<AuditRow>[] = [
     header: "From",
     width: "w-32",
     type: "center",
+    hideOnMobile: true,
     render: (entry) => (
       <span className="font-mono text-xs text-gray-300">{entry.ip ?? "—"}</span>
     ),

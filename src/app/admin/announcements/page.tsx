@@ -65,6 +65,7 @@ const columns: AdminTableCol<AnnouncementRow>[] = [
     header: "Color",
     width: "w-24",
     type: "center",
+    hideOnMobile: true,
     render: (a) => (
       <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 capitalize">
         <span
@@ -80,6 +81,7 @@ const columns: AdminTableCol<AnnouncementRow>[] = [
     header: "Schedule",
     width: "w-56",
     type: "text",
+    hideOnMobile: true,
     render: (a) =>
       a.showFrom || a.showUntil ? (
         <div className="space-y-0.5 text-xs text-gray-500">

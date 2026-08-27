@@ -28,6 +28,7 @@ export interface AdminTableCol<T> {
   headerTitle?: string
   width?: string
   type?: ColType
+  hideOnMobile?: boolean
   render: (row: T) => ReactNode
 }
 
@@ -44,7 +45,7 @@ export function AdminTable<T,>({
 }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-      <table className="w-full table-fixed min-w-[600px]">
+      <table className="w-full table-fixed">
         <colgroup>
           {columns.map((col) => (
             <col key={col.id} className={col.width} />
@@ -55,9 +56,13 @@ export function AdminTable<T,>({
             {columns.map((col) => {
               const type = col.type ?? "text"
               return (
-                <th key={col.id} className={HEADER_CLASS[type]} title={col.headerTitle}>
-                  {col.header}
-                </th>
+                <th
+                key={col.id}
+                className={`${HEADER_CLASS[type]}${col.hideOnMobile ? " hidden sm:table-cell" : ""}`}
+                title={col.headerTitle}
+              >
+                {col.header}
+              </th>
               )
             })}
           </tr>
@@ -69,7 +74,10 @@ export function AdminTable<T,>({
                 const type = col.type ?? "text"
                 const content = col.render(row)
                 return (
-                  <td key={col.id} className={CELL_CLASS[type]}>
+                  <td
+                    key={col.id}
+                    className={`${CELL_CLASS[type]}${col.hideOnMobile ? " hidden sm:table-cell" : ""}`}
+                  >
                     {type === "actions" ? (
                       <div className="flex items-center justify-center gap-1.5">{content}</div>
                     ) : (

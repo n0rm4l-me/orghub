@@ -119,6 +119,7 @@ export default async function AdminPagesPage({ searchParams }: Props) {
       header: "Path",
       width: "w-56",
       type: "text",
+      hideOnMobile: true,
       render: (row) => (
         <span className="block truncate font-mono text-xs text-gray-400">
           /pages/{row.slug}
@@ -142,6 +143,7 @@ export default async function AdminPagesPage({ searchParams }: Props) {
       header: "In menu",
       width: "w-28",
       type: "center",
+      hideOnMobile: true,
       render: (row) =>
         row.showInNav && row.published ? (
           <span className="text-xs font-medium text-gray-600">Yes</span>
@@ -154,6 +156,7 @@ export default async function AdminPagesPage({ searchParams }: Props) {
       header: "Updated",
       width: "w-24",
       type: "date",
+      hideOnMobile: true,
       render: (row) =>
         new Date(row.updatedAt).toLocaleDateString("en-US", {
           month: "short",

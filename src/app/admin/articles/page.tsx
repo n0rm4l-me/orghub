@@ -61,6 +61,7 @@ const columns: AdminTableCol<ArticleRow>[] = [
     header: "Category",
     width: "w-36",
     type: "center",
+    hideOnMobile: true,
     render: (a) =>
       a.categories[0] ? (
         <div className="flex flex-wrap items-center justify-center gap-1">
@@ -80,6 +81,7 @@ const columns: AdminTableCol<ArticleRow>[] = [
     header: "Author",
     width: "w-36",
     type: "center",
+    hideOnMobile: true,
     render: (a) => (
       <span className="truncate text-sm text-gray-500">
         {a.author.name ?? a.author.email}
@@ -100,6 +102,7 @@ const columns: AdminTableCol<ArticleRow>[] = [
     header: "Updated",
     width: "w-24",
     type: "date",
+    hideOnMobile: true,
     render: (a) =>
       a.updatedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
   },
@@ -109,6 +112,7 @@ const columns: AdminTableCol<ArticleRow>[] = [
     headerTitle: "Unique readers",
     width: "w-12",
     type: "number",
+    hideOnMobile: true,
     render: (a) => a._count.views,
   },
   {
