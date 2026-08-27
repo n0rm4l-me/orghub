@@ -88,11 +88,18 @@ export function PollCard({ poll, options, totalVotes, initialVotedOptionIds, com
   }
 
   return (
-    <div className={`rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900 ${compact ? "p-3" : "px-4 pb-4 pt-3"}`}>
-      <p className="mb-1 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-        <BarChart2 className="size-3" aria-hidden />
-        Poll
-      </p>
+    <div className={`rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900 ${compact ? "p-5" : "px-4 pb-4 pt-3"}`}>
+      {compact ? (
+        <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+          <BarChart2 className="size-4 text-brand" aria-hidden />
+          Poll
+        </h2>
+      ) : (
+        <p className="mb-1 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+          <BarChart2 className="size-3" aria-hidden />
+          Poll
+        </p>
+      )}
       <h3 className={`font-semibold text-gray-900 dark:text-gray-100 ${compact ? "text-sm" : "text-base"}`}>
         {poll.question}
       </h3>

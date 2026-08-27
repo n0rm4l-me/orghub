@@ -152,7 +152,7 @@ export default async function AdminPagesPage({ searchParams }: Props) {
     {
       id: "updated",
       header: "Updated",
-      width: "w-32",
+      width: "w-24",
       type: "date",
       render: (row) =>
         new Date(row.updatedAt).toLocaleDateString("en-US", {

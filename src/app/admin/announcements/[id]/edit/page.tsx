@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 import { db } from "@/lib/db"
 import { requireRole } from "@/lib/rbac"
 import { updateAnnouncement } from "@/lib/actions/announcements"
-import { PageHeader } from "@/components/ui/page-header"
+import { EditorHeader } from "@/components/editor-header"
 import { AnnouncementForm } from "../../_form"
 
 interface Props {
@@ -23,7 +23,7 @@ export default async function EditAnnouncementPage({ params }: Props) {
 
   return (
     <div>
-      <PageHeader title="Edit announcement" description="Update message, schedule, or style." />
+      <EditorHeader backHref="/admin/announcements" backLabel="Announcements" title="Edit announcement" />
       <AnnouncementForm
         values={announcement}
         action={updateAnnouncement.bind(null, id)}

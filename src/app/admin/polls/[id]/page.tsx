@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 import { db } from "@/lib/db"
 import { requireRole } from "@/lib/rbac"
-import { PageHeader } from "@/components/ui/page-header"
+import { EditorHeader } from "@/components/editor-header"
 import { PollForm } from "@/components/poll-form"
 import { PollResults } from "@/components/poll-results"
 
@@ -40,7 +40,7 @@ export default async function EditPollPage({ params }: Props) {
 
   return (
     <>
-      <PageHeader title="Edit poll" />
+      <EditorHeader backHref="/admin/polls" backLabel="Polls" title="Edit poll" />
       <div className="space-y-8">
         <PollForm
           poll={{
