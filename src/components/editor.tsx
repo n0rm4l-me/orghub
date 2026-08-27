@@ -185,7 +185,7 @@ function InsertPollButton({ editor }: { editor: ReturnType<typeof useEditor> }) 
         Poll
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-20 mt-1 w-72 rounded-lg border border-gray-200 bg-white shadow-lg">
+        <div className="absolute right-0 top-full z-20 mt-1 w-72 rounded-lg border border-gray-200 bg-white shadow-lg">
           {loading ? (
             <p className="px-3 py-2 text-xs text-gray-400">Loading polls...</p>
           ) : !polls?.length ? (
