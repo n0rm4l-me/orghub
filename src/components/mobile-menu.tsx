@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Menu, X, Search, ChevronRight } from "lucide-react"
@@ -49,7 +50,7 @@ export function MobileMenu({ items }: Props) {
         {open ? <X className="size-5" aria-hidden /> : <Menu className="size-5" aria-hidden />}
       </button>
 
-      {open && (
+      {open && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 z-[100] flex flex-col bg-brand md:hidden">
           {/* Top bar — mirrors the header height */}
           <div className="flex h-14 shrink-0 items-center justify-between px-4">
@@ -153,7 +154,8 @@ export function MobileMenu({ items }: Props) {
               </div>
             </div>
           </nav>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )
