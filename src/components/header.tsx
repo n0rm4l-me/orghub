@@ -1,5 +1,7 @@
 import Link from "next/link"
 import { Search } from "lucide-react"
+import { headers } from "next/headers"
+import { redirect } from "next/navigation"
 import { db } from "@/lib/db"
 import { getSettings } from "@/lib/settings"
 import { getNavPages } from "@/lib/nav"
@@ -118,7 +120,10 @@ export async function Header() {
               canAdmin={can.manageContent(user)}
               signOutAction={async () => {
                 "use server"
-                await signOut({ redirectTo: "/" })
+                const hdrs = await headers()
+                const host = hdrs.get("x-forwarded-host") ?? hdrs.get("host") ?? "localhost:3000"
+                const proto = hdrs.get("x-forwarded-proto") ?? "http"
+                await signOut({ redirectTo: `${proto}://${host}/` })
               }}
             />
           ) : (
