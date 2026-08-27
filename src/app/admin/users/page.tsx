@@ -103,7 +103,7 @@ export default async function UsersPage({ searchParams }: Props) {
                 <th className="px-5 py-3 text-center">Role</th>
                 <th className="px-5 py-3 text-center">Sign-in</th>
                 <th className="px-5 py-3 text-center">Status</th>
-                <th className="px-5 py-3 text-center">Joined</th>
+                <th className="px-5 py-3 text-left">Joined</th>
                 <th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -160,7 +160,7 @@ export default async function UsersPage({ searchParams }: Props) {
                         {user.active ? "Active" : "Disabled"}
                       </span>
                     </td>
-                    <td className="px-5 py-3 text-center text-xs whitespace-nowrap text-gray-400">
+                    <td className="px-5 py-3 text-xs whitespace-nowrap text-gray-400">
                       {user.createdAt.toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",

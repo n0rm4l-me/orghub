@@ -115,7 +115,7 @@ export default async function AdminPagesPage({ searchParams }: Props) {
                 <th className="px-5 py-3 text-left">Path</th>
                 <th className="px-5 py-3 text-center">Status</th>
                 <th className="px-5 py-3 text-center">In menu</th>
-                <th className="px-5 py-3 text-center">Updated</th>
+                <th className="px-5 py-3 text-left">Updated</th>
                 <th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -175,7 +175,7 @@ function PageRow({
   return (
     <tr className="transition-colors hover:bg-gray-50/70">
       {showReorder && (
-        <td className="px-1.5 py-2">
+        <td className="px-1.5 py-2 !align-middle">
           <PageReorder pageId={page.id} label={page.title} isFirst={isFirst} isLast={isLast} />
         </td>
       )}
@@ -213,7 +213,7 @@ function PageRow({
           <span className="text-xs text-gray-300">No</span>
         )}
       </td>
-      <td className="px-5 py-3 text-center text-xs text-gray-400">
+      <td className="px-5 py-3 text-xs text-gray-400">
         {new Date(page.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
       </td>
       <td className="px-5 py-3">

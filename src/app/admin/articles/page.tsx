@@ -138,7 +138,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
                 <th className="px-5 py-3 text-center">Category</th>
                 <th className="px-5 py-3 text-center">Author</th>
                 <th className="px-5 py-3 text-center">Status</th>
-                <th className="px-5 py-3 text-center">Updated</th>
+                <th className="px-5 py-3 text-left">Updated</th>
                 <th className="px-2 py-3 text-center" title="Unique readers">
                   <Eye className="size-3.5 mx-auto" aria-hidden />
                 </th>
@@ -202,7 +202,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
                       onToggle={togglePublish.bind(null, article.id)}
                     />
                   </td>
-                  <td className="px-5 py-3 text-center text-xs whitespace-nowrap text-gray-400">
+                  <td className="px-5 py-3 text-xs whitespace-nowrap text-gray-400">
                     {article.updatedAt.toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",

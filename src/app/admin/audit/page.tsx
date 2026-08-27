@@ -141,7 +141,7 @@ export default async function AuditPage({ searchParams }: Props) {
                 className="border-b border-gray-100 text-xs font-semibold tracking-wide text-gray-400
                   uppercase"
               >
-                <th className="px-5 py-3 text-center">When</th>
+                <th className="px-5 py-3 text-left">When</th>
                 <th className="px-5 py-3 text-left">Who</th>
                 <th className="px-5 py-3 text-left">What</th>
                 <th className="px-5 py-3 text-center">From</th>
@@ -165,7 +165,7 @@ export default async function AuditPage({ searchParams }: Props) {
 
                 return (
                   <tr key={entry.id} className="transition-colors hover:bg-gray-50/70">
-                    <td className="px-5 py-3 text-center text-xs whitespace-nowrap text-gray-400">
+                    <td className="px-5 py-3 text-xs whitespace-nowrap text-gray-400">
                       {entry.createdAt.toLocaleString("en-US", {
                         month: "short",
                         day: "numeric",
