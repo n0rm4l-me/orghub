@@ -182,7 +182,7 @@ export default async function AdminEventsPage({ searchParams }: Props) {
         description={`${publishedCount} published · ${draftCount} draft${draftCount === 1 ? "" : "s"}`}
         action={
           <Link
-            href="/admin/articles/new?kind=event"
+            href="/admin/events/new"
             className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3.5 py-2 text-sm
               font-medium text-white transition hover:brightness-95 active:brightness-90"
           >
@@ -212,7 +212,7 @@ export default async function AdminEventsPage({ searchParams }: Props) {
             icon={CalendarDays}
             title="No events yet"
             description="Create an article and fill in the Event section to add it to the calendar."
-            action={{ label: "Create first event", href: "/admin/articles/new?kind=event" }}
+            action={{ label: "Create first event", href: "/admin/events/new" }}
           />
         )
       ) : (
