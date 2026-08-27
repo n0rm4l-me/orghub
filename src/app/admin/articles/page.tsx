@@ -118,16 +118,20 @@ const columns: AdminTableCol<ArticleRow>[] = [
     type: "actions",
     render: (a) => (
       <>
-        <PinButton
-          initialPinned={a.pinned}
-          onPin={pinArticle.bind(null, a.id)}
-          className={`grid size-7 place-items-center rounded-md hover:bg-gray-100${a.published ? "" : " invisible"}`}
-        />
-        <ImportantButton
-          initialImportant={a.important}
-          onMark={markImportant.bind(null, a.id)}
-          className={`grid size-7 place-items-center rounded-md hover:bg-gray-100${a.published ? "" : " invisible"}`}
-        />
+        {a.published && (
+          <PinButton
+            initialPinned={a.pinned}
+            onPin={pinArticle.bind(null, a.id)}
+            className="grid size-7 place-items-center rounded-md hover:bg-gray-100"
+          />
+        )}
+        {a.published && (
+          <ImportantButton
+            initialImportant={a.important}
+            onMark={markImportant.bind(null, a.id)}
+            className="grid size-7 place-items-center rounded-md hover:bg-gray-100"
+          />
+        )}
         <Link
           href={`/admin/articles/${a.id}/edit`}
           aria-label="Edit article"
