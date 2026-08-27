@@ -133,9 +133,6 @@
   }
   html {
     @apply font-sans;
-    /* Reserve the scrollbar gutter so navigating between a short and a tall
-       page does not shift the layout horizontally. */
-    scrollbar-gutter: stable;
   }
 
   /* Tailwind v4's preflight sets `cursor: default` on buttons to match the

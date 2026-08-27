@@ -50,7 +50,7 @@ export function MobileMenu({ items }: Props) {
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-40 flex flex-col bg-brand md:hidden">
+        <div className="fixed inset-0 z-[100] flex flex-col bg-brand md:hidden">
           {/* Top bar — mirrors the header height */}
           <div className="flex h-14 shrink-0 items-center justify-between px-4">
             <span className="text-base font-semibold text-white">Menu</span>
