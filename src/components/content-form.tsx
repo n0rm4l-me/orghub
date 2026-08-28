@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Editor } from "@/components/editor"
+import { MediaPicker } from "@/components/media-picker"
 import { Loader2, Check, Circle, CircleDot } from "lucide-react"
 import { useAction } from "@/lib/use-action"
 import { toast } from "@/components/ui/toaster"
@@ -260,22 +261,12 @@ export function ContentForm({
 
           {kind === "article" && (
             <section className="rounded-xl border border-gray-200 bg-white p-4">
-              <h2 className="mb-2.5 text-sm font-semibold text-gray-900">Cover image</h2>
-              {coverImageUrl && (
-                <div className="mb-2.5 overflow-hidden rounded-lg">
-                  <img src={coverImageUrl} alt="" className="aspect-video w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }} />
-                </div>
-              )}
-              <input
+              <MediaPicker
+                label="Cover image"
                 name="coverImage"
-                type="url"
                 value={coverImageUrl}
-                onChange={(e) => { setCoverImageUrl(e.target.value); setDirty(true) }}
-                placeholder="https://…"
-                aria-label="Cover image URL"
-                className="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-700 outline-none placeholder:text-gray-300 focus:border-brand focus:ring-1 focus:ring-brand"
+                onChange={(url) => { setCoverImageUrl(url); setDirty(true) }}
               />
-              <p className="mt-1.5 text-[11px] text-gray-400">Paste an image URL.</p>
             </section>
           )}
 

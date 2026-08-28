@@ -3,23 +3,23 @@ import type { ReactNode } from "react"
 type ColType = "text" | "date" | "center" | "number" | "icon" | "reorder" | "actions"
 
 const HEADER_CLASS: Record<ColType, string> = {
-  text:    "px-5 py-3 text-left",
-  date:    "px-5 py-3 text-left",
-  center:  "px-5 py-3 text-center",
+  text:    "px-4 sm:px-5 py-3 text-left",
+  date:    "px-4 sm:px-5 py-3 text-left",
+  center:  "px-4 sm:px-5 py-3 text-center",
   number:  "px-2 py-3 text-center",
   icon:    "px-1 py-3 text-center",
   reorder: "px-2 py-3",
-  actions: "px-5 py-3 text-center",
+  actions: "px-2 sm:px-5 py-3 text-center",
 }
 
 const CELL_CLASS: Record<ColType, string> = {
-  text:    "px-5 py-3",
-  date:    "px-5 py-3 text-xs whitespace-nowrap text-gray-400",
-  center:  "px-5 py-3 text-center",
-  number:  "px-2 py-3 text-center text-xs text-gray-400",
+  text:    "px-4 sm:px-5 py-3",
+  date:    "px-4 sm:px-5 py-3 text-sm whitespace-nowrap text-gray-600",
+  center:  "px-4 sm:px-5 py-3 text-center",
+  number:  "px-2 py-3 text-center text-sm font-medium text-gray-600",
   icon:    "px-0.5 py-3 !align-middle text-center",
   reorder: "px-1.5 py-2 !align-middle",
-  actions: "px-5 py-3",
+  actions: "px-2 sm:px-5 py-3",
 }
 
 export interface AdminTableCol<T> {

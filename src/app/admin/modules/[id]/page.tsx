@@ -6,6 +6,9 @@ import { getSettings } from "@/lib/settings"
 import { MODULES, parseModules, type ModuleId } from "@/lib/modules"
 import { ModuleToggle } from "@/components/module-toggle"
 import { KudosSettingsForm } from "@/components/kudos-settings-form"
+import { KudosRedeemTypesPanel } from "@/components/kudos-redeem-types-panel"
+import { TranslationSettingsForm } from "@/components/translation-settings-form"
+import { getRedeemTypes } from "@/lib/actions/kudos"
 
 interface Props {
   params: Promise<{ id: string }>
@@ -24,7 +27,10 @@ export default async function ModuleSettingsPage({ params }: Props) {
   const mod = MODULES[id as ModuleId]
   if (!mod) notFound()
 
-  const settings = await getSettings()
+  const [settings, redeemTypes] = await Promise.all([
+    getSettings(),
+    mod.id === "kudos" ? getRedeemTypes() : Promise.resolve([]),
+  ])
   const enabled = parseModules(settings.enabledModules)
 
   return (
@@ -101,6 +107,13 @@ export default async function ModuleSettingsPage({ params }: Props) {
           </div>
         )}
 
+        {mod.id === "translation" && (
+          <TranslationSettingsForm
+            provider={settings.translationProvider}
+            languages={settings.translationLanguages}
+          />
+        )}
+
         {mod.id === "kudos" && (
           <>
             <KudosSettingsForm
@@ -110,6 +123,7 @@ export default async function ModuleSettingsPage({ params }: Props) {
               redeemWebhook={settings.kudosRedeemWebhook ?? ""}
               redeemRateLabel={settings.kudosRedeemRateLabel ?? ""}
             />
+            <KudosRedeemTypesPanel initialTypes={redeemTypes} />
             <div className="rounded-xl border border-gray-200 bg-white px-5 py-5">
               <h2 className="mb-3 text-sm font-semibold text-gray-900">History</h2>
               <p className="mb-4 text-xs leading-relaxed text-gray-500">

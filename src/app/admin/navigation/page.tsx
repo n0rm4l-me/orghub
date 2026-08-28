@@ -7,7 +7,7 @@ import { NavManager } from "@/components/nav-manager"
 
 export const metadata = { title: "Navigation" }
 
-const MODULE_META: Record<string, string> = { events: "Calendar", polls: "Polls" }
+const MODULE_META: Record<string, string> = { events: "Calendar", polls: "Polls", kudos: "Kudos" }
 
 export default async function NavigationPage() {
   await requireRole("EDITOR")
@@ -29,9 +29,9 @@ export default async function NavigationPage() {
   const navOrder = (settings.navOrder ?? "events,polls").split(",").filter(Boolean)
 
   // Build ordered list of enabled module items, with visibility flag
-  const allModuleIds = ["events", "polls"].filter((id) => enabled.has(id as "events" | "polls"))
+  const allModuleIds = (["events", "polls", "kudos"] as const).filter((id) => enabled.has(id))
   const orderedModuleIds = [
-    ...navOrder.filter((id) => allModuleIds.includes(id)),
+    ...navOrder.filter((id) => (allModuleIds as string[]).includes(id)),
     ...allModuleIds.filter((id) => !navOrder.includes(id)),
   ]
   const moduleItems = orderedModuleIds.map((id) => ({

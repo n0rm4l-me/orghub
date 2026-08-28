@@ -1,10 +1,10 @@
 import { db } from "@/lib/db"
 import Link from "next/link"
-import type { LucideIcon } from "lucide-react"
-import { Plus, FileText, Files, Users, Tag, ArrowRight, CalendarDays, Eye } from "lucide-react"
+import { Plus, FileText, Files, Users, Tag, ArrowRight, CalendarDays, Eye, Award } from "lucide-react"
 import { requireRole, can } from "@/lib/rbac"
 import { PageHeader } from "@/components/ui/page-header"
 import { EmptyState } from "@/components/ui/empty-state"
+import { StatCard } from "@/components/ui/stat-card"
 import { getSettings } from "@/lib/settings"
 import { parseModules } from "@/lib/modules"
 
@@ -13,6 +13,7 @@ export const metadata = { title: "Dashboard" }
 export default async function AdminDashboard() {
   const user = await requireRole("EDITOR")
 
+  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
   const [published, drafts, pageCount, categoryCount, activeUsers, recent, pinnedCount, upcomingCount, settings, totalViews, topArticles] = await Promise.all([
     db.article.count({ where: { published: true } }),
     db.article.count({ where: { published: false } }),
@@ -49,6 +50,11 @@ export default async function AdminDashboard() {
       },
     }),
   ])
+
+  const enabledModules = parseModules(settings.enabledModules)
+  const kudosThisMonth = enabledModules.has("kudos")
+    ? await db.kudos.count({ where: { createdAt: { gte: monthStart } } })
+    : 0
 
   return (
     <div>
@@ -87,13 +93,22 @@ export default async function AdminDashboard() {
           value={categoryCount}
           sub="Topics on the feed"
         />
-        {parseModules(settings.enabledModules).has("events") && (
+        {enabledModules.has("events") && (
           <StatCard
             href="/admin/events"
             icon={CalendarDays}
             label="Upcoming events"
             value={upcomingCount}
             sub={pinnedCount > 0 ? `${pinnedCount} pinned` : "None pinned"}
+          />
+        )}
+        {enabledModules.has("kudos") && (
+          <StatCard
+            href="/admin/kudos"
+            icon={Award}
+            label="Kudos this month"
+            value={kudosThisMonth}
+            sub="Recognitions sent"
           />
         )}
         <StatCard
@@ -220,42 +235,6 @@ export default async function AdminDashboard() {
   )
 }
 
-function StatCard({
-  href,
-  icon: Icon,
-  label,
-  value,
-  sub,
-}: {
-  href?: string
-  icon: LucideIcon
-  label: string
-  value: number
-  sub: string
-}) {
-  const body = (
-    <>
-      <div className="flex items-start justify-between">
-        <p className="text-sm text-gray-500">{label}</p>
-        <Icon className="size-4 text-gray-300" aria-hidden />
-      </div>
-      <p className="mt-2 text-3xl font-semibold tabular-nums text-gray-900">{value}</p>
-      <p className="mt-0.5 text-xs text-gray-400">{sub}</p>
-    </>
-  )
-
-  const shell = "rounded-xl border border-gray-200 bg-white p-4"
-
-  // Cards that lead somewhere are links; the rest stay inert rather than looking
-  // clickable and doing nothing.
-  return href ? (
-    <Link href={href} className={`${shell} transition hover:border-gray-300 hover:shadow-sm`}>
-      {body}
-    </Link>
-  ) : (
-    <div className={shell}>{body}</div>
-  )
-}
 
 function greeting(): string {
   const hour = new Date().getHours()

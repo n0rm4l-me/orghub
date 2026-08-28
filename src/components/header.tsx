@@ -13,6 +13,7 @@ import { UserMenu } from "@/components/user-menu"
 import { HeaderContainer } from "@/components/portal-width"
 import { MobileMenu } from "@/components/mobile-menu"
 import { CustomizeMenu } from "@/components/customize-menu"
+import { NotificationBell } from "@/components/notification-bell"
 import { signOut } from "@/auth"
 import { gravatarUrl } from "@/lib/gravatar"
 
@@ -112,6 +113,7 @@ export async function Header() {
 
         <div className="flex shrink-0 items-center gap-1 ml-auto md:ml-0">
           <div className="hidden md:block"><CustomizeMenu /></div>
+          {user && <NotificationBell />}
           <MobileMenu items={items} />
           {user ? (
             <UserMenu

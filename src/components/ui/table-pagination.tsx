@@ -6,6 +6,8 @@ interface Props {
   totalPages: number
   /** Current query string values, carried across page changes. */
   params: Record<string, string | undefined>
+  /** URL param name to use for the page number. Defaults to "page". */
+  pageParam?: string
 }
 
 /**
@@ -14,13 +16,13 @@ interface Props {
  * Both ends stay rendered when unavailable, styled as disabled, so the row does
  * not reflow between the first, middle, and last page.
  */
-export function TablePagination({ basePath, page, totalPages, params }: Props) {
+export function TablePagination({ basePath, page, totalPages, params, pageParam = "page" }: Props) {
   const href = (n: number) => {
     const search = new URLSearchParams()
     for (const [key, value] of Object.entries(params)) {
-      if (value && key !== "page") search.set(key, value)
+      if (value && key !== pageParam) search.set(key, value)
     }
-    if (n > 1) search.set("page", String(n))
+    if (n > 1) search.set(pageParam, String(n))
     const qs = search.toString()
     return qs ? `${basePath}?${qs}` : basePath
   }

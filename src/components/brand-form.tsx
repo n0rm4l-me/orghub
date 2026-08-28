@@ -5,6 +5,7 @@ import { Check, Loader2 } from "lucide-react"
 import { saveSettings } from "@/lib/actions/settings"
 import { useAction } from "@/lib/use-action"
 import { BrandLogo } from "@/components/brand-logo"
+import { MediaPickerField } from "@/components/media-picker"
 import { Field, inputClass } from "@/components/ui/field"
 
 const PRESETS = [
@@ -84,39 +85,23 @@ export function BrandForm({ siteName, logoUrl, logoOnLightUrl, primaryColor }: P
               />
             </Field>
 
-            <Field
-              label="Header logo URL"
-              htmlFor="logoUrl"
-              hint="PNG, SVG, or WebP on the brand colour — normally the white version. Leave empty to use a lettermark."
-            >
-              <input
-                id="logoUrl"
-                name="logoUrl"
-                type="url"
-                value={logo}
-                onChange={(e) => setLogo(e.target.value)}
-                placeholder="https://example.com/logo-white.svg"
-                className={inputClass}
-                spellCheck={false}
-              />
-            </Field>
+            <div>
+              <p className="mb-1 text-xs font-medium text-gray-700">Logo for dark background</p>
+              <p className="mb-2 text-[11px] text-gray-400">
+                Shown in the portal header. Use a light (white) version — it sits on the brand colour.
+              </p>
+              <input type="hidden" name="logoUrl" value={logo} />
+              <MediaPickerField value={logo} onChange={setLogo} tone="dark" />
+            </div>
 
-            <Field
-              label="Logo for white backgrounds"
-              htmlFor="logoOnLightUrl"
-              hint="Used on the sign-in screen. Leave empty to show the lettermark there."
-            >
-              <input
-                id="logoOnLightUrl"
-                name="logoOnLightUrl"
-                type="url"
-                value={lightLogo}
-                onChange={(e) => setLightLogo(e.target.value)}
-                placeholder="https://example.com/logo-colour.svg"
-                className={inputClass}
-                spellCheck={false}
-              />
-            </Field>
+            <div>
+              <p className="mb-1 text-xs font-medium text-gray-700">Logo for light background</p>
+              <p className="mb-2 text-[11px] text-gray-400">
+                Shown on the sign-in screen. Use a dark or coloured version — it sits on white.
+              </p>
+              <input type="hidden" name="logoOnLightUrl" value={lightLogo} />
+              <MediaPickerField value={lightLogo} onChange={setLightLogo} />
+            </div>
 
             <div className="space-y-3 border-t border-gray-100 pt-4">
               <p className="text-sm font-medium text-gray-800">Brand colour</p>
@@ -186,7 +171,7 @@ export function BrandForm({ siteName, logoUrl, logoOnLightUrl, primaryColor }: P
           </div>
 
           {/* Right: live preview */}
-          <div className="bg-gray-50/60 p-5 md:sticky md:top-0 md:self-start">
+          <div className="bg-white p-5 md:sticky md:top-0 md:self-start">
             <p className="mb-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Preview</p>
             <div className="space-y-2">
               <div className="overflow-hidden rounded-lg" style={{ backgroundColor: color }}>

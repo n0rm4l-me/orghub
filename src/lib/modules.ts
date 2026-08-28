@@ -19,6 +19,11 @@ export const MODULES = {
     label: "Kudos",
     description: "Let employees recognise each other with coins, company values, and a public wall.",
   },
+  translation: {
+    id: "translation" as const,
+    label: "Article translation",
+    description: "On-demand AI translation of articles via configurable provider.",
+  },
 } as const
 
 export type ModuleId = keyof typeof MODULES

@@ -52,4 +52,5 @@ skills-lock.json
 CLAUDE.md
 AGENTS.md
 .claude/
+STYLE_GUIDE.md
 deploy/values-override.yaml

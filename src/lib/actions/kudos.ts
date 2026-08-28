@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { requireRole, getCurrentUser } from "@/lib/rbac"
 import { getSettings } from "@/lib/settings"
 import { parseModules } from "@/lib/modules"
+import { createNotification } from "@/lib/notifications"
 import { revalidatePath } from "next/cache"
 import { type ActionResult, ok, okWith, fail } from "@/lib/actions/types"
 
@@ -131,16 +132,26 @@ export async function sendKudos(formData: FormData): Promise<ActionResult> {
     }
   }
 
-  await db.kudos.create({
+  const kudos = await db.kudos.create({
     data: { fromId: user.id, toId, amount, message, value },
+    select: { from: { select: { name: true, email: true } } },
   })
+
+  const fromName = kudos.from.name ?? kudos.from.email.split("@")[0]
+  await createNotification(
+    toId,
+    "kudos.received",
+    `${fromName} sent you kudos`,
+    message.slice(0, 80),
+    "/kudos",
+  ).catch(() => {})
 
   revalidatePath("/kudos")
   revalidatePath("/")
   return ok("Kudos sent!")
 }
 
-export async function redeemKudos(amount: number): Promise<ActionResult> {
+export async function redeemKudos(amount: number, typeId?: string): Promise<ActionResult> {
   const user = await getCurrentUser()
   if (!user) return fail("Not authenticated.")
 
@@ -148,6 +159,19 @@ export async function redeemKudos(amount: number): Promise<ActionResult> {
   if (!settings.kudosRedeemEnabled) return fail("Redemption is not enabled.")
 
   if (amount < 1) return fail("Invalid amount.")
+
+  let resolvedTypeId: string | null = null
+  let webhookUrl = settings.kudosRedeemWebhook
+
+  if (typeId) {
+    const redeemType = await db.kudosRedeemType.findUnique({
+      where: { id: typeId, active: true },
+      select: { id: true, webhook: true },
+    })
+    if (!redeemType) return fail("Invalid redemption type.")
+    resolvedTypeId = redeemType.id
+    if (redeemType.webhook) webhookUrl = redeemType.webhook
+  }
 
   const [received, redeemed] = await Promise.all([
     db.kudos.aggregate({ where: { toId: user.id }, _sum: { amount: true } }),
@@ -161,15 +185,15 @@ export async function redeemKudos(amount: number): Promise<ActionResult> {
   if (amount > available) return fail(`You only have ${available} coins available to redeem.`)
 
   const redemption = await db.kudosRedemption.create({
-    data: { userId: user.id, amount, status: "PENDING" },
+    data: { userId: user.id, amount, status: "PENDING", typeId: resolvedTypeId },
   })
 
-  if (settings.kudosRedeemWebhook) {
+  if (webhookUrl) {
     try {
-      const res = await fetch(settings.kudosRedeemWebhook, {
+      const res = await fetch(webhookUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, email: user.email, amount, redemptionId: redemption.id }),
+        body: JSON.stringify({ userId: user.id, email: user.email, amount, redemptionId: redemption.id, typeId: resolvedTypeId }),
         signal: AbortSignal.timeout(10_000),
       })
       const text = await res.text().catch(() => "")
@@ -191,12 +215,100 @@ export async function redeemKudos(amount: number): Promise<ActionResult> {
   return ok("Redemption submitted!")
 }
 
+export async function getMyRedemptions(page = 1, perPage = 5) {
+  const user = await getCurrentUser()
+  if (!user) return { rows: [], total: 0 }
+  const [rows, total] = await Promise.all([
+    db.kudosRedemption.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * perPage,
+      take: perPage,
+      select: { id: true, amount: true, status: true, createdAt: true, redeemType: { select: { label: true } } },
+    }),
+    db.kudosRedemption.count({ where: { userId: user.id } }),
+  ])
+  return { rows, total }
+}
+
 // ─── Admin ────────────────────────────────────────────────────────────────────
 
-export async function getKudosAdminList(page = 1, perPage = 30) {
+export async function getKudosStats() {
   await requireRole("ADMIN")
+  const now = new Date()
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+
+  const [topRecipients, topSenders, valueGroups, totalThisMonth, totalAllTime] = await Promise.all([
+    db.kudos.groupBy({
+      by: ["toId"],
+      where: { createdAt: { gte: monthStart } },
+      _sum: { amount: true },
+      orderBy: { _sum: { amount: "desc" } },
+      take: 5,
+    }),
+    db.kudos.groupBy({
+      by: ["fromId"],
+      where: { createdAt: { gte: monthStart } },
+      _sum: { amount: true },
+      orderBy: { _sum: { amount: "desc" } },
+      take: 5,
+    }),
+    db.kudos.groupBy({
+      by: ["value"],
+      where: { createdAt: { gte: monthStart }, value: { not: null } },
+      _count: { value: true },
+      orderBy: { _count: { value: "desc" } },
+      take: 5,
+    }),
+    db.kudos.count({ where: { createdAt: { gte: monthStart } } }),
+    db.kudos.count(),
+  ])
+
+  const recipientIds = topRecipients.map((r) => r.toId)
+  const senderIds = topSenders.map((s) => s.fromId)
+  const allIds = [...new Set([...recipientIds, ...senderIds])]
+  const users = await db.user.findMany({
+    where: { id: { in: allIds } },
+    select: { id: true, name: true, email: true },
+  })
+  const userMap = new Map(users.map((u) => [u.id, u]))
+
+  return {
+    totalThisMonth,
+    totalAllTime,
+    topRecipients: topRecipients.map((r) => ({
+      user: userMap.get(r.toId)!,
+      total: r._sum.amount ?? 0,
+    })),
+    topSenders: topSenders.map((s) => ({
+      user: userMap.get(s.fromId)!,
+      total: s._sum.amount ?? 0,
+    })),
+    topValues: valueGroups
+      .filter((v) => v.value)
+      .map((v) => ({ value: v.value!, count: v._count.value })),
+  }
+}
+
+export async function getKudosAdminList(page = 1, perPage = 30, query?: string) {
+  await requireRole("ADMIN")
+  const where = query ? {
+    OR: [
+      { message: { contains: query, mode: "insensitive" as const } },
+      { value:   { contains: query, mode: "insensitive" as const } },
+      { from: { OR: [
+        { name:  { contains: query, mode: "insensitive" as const } },
+        { email: { contains: query, mode: "insensitive" as const } },
+      ]}},
+      { to: { OR: [
+        { name:  { contains: query, mode: "insensitive" as const } },
+        { email: { contains: query, mode: "insensitive" as const } },
+      ]}},
+    ],
+  } : {}
   const [rows, total] = await Promise.all([
     db.kudos.findMany({
+      where,
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * perPage,
       take: perPage,
@@ -206,9 +318,92 @@ export async function getKudosAdminList(page = 1, perPage = 30) {
         to:   { select: { id: true, name: true, email: true } },
       },
     }),
-    db.kudos.count(),
+    db.kudos.count({ where }),
   ])
   return { rows, total }
+}
+
+export async function getKudosRedemptions(page = 1, perPage = 30, query?: string, status?: string) {
+  await requireRole("ADMIN")
+  const where = {
+    ...(status ? { status: status as "PENDING" | "DONE" | "FAILED" | "REJECTED" } : {}),
+    ...(query ? { user: { OR: [
+      { name:  { contains: query, mode: "insensitive" as const } },
+      { email: { contains: query, mode: "insensitive" as const } },
+    ]}} : {}),
+  }
+  const [rows, total] = await Promise.all([
+    db.kudosRedemption.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * perPage,
+      take: perPage,
+      select: {
+        id: true, amount: true, status: true, createdAt: true, webhookResponse: true,
+        user: { select: { id: true, name: true, email: true } },
+        redeemType: { select: { id: true, label: true } },
+      },
+    }),
+    db.kudosRedemption.count({ where }),
+  ])
+  return { rows, total }
+}
+
+export async function getRedeemTypes(activeOnly = false) {
+  return db.kudosRedeemType.findMany({
+    where: activeOnly ? { active: true } : undefined,
+    orderBy: [{ order: "asc" }, { label: "asc" }],
+  })
+}
+
+export async function createRedeemType(formData: FormData): Promise<ActionResult> {
+  await requireRole("ADMIN")
+  const label = String(formData.get("label") ?? "").trim()
+  if (!label) return fail("Label is required.")
+  const rateLabel = String(formData.get("rateLabel") ?? "").trim() || null
+  const webhook = String(formData.get("webhook") ?? "").trim() || null
+
+  const agg = await db.kudosRedeemType.aggregate({ _max: { order: true } })
+  const order = (agg._max.order ?? -1) + 1
+
+  await db.kudosRedeemType.create({ data: { label, rateLabel, webhook, order } })
+  revalidatePath("/admin/modules/kudos")
+  return ok("Type created.")
+}
+
+export async function updateRedeemType(id: string, formData: FormData): Promise<ActionResult> {
+  await requireRole("ADMIN")
+  const label = String(formData.get("label") ?? "").trim()
+  if (!label) return fail("Label is required.")
+  const rateLabel = String(formData.get("rateLabel") ?? "").trim() || null
+  const webhook = String(formData.get("webhook") ?? "").trim() || null
+  const activeRaw = formData.get("active")
+  const active = activeRaw !== null ? activeRaw === "true" : undefined
+
+  await db.kudosRedeemType.update({
+    where: { id },
+    data: { label, rateLabel, webhook, ...(active !== undefined ? { active } : {}) },
+  })
+  revalidatePath("/admin/modules/kudos")
+  return ok("Type updated.")
+}
+
+export async function deleteRedeemType(id: string): Promise<ActionResult> {
+  await requireRole("ADMIN")
+  await db.kudosRedeemType.delete({ where: { id } })
+  revalidatePath("/admin/modules/kudos")
+  return ok("Type deleted.")
+}
+
+export async function rejectRedemption(id: string): Promise<ActionResult> {
+  await requireRole("ADMIN")
+  const r = await db.kudosRedemption.findUnique({ where: { id }, select: { status: true } })
+  if (!r) return fail("Not found.")
+  if (r.status !== "PENDING") return fail("Only PENDING redemptions can be rejected.")
+  await db.kudosRedemption.update({ where: { id }, data: { status: "REJECTED" } })
+  revalidatePath("/admin/kudos/redemptions")
+  revalidatePath("/kudos")
+  return ok("Rejected.")
 }
 
 export async function deleteKudos(id: string): Promise<ActionResult> {

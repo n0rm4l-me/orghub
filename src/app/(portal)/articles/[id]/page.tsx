@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 import { db } from "@/lib/db"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { gravatarUrl } from "@/lib/gravatar"
-import { ArticleBody } from "@/components/article-body"
+import { ArticleTranslateBody } from "@/components/article-translate-body"
 import Link from "next/link"
 import { ArrowLeft, CalendarDays, Eye, MapPin, MessageSquare } from "lucide-react"
 import { SidebarBlocks, type ActivePollData } from "@/components/sidebar-blocks"
@@ -83,6 +83,7 @@ export default async function ArticlePage({ params }: Props) {
   const articleLayout = settings.articleLayout ?? "sidebar-right"
   const enabled = parseModules(settings.enabledModules)
   const eventsEnabled = enabled.has("events")
+  const translationEnabled = enabled.has("translation")
   const pollsEnabled = enabled.has("polls")
   const rightBlocks = settings.sidebarOrder?.split(",").filter(Boolean) ?? ["quickLinks", "browseByTopic", "upcomingEvents"]
   const leftBlocks  = settings.leftSidebarOrder?.split(",").filter(Boolean) ?? []
@@ -151,40 +152,41 @@ export default async function ArticlePage({ params }: Props) {
       )}
 
       <div className="rounded-2xl border border-gray-100 bg-white p-8 dark:border-gray-700 dark:bg-gray-900">
-        <h1 className="text-3xl font-bold text-gray-900 leading-tight mb-6 dark:text-gray-100">
-          {article.title}
-        </h1>
-
-        {eventStart && (
-          <div className="mb-8 flex flex-wrap items-center gap-x-5 gap-y-1.5 rounded-xl bg-brand/5
-            border border-brand/20 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 dark:bg-brand/10">
-            <span className="flex items-center gap-1.5">
-              <CalendarDays className="size-4 text-brand shrink-0" aria-hidden />
-              <span className="font-medium text-brand">
-                {eventStart.toLocaleDateString("en-US", {
-                  weekday: "short", month: "short", day: "numeric", year: "numeric",
-                })}
+        <ArticleTranslateBody
+          articleId={id}
+          title={article.title}
+          bodyJson={article.body}
+          enabledLanguages={translationEnabled ? settings.translationLanguages : undefined}
+        >
+          {eventStart && (
+            <div className="mb-8 flex flex-wrap items-center gap-x-5 gap-y-1.5 rounded-xl bg-brand/5
+              border border-brand/20 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 dark:bg-brand/10">
+              <span className="flex items-center gap-1.5">
+                <CalendarDays className="size-4 text-brand shrink-0" aria-hidden />
+                <span className="font-medium text-brand">
+                  {eventStart.toLocaleDateString("en-US", {
+                    weekday: "short", month: "short", day: "numeric", year: "numeric",
+                  })}
+                </span>
+                {" · "}
+                {eventStart.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                {eventEnd && sameDay && (
+                  <> – {eventEnd.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</>
+                )}
+                {eventEnd && !sameDay && (
+                  <> – {eventEnd.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}{" "}
+                  {eventEnd.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</>
+                )}
               </span>
-              {" · "}
-              {eventStart.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
-              {eventEnd && sameDay && (
-                <> – {eventEnd.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</>
+              {article.eventLocation && (
+                <span className="flex items-center gap-1.5 text-gray-500">
+                  <MapPin className="size-4 shrink-0" aria-hidden />
+                  {article.eventLocation}
+                </span>
               )}
-              {eventEnd && !sameDay && (
-                <> – {eventEnd.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}{" "}
-                {eventEnd.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</>
-              )}
-            </span>
-            {article.eventLocation && (
-              <span className="flex items-center gap-1.5 text-gray-500">
-                <MapPin className="size-4 shrink-0" aria-hidden />
-                {article.eventLocation}
-              </span>
-            )}
-          </div>
-        )}
-
-        <ArticleBody body={article.body} />
+            </div>
+          )}
+        </ArticleTranslateBody>
 
         <div className="mt-8 flex items-center justify-between border-t border-gray-100 pt-6 dark:border-gray-700">
           <div className="flex items-center gap-3">
@@ -300,7 +302,7 @@ export default async function ArticlePage({ params }: Props) {
   return (
     <div className="flex items-start gap-8">
       {showLeft && (
-        <aside className="sticky top-20 hidden w-52 shrink-0 space-y-4 lg:block">
+        <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
           <SidebarBlocks blocks={leftBlocks} eventsEnabled={eventsEnabled} quickLinks={quickLinks} categories={categories} upcomingEvents={upcomingEvents} activePoll={activePollData} />
         </aside>
       )}

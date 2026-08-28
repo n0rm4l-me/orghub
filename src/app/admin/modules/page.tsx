@@ -1,9 +1,17 @@
 import Link from "next/link"
-import { ChevronRight } from "lucide-react"
+import { ChevronRight, CalendarDays, FileText, BarChart2, Award, Languages, type LucideIcon } from "lucide-react"
 import { requireRole } from "@/lib/rbac"
 import { getSettings } from "@/lib/settings"
 import { PageHeader } from "@/components/ui/page-header"
-import { MODULES, parseModules } from "@/lib/modules"
+import { MODULES, parseModules, type ModuleId } from "@/lib/modules"
+
+const MODULE_ICONS: Record<ModuleId, LucideIcon> = {
+  events:      CalendarDays,
+  pages:       FileText,
+  polls:       BarChart2,
+  kudos:       Award,
+  translation: Languages,
+}
 
 export const metadata = { title: "Modules" }
 
@@ -27,6 +35,11 @@ export default async function ModulesPage() {
             className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white px-5 py-4
               transition hover:border-gray-300 hover:shadow-sm"
           >
+            {(() => { const Icon = MODULE_ICONS[mod.id]; return (
+              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand/10">
+                <Icon className="size-4 text-brand" aria-hidden />
+              </span>
+            )})()}
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-gray-900">{mod.label}</p>
               <p className="mt-0.5 text-xs text-gray-500">{mod.description}</p>

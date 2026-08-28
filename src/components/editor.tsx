@@ -7,17 +7,18 @@ import Placeholder from "@tiptap/extension-placeholder"
 import Underline from "@tiptap/extension-underline"
 import TextAlign from "@tiptap/extension-text-align"
 import Highlight from "@tiptap/extension-highlight"
-import Image from "@tiptap/extension-image"
 import Link from "@tiptap/extension-link"
 import { PollEmbed } from "@/components/poll-embed-extension"
+import { ImageEmbed } from "@/components/image-embed-extension"
 import { getActivePollsForInsert } from "@/lib/actions/polls"
+import { getMediaList } from "@/lib/actions/media"
 import {
   Bold, Italic, UnderlineIcon, Strikethrough,
   Heading1, Heading2, Heading3,
   List, ListOrdered, Quote, Code2, Minus,
   AlignLeft, AlignCenter, AlignRight,
   Highlighter, Link2, Image as ImageIcon,
-  Undo, Redo, BarChart2,
+  Undo, Redo, BarChart2, Loader2, Upload,
 } from "lucide-react"
 
 interface Props {
@@ -30,7 +31,7 @@ export const EDITOR_EXTENSIONS = [
   Underline,
   Highlight,
   TextAlign.configure({ types: ["heading", "paragraph"] }),
-  Image,
+  ImageEmbed,
   Link.configure({ openOnClick: false }),
   PollEmbed,
 ]
@@ -119,20 +120,127 @@ function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
         Link2,
         "Link"
       )}
-      {btn(
-        false,
-        () => {
-          const url = window.prompt("Image URL:")
-          if (url) editor.chain().focus().setImage({ src: url }).run()
-        },
-        ImageIcon,
-        "Image"
-      )}
+      <InsertImageButton editor={editor} />
       {divider}
       {btn(false, () => editor.chain().focus().undo().run(), Undo, "Undo")}
       {btn(false, () => editor.chain().focus().redo().run(), Redo, "Redo")}
       {divider}
       <InsertPollButton editor={editor} />
+    </div>
+  )
+}
+
+function InsertImageButton({ editor }: { editor: ReturnType<typeof useEditor> }) {
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [open, setOpen] = useState(false)
+  const [media, setMedia] = useState<Array<{ id: string; url: string; filename: string; mimeType: string }> | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [query, setQuery] = useState("")
+  const [uploading, setUploading] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener("mousedown", handleClick)
+    return () => document.removeEventListener("mousedown", handleClick)
+  }, [open])
+
+  async function handleOpen() {
+    if (open) { setOpen(false); return }
+    setOpen(true)
+    setQuery("")
+    if (media !== null) return
+    setLoading(true)
+    const result = await getMediaList(1, "")
+    setMedia(result.rows.filter((r) => r.mimeType.startsWith("image/")))
+    setLoading(false)
+  }
+
+  function insert(url: string) {
+    editor?.chain().focus().setImage({ src: url }).run()
+    setOpen(false)
+  }
+
+  async function handleUpload(files: FileList | null) {
+    if (!files?.length) return
+    setUploading(true)
+    try {
+      const fd = new FormData()
+      fd.set("file", files[0])
+      const res = await fetch("/api/upload", { method: "POST", body: fd })
+      const data = await res.json()
+      if (res.ok) {
+        insert(data.url)
+        setMedia(null) // reset cache so next open re-fetches
+      }
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const filtered = (media ?? []).filter((m) =>
+    m.filename.toLowerCase().includes(query.toLowerCase())
+  )
+
+  return (
+    <div className="relative" ref={ref}>
+      <input ref={fileRef} type="file" accept="image/*" className="sr-only"
+        onChange={(e) => handleUpload(e.target.files)} />
+      <button
+        type="button"
+        onClick={handleOpen}
+        title="Insert image"
+        className="p-1.5 rounded transition text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+      >
+        <ImageIcon className="w-4 h-4" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full z-20 mt-1 w-80 rounded-lg border border-gray-200 bg-white shadow-lg">
+          <div className="flex items-center gap-2 border-b border-gray-100 px-2 py-1.5">
+            <input
+              autoFocus
+              type="text"
+              placeholder="Search images…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="min-w-0 flex-1 rounded px-2 py-1 text-xs text-gray-700 outline-none placeholder:text-gray-400 focus:bg-gray-50"
+            />
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              className="flex shrink-0 items-center gap-1 rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+            >
+              {uploading ? <Loader2 className="size-3 animate-spin" /> : <Upload className="size-3" />}
+              Upload
+            </button>
+          </div>
+          {loading ? (
+            <p className="px-3 py-3 text-xs text-gray-400">Loading…</p>
+          ) : filtered.length === 0 ? (
+            <p className="px-3 py-3 text-xs text-gray-400">
+              {query ? "No matches." : "No images uploaded yet."}
+            </p>
+          ) : (
+            <div className="grid max-h-60 grid-cols-3 gap-1 overflow-y-auto p-2">
+              {filtered.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => insert(m.url)}
+                  className="group overflow-hidden rounded border border-gray-100 hover:border-brand transition"
+                  title={m.filename}
+                >
+                  <img src={m.url} alt={m.filename} className="aspect-square w-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

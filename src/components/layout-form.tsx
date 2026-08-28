@@ -220,13 +220,15 @@ interface Props {
   feedLayout: string
   articleLayout: string
   pagesLayout: string
+  kudosLayout: string
+  eventsLayout: string
   portalWidth: string
   feedPageSize: number
   feedCardStyle: string
   enabledModules: Set<ModuleId>
 }
 
-export function LayoutForm({ feedLayout, articleLayout, pagesLayout, portalWidth, feedPageSize, feedCardStyle, enabledModules }: Props) {
+export function LayoutForm({ feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, portalWidth, feedPageSize, feedCardStyle, enabledModules }: Props) {
   const { run, pending } = useAction(saveLayout)
 
   return (
@@ -276,6 +278,12 @@ export function LayoutForm({ feedLayout, articleLayout, pagesLayout, portalWidth
           <LayoutPicker name="articleLayout" label="Article reader" value={articleLayout as LayoutValue} />
           {enabledModules.has("pages") && (
             <LayoutPicker name="pagesLayout" label="Pages" value={pagesLayout as LayoutValue} />
+          )}
+          {enabledModules.has("events") && (
+            <LayoutPicker name="eventsLayout" label="Calendar" value={eventsLayout as LayoutValue} />
+          )}
+          {enabledModules.has("kudos") && (
+            <LayoutPicker name="kudosLayout" label="Kudos" value={kudosLayout as LayoutValue} />
           )}
         </div>
       </Panel>

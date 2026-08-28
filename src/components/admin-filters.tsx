@@ -4,13 +4,20 @@ import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState, useTransition } from "react"
 import { Search, X, Loader2 } from "lucide-react"
 
+interface StatusOption {
+  value: string
+  label: string
+}
+
 interface Props {
   basePath: string
   query?: string
-  status?: "published" | "draft"
+  status?: string
   placeholder: string
-  /** Hides the published/draft segmented control for lists without a status. */
+  /** Hides the status segmented control for lists without a status. */
   showStatus?: boolean
+  /** Custom status options. Defaults to Published / Drafts when omitted. */
+  statusOptions?: StatusOption[]
 }
 
 const DEBOUNCE_MS = 300
@@ -23,13 +30,20 @@ const DEBOUNCE_MS = 300
  * like a dropped one. Filter state lives in the URL, so a filtered view is
  * shareable and survives a reload.
  */
+const DEFAULT_STATUS_OPTIONS: StatusOption[] = [
+  { value: "published", label: "Published" },
+  { value: "draft", label: "Drafts" },
+]
+
 export function AdminFilters({
   basePath,
   query = "",
   status,
   placeholder,
   showStatus = true,
+  statusOptions,
 }: Props) {
+  const resolvedOptions = statusOptions ?? DEFAULT_STATUS_OPTIONS
   const router = useRouter()
   const [value, setValue] = useState(query)
   const [seenQuery, setSeenQuery] = useState(query)
@@ -57,7 +71,7 @@ export function AdminFilters({
     return () => clearTimeout(timer)
   }, [value, query, status, basePath, router])
 
-  const statusHref = (next?: "published" | "draft") => {
+  const statusHref = (next?: string) => {
     const search = new URLSearchParams()
     if (value.trim()) search.set("q", value.trim())
     if (next) search.set("status", next)
@@ -124,12 +138,11 @@ export function AdminFilters({
           <a href={statusHref()} className={tab(!status)}>
             All
           </a>
-          <a href={statusHref("published")} className={tab(status === "published")}>
-            Published
-          </a>
-          <a href={statusHref("draft")} className={tab(status === "draft")}>
-            Drafts
-          </a>
+          {resolvedOptions.map((opt) => (
+            <a key={opt.value} href={statusHref(opt.value)} className={tab(status === opt.value)}>
+              {opt.label}
+            </a>
+          ))}
         </div>
       )}
     </div>

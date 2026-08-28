@@ -59,7 +59,7 @@ export async function saveSettings(formData: FormData): Promise<ActionResult> {
 
 import { MODULES, type ModuleId } from "@/lib/modules"
 
-const SIDEBAR_BLOCK_IDS = new Set(["quickLinks", "browseByTopic", "upcomingEvents", "activePolls"])
+const SIDEBAR_BLOCK_IDS = new Set(["quickLinks", "browseByTopic", "upcomingEvents", "activePolls", "topKudos"])
 const VALID_MODULE_IDS = new Set(Object.keys(MODULES) as ModuleId[])
 
 export async function saveSidebarWidgets(
@@ -89,7 +89,7 @@ export async function saveSidebarWidgets(
   return ok("Sidebar widgets saved.")
 }
 
-const NAV_ITEM_IDS = new Set(["events", "polls"])
+const NAV_ITEM_IDS = new Set(["events", "polls", "kudos"])
 
 async function getCurrentNavOrder(): Promise<string[]> {
   const s = await db.siteSettings.findUnique({ where: { id: "singleton" }, select: { navOrder: true } })
@@ -174,11 +174,13 @@ export async function saveLayout(formData: FormData): Promise<ActionResult> {
   const feedLayout    = (formData.get("feedLayout")    as string) || "sidebar-right"
   const articleLayout = (formData.get("articleLayout") as string) || "sidebar-right"
   const pagesLayout   = (formData.get("pagesLayout")   as string) || "content"
+  const kudosLayout   = (formData.get("kudosLayout")   as string) || "content"
+  const eventsLayout  = (formData.get("eventsLayout")  as string) || "content"
   const portalWidth   = (formData.get("portalWidth")   as string) || "default"
   const feedPageSize  = Number(formData.get("feedPageSize")) || 15
   const feedCardStyle = (formData.get("feedCardStyle") as string) || "preview"
 
-  if (!VALID_LAYOUTS.has(feedLayout) || !VALID_LAYOUTS.has(articleLayout) || !VALID_LAYOUTS.has(pagesLayout))
+  if (!VALID_LAYOUTS.has(feedLayout) || !VALID_LAYOUTS.has(articleLayout) || !VALID_LAYOUTS.has(pagesLayout) || !VALID_LAYOUTS.has(kudosLayout) || !VALID_LAYOUTS.has(eventsLayout))
     return fail("Invalid layout value.")
   if (!VALID_WIDTHS.has(portalWidth))
     return fail("Invalid width value.")
@@ -189,15 +191,15 @@ export async function saveLayout(formData: FormData): Promise<ActionResult> {
 
   await db.siteSettings.upsert({
     where: { id: "singleton" },
-    create: { id: "singleton", feedLayout, articleLayout, pagesLayout, portalWidth, feedPageSize, feedCardStyle },
-    update: { feedLayout, articleLayout, pagesLayout, portalWidth, feedPageSize, feedCardStyle },
+    create: { id: "singleton", feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, portalWidth, feedPageSize, feedCardStyle },
+    update: { feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, portalWidth, feedPageSize, feedCardStyle },
   })
 
   await logAudit({
     userId: user.id,
     action: "settings.layout",
     resourceType: "SiteSettings",
-    metadata: { feedLayout, articleLayout, pagesLayout, portalWidth, feedPageSize, feedCardStyle },
+    metadata: { feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, portalWidth, feedPageSize, feedCardStyle },
   })
 
   revalidatePath("/", "layout")

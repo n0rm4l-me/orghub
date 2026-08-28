@@ -4,6 +4,10 @@ import Link from "next/link"
 import { ChevronLeft, ChevronRight, CalendarDays, MapPin } from "lucide-react"
 import { getSettings } from "@/lib/settings"
 import { parseModules } from "@/lib/modules"
+import { getCurrentUser } from "@/lib/rbac"
+import { getQuickLinks, getUpcomingEvents } from "@/lib/nav"
+import { getTopKudosRecipients } from "@/lib/actions/kudos"
+import { SidebarBlocks, type ActivePollData, type TopKudosEntry } from "@/components/sidebar-blocks"
 
 interface Props {
   searchParams: Promise<{ month?: string }>
@@ -43,30 +47,68 @@ export async function generateMetadata() {
 
 export default async function EventsPage({ searchParams }: Props) {
   const settings = await getSettings()
-  if (!parseModules(settings.enabledModules).has("events")) notFound()
+  const enabled = parseModules(settings.enabledModules)
+  if (!enabled.has("events")) notFound()
 
   const sp = await searchParams
   const { year, month } = parseMonth(sp.month)
 
+  const eventsLayout = settings.eventsLayout ?? "content"
+  const rightBlocks = settings.sidebarOrder?.split(",").filter(Boolean) ?? ["quickLinks", "browseByTopic", "upcomingEvents"]
+  const leftBlocks  = settings.leftSidebarOrder?.split(",").filter(Boolean) ?? []
+  const showLeft  = eventsLayout === "sidebar-left"  || eventsLayout === "sidebar-both"
+  const showRight = eventsLayout === "sidebar-right" || eventsLayout === "sidebar-both"
+  const allBlocks = [...rightBlocks, ...leftBlocks]
+
+  const pollsEnabled = enabled.has("polls")
+  const kudosEnabled = enabled.has("kudos")
+
   const monthStart = new Date(year, month - 1, 1)
   const monthEnd = new Date(year, month, 1)
 
-  const events = await db.article.findMany({
-    where: {
-      published: true,
-      eventDate: { gte: monthStart, lt: monthEnd },
-    },
-    orderBy: { eventDate: "asc" },
-    select: {
-      id: true,
-      title: true,
-      eventDate: true,
-      eventEndDate: true,
-      eventLocation: true,
-    },
-  })
+  const [user, events, quickLinks, upcomingEvents, categories] = await Promise.all([
+    getCurrentUser(),
+    db.article.findMany({
+      where: { published: true, eventDate: { gte: monthStart, lt: monthEnd } },
+      orderBy: { eventDate: "asc" },
+      select: { id: true, title: true, eventDate: true, eventEndDate: true, eventLocation: true },
+    }),
+    getQuickLinks(),
+    getUpcomingEvents(),
+    db.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, slug: true } }),
+  ])
 
-  // Build a map from day-of-month → events
+  let activePollData: ActivePollData | null = null
+  if (pollsEnabled && allBlocks.includes("activePolls")) {
+    const activePollRaw = await db.poll.findFirst({
+      where: { status: "ACTIVE" },
+      include: { options: { include: { _count: { select: { votes: true } } }, orderBy: { order: "asc" } }, _count: { select: { votes: true } } },
+    })
+    if (activePollRaw) {
+      const votedOptionIds = user
+        ? (await db.pollVote.findMany({ where: { pollId: activePollRaw.id, userId: user.id }, select: { optionId: true } })).map((v) => v.optionId)
+        : []
+      activePollData = {
+        poll: { id: activePollRaw.id, question: activePollRaw.question, anonymous: activePollRaw.anonymous, multiChoice: activePollRaw.multiChoice, resultsVisibility: activePollRaw.resultsVisibility, status: activePollRaw.status, endsAt: activePollRaw.endsAt },
+        options: activePollRaw.options.map((o) => ({ id: o.id, text: o.text, voteCount: o._count.votes })),
+        totalVotes: activePollRaw._count.votes,
+        votedOptionIds,
+      }
+    }
+  }
+
+  let topKudosData: TopKudosEntry[] = []
+  if (kudosEnabled && allBlocks.includes("topKudos")) {
+    topKudosData = await getTopKudosRecipients(5)
+  }
+
+  // Calendar grid
+  const firstDow = monthStart.getDay()
+  const daysInMonth = new Date(year, month, 0).getDate()
+  const totalCells = Math.ceil((firstDow + daysInMonth) / 7) * 7
+  const cells: (number | null)[] = Array(totalCells).fill(null)
+  for (let d = 1; d <= daysInMonth; d++) cells[firstDow + d - 1] = d
+
   const byDay = new Map<number, typeof events>()
   for (const ev of events) {
     const day = new Date(ev.eventDate!).getDate()
@@ -74,22 +116,23 @@ export default async function EventsPage({ searchParams }: Props) {
     byDay.get(day)!.push(ev)
   }
 
-  // Calendar grid: starts on Sunday
-  const firstDow = monthStart.getDay() // 0=Sun
-  const daysInMonth = monthEnd.getDate() - 1 === -1
-    ? new Date(year, month, 0).getDate()
-    : new Date(year, month, 0).getDate()
-
-  const totalCells = Math.ceil((firstDow + daysInMonth) / 7) * 7
-  const cells: (number | null)[] = Array(totalCells).fill(null)
-  for (let d = 1; d <= daysInMonth; d++) cells[firstDow + d - 1] = d
-
   const prev = prevMonth(year, month)
   const next = nextMonth(year, month)
   const today = new Date()
   const isCurrentMonth = today.getFullYear() === year && today.getMonth() + 1 === month
 
-  return (
+  const sidebarProps = {
+    eventsEnabled: true,
+    kudosEnabled,
+    quickLinks,
+    categories,
+    upcomingEvents,
+    activePoll: activePollData,
+    topKudos: topKudosData,
+    gravatarsEnabled: settings.gravatarsEnabled,
+  }
+
+  const content = (
     <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -121,7 +164,6 @@ export default async function EventsPage({ searchParams }: Props) {
 
       {/* Calendar grid */}
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-        {/* Day-of-week header */}
         <div className="grid grid-cols-7 border-b border-gray-100 dark:border-gray-700">
           {DAY_LABELS.map((d) => (
             <div key={d} className="py-2 text-center text-xs font-semibold uppercase tracking-wide text-gray-400">
@@ -129,14 +171,11 @@ export default async function EventsPage({ searchParams }: Props) {
             </div>
           ))}
         </div>
-
-        {/* Day cells */}
         <div className="grid grid-cols-7">
           {cells.map((day, idx) => {
             const isToday = isCurrentMonth && day === today.getDate()
             const dayEvents = day ? (byDay.get(day) ?? []) : []
             const isLast = idx >= cells.length - 7
-
             return (
               <div
                 key={idx}
@@ -182,7 +221,6 @@ export default async function EventsPage({ searchParams }: Props) {
             ? `${events.length} event${events.length === 1 ? "" : "s"} in ${MONTH_NAMES[month - 1]}`
             : `No events in ${MONTH_NAMES[month - 1]}`}
         </h2>
-
         {events.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-gray-200 py-16 text-center dark:border-gray-700">
             <CalendarDays className="mx-auto mb-3 size-8 text-gray-300 dark:text-gray-600" />
@@ -194,24 +232,12 @@ export default async function EventsPage({ searchParams }: Props) {
               const start = new Date(ev.eventDate!)
               const end = ev.eventEndDate ? new Date(ev.eventEndDate) : null
               const sameDay = end && start.toDateString() === end.toDateString()
-
-              const dateLabel = start.toLocaleDateString("en-US", {
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-              })
-              const timeLabel = start.toLocaleTimeString("en-US", {
-                hour: "numeric",
-                minute: "2-digit",
-              })
-              const endTimeLabel = end
-                ? end.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+              const dateLabel = start.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
+              const timeLabel = start.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+              const endTimeLabel = end ? end.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : null
+              const endDateLabel = end && !sameDay
+                ? end.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
                 : null
-              const endDateLabel =
-                end && !sameDay
-                  ? end.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
-                  : null
-
               return (
                 <Link
                   key={ev.id}
@@ -220,7 +246,6 @@ export default async function EventsPage({ searchParams }: Props) {
                     transition hover:border-brand/30 hover:bg-brand/5
                     dark:border-gray-700 dark:bg-gray-900 dark:hover:border-brand/40"
                 >
-                  {/* Date badge */}
                   <div className="shrink-0 w-12 text-center">
                     <p className="text-[10px] font-semibold uppercase tracking-wide text-brand">
                       {start.toLocaleDateString("en-US", { month: "short" })}
@@ -229,7 +254,6 @@ export default async function EventsPage({ searchParams }: Props) {
                       {start.getDate()}
                     </p>
                   </div>
-
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-gray-900 group-hover:text-brand transition dark:text-gray-100">
                       {ev.title}
@@ -255,6 +279,26 @@ export default async function EventsPage({ searchParams }: Props) {
           </div>
         )}
       </div>
+    </div>
+  )
+
+  if (!showLeft && !showRight) {
+    return content
+  }
+
+  return (
+    <div className="flex items-start gap-8">
+      {showLeft && (
+        <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
+          <SidebarBlocks blocks={leftBlocks} {...sidebarProps} />
+        </aside>
+      )}
+      <div className="min-w-0 flex-1">{content}</div>
+      {showRight && (
+        <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
+          <SidebarBlocks blocks={rightBlocks} {...sidebarProps} />
+        </aside>
+      )}
     </div>
   )
 }

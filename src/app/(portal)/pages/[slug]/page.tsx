@@ -96,7 +96,7 @@ export default async function PublicPagePage({ params }: Props) {
   return (
     <div className="flex items-start gap-8">
       {showLeft && (
-        <aside className="sticky top-20 hidden w-52 shrink-0 space-y-4 lg:block">
+        <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
           <SidebarBlocks blocks={leftBlocks} eventsEnabled={eventsEnabled} quickLinks={quickLinks} categories={categories} upcomingEvents={upcomingEvents} />
         </aside>
       )}

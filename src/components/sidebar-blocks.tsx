@@ -3,6 +3,7 @@ import { Zap, ExternalLink, CalendarDays, MapPin, Tag, Award } from "lucide-reac
 import { PollCard } from "@/components/poll-card"
 import type { PollCardPoll, PollOption } from "@/components/poll-card"
 import { gravatarUrl } from "@/lib/gravatar"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 
 interface QuickLink {
   id: string
@@ -210,24 +211,21 @@ export function SidebarBlocks({
             <section key="topKudos" className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
                 <Award className="size-4 text-brand" aria-hidden />
-                Top kudos this month
+                Top kudos
               </h2>
               <ul className="space-y-2">
                 {topKudos.map((entry, i) => {
                   const initials = (entry.name ?? entry.email)
                     .split(/[\s@.]+/).filter(Boolean)
                     .map((p) => p[0]).join("").toUpperCase().slice(0, 2) || "?"
-                  const avatar = gravatarsEnabled ? gravatarUrl(entry.email, 32) : null
+                  const avatarSrc = gravatarsEnabled ? gravatarUrl(entry.email, 32) : undefined
                   return (
                     <li key={entry.userId} className="flex items-center gap-2.5">
-                      <span className="w-4 shrink-0 text-[11px] font-semibold text-gray-400">{i + 1}</span>
-                      {avatar ? (
-                        <img src={avatar} alt="" className="size-7 shrink-0 rounded-full bg-gray-100" />
-                      ) : (
-                        <span className="grid size-7 shrink-0 place-items-center rounded-full bg-brand/10 text-[10px] font-bold text-brand">
-                          {initials}
-                        </span>
-                      )}
+                      <span className="flex h-7 w-4 shrink-0 items-center justify-center text-[11px] font-semibold text-gray-400">{i + 1}</span>
+                      <Avatar className="size-7 shrink-0">
+                        {avatarSrc && <AvatarImage src={avatarSrc} alt="" />}
+                        <AvatarFallback className="bg-brand/10 text-[10px] font-bold text-brand">{initials}</AvatarFallback>
+                      </Avatar>
                       <span className="min-w-0 flex-1 truncate text-xs font-medium text-gray-700 dark:text-gray-300">
                         {entry.name ?? entry.email.split("@")[0]}
                       </span>

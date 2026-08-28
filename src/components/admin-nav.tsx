@@ -17,6 +17,7 @@ import {
   Megaphone,
   BarChart2,
   Award,
+  Images,
   type LucideIcon,
 } from "lucide-react"
 
@@ -41,6 +42,7 @@ const KUDOS_ITEM: Item  = { href: "/admin/kudos",  label: "Kudos",  icon: Award 
 
 const ADMINISTRATION: Item[] = [
   { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/media", label: "Media", icon: Images },
   { href: "/admin/audit", label: "Audit log", icon: ScrollText },
 ]
 
