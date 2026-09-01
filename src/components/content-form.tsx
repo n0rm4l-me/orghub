@@ -159,6 +159,7 @@ export function ContentForm({
 
           <Editor
             initialContent={values?.body ?? EMPTY_DOC}
+            folder={kind}
             onChange={(next) => {
               setBody(next)
               setDirty(true)
@@ -264,6 +265,7 @@ export function ContentForm({
               <MediaPicker
                 label="Cover image"
                 name="coverImage"
+                folder="articles"
                 value={coverImageUrl}
                 onChange={(url) => { setCoverImageUrl(url); setDirty(true) }}
               />

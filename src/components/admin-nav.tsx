@@ -18,6 +18,7 @@ import {
   BarChart2,
   Award,
   Images,
+  UtensilsCrossed,
   type LucideIcon,
 } from "lucide-react"
 
@@ -36,9 +37,10 @@ const BASE_CONTENT: Item[] = [
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
 ]
 
-const EVENTS_ITEM: Item = { href: "/admin/events", label: "Events", icon: CalendarDays }
-const POLLS_ITEM: Item  = { href: "/admin/polls",  label: "Polls",  icon: BarChart2 }
-const KUDOS_ITEM: Item  = { href: "/admin/kudos",  label: "Kudos",  icon: Award }
+const EVENTS_ITEM:  Item = { href: "/admin/events",  label: "Events",  icon: CalendarDays     }
+const POLLS_ITEM:   Item = { href: "/admin/polls",   label: "Polls",   icon: BarChart2        }
+const KUDOS_ITEM:   Item = { href: "/admin/kudos",   label: "Kudos",   icon: Award            }
+const DINING_ITEM:  Item = { href: "/admin/dining",  label: "Dining",  icon: UtensilsCrossed  }
 
 const ADMINISTRATION: Item[] = [
   { href: "/admin/users", label: "Users", icon: Users },
@@ -63,20 +65,23 @@ export function AdminNav({
   eventsEnabled,
   pollsEnabled,
   kudosEnabled,
+  diningEnabled,
 }: {
   canAdminister: boolean
   eventsEnabled: boolean
   pollsEnabled: boolean
   kudosEnabled?: boolean
+  diningEnabled?: boolean
 }) {
   const pathname = usePathname()
 
   const content = [
     BASE_CONTENT[0],
     BASE_CONTENT[1],
-    ...(eventsEnabled ? [EVENTS_ITEM] : []),
-    ...(pollsEnabled  ? [POLLS_ITEM]  : []),
-    ...(kudosEnabled  ? [KUDOS_ITEM]  : []),
+    ...(eventsEnabled ? [EVENTS_ITEM]  : []),
+    ...(pollsEnabled  ? [POLLS_ITEM]   : []),
+    ...(kudosEnabled  ? [KUDOS_ITEM]   : []),
+    ...(diningEnabled ? [DINING_ITEM]  : []),
     ...BASE_CONTENT.slice(2),
   ]
 

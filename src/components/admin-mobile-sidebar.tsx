@@ -13,6 +13,7 @@ interface Props {
   eventsEnabled: boolean
   pollsEnabled: boolean
   kudosEnabled?: boolean
+  diningEnabled?: boolean
   userName: string
   userRole: string
   gravatarUrl?: string
@@ -25,6 +26,7 @@ export function AdminMobileSidebar({
   eventsEnabled,
   pollsEnabled,
   kudosEnabled,
+  diningEnabled,
   userName,
   userRole,
   gravatarUrl,
@@ -98,6 +100,7 @@ export function AdminMobileSidebar({
               eventsEnabled={eventsEnabled}
               pollsEnabled={pollsEnabled}
               kudosEnabled={kudosEnabled}
+              diningEnabled={diningEnabled}
             />
 
             {/* Bottom: view portal + user */}

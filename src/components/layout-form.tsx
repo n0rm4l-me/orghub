@@ -222,13 +222,14 @@ interface Props {
   pagesLayout: string
   kudosLayout: string
   eventsLayout: string
+  diningLayout: string
   portalWidth: string
   feedPageSize: number
   feedCardStyle: string
   enabledModules: Set<ModuleId>
 }
 
-export function LayoutForm({ feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, portalWidth, feedPageSize, feedCardStyle, enabledModules }: Props) {
+export function LayoutForm({ feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, diningLayout, portalWidth, feedPageSize, feedCardStyle, enabledModules }: Props) {
   const { run, pending } = useAction(saveLayout)
 
   return (
@@ -284,6 +285,9 @@ export function LayoutForm({ feedLayout, articleLayout, pagesLayout, kudosLayout
           )}
           {enabledModules.has("kudos") && (
             <LayoutPicker name="kudosLayout" label="Kudos" value={kudosLayout as LayoutValue} />
+          )}
+          {enabledModules.has("dining") && (
+            <LayoutPicker name="diningLayout" label="Dining" value={diningLayout as LayoutValue} />
           )}
         </div>
       </Panel>

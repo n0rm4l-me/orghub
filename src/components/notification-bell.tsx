@@ -76,11 +76,17 @@ export function NotificationBell() {
     } catch { /* ignore */ }
   }, [])
 
-  // Poll every 30s
+  // Poll every 30s, but only when the tab is visible. The bell sits in the
+  // header and occupies a connection while dish photos are downloading; pausing
+  // when hidden costs nothing and leaves more connections for the page content.
   useEffect(() => {
     fetchCount()
-    const id = setInterval(fetchCount, 30_000)
-    return () => clearInterval(id)
+    const id = setInterval(() => {
+      if (document.visibilityState === "visible") fetchCount()
+    }, 30_000)
+    const onVisible = () => { if (document.visibilityState === "visible") fetchCount() }
+    document.addEventListener("visibilitychange", onVisible)
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVisible) }
   }, [fetchCount])
 
   // Register service worker once

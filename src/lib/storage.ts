@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3"
+import { S3Client, PutObjectCommand, DeleteObjectCommand, ListObjectsV2Command, CopyObjectCommand } from "@aws-sdk/client-s3"
 
 function getClient() {
   const endpoint = process.env.S3_ENDPOINT
@@ -16,7 +16,6 @@ function getClient() {
 }
 
 const BUCKET = () => process.env.S3_BUCKET ?? "orghub"
-const PUBLIC_URL = () => process.env.NEXT_PUBLIC_S3_PUBLIC_URL ?? ""
 
 export async function uploadToStorage(
   key: string,
@@ -29,11 +28,42 @@ export async function uploadToStorage(
     Key: key,
     Body: body,
     ContentType: contentType,
+    CacheControl: "public, max-age=31536000, immutable",
   }))
-  return `${PUBLIC_URL()}/${BUCKET()}/${key}`
+  return `/uploads/${key}`
 }
 
 export async function deleteFromStorage(key: string): Promise<void> {
   const client = getClient()
   await client.send(new DeleteObjectCommand({ Bucket: BUCKET(), Key: key }))
+}
+
+export async function listStorageObjects(prefix = ""): Promise<{ key: string; size: number; lastModified: Date }[]> {
+  const client = getClient()
+  const results: { key: string; size: number; lastModified: Date }[] = []
+  let continuationToken: string | undefined
+
+  do {
+    const res = await client.send(new ListObjectsV2Command({
+      Bucket: BUCKET(),
+      Prefix: prefix,
+      MaxKeys: 1000,
+      ContinuationToken: continuationToken,
+    }))
+    for (const obj of res.Contents ?? []) {
+      if (obj.Key) results.push({ key: obj.Key, size: obj.Size ?? 0, lastModified: obj.LastModified ?? new Date() })
+    }
+    continuationToken = res.IsTruncated ? res.NextContinuationToken : undefined
+  } while (continuationToken)
+
+  return results
+}
+
+export async function copyStorageObject(sourceKey: string, destKey: string): Promise<void> {
+  const client = getClient()
+  await client.send(new CopyObjectCommand({
+    Bucket: BUCKET(),
+    CopySource: `${BUCKET()}/${sourceKey}`,
+    Key: destKey,
+  }))
 }

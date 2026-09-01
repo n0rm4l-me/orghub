@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from "react"
 import { X, Upload, Loader2, Images } from "lucide-react"
+import { SafeImg } from "@/components/dining/safe-img"
 import { toast } from "@/components/ui/toaster"
 import { getMediaList } from "@/lib/actions/media"
 
@@ -74,9 +75,10 @@ interface Props {
   onChange: (url: string) => void
   name?: string
   label?: string
+  folder?: string
 }
 
-export function MediaPicker({ value, onChange, name = "photo", label = "Image" }: Props) {
+export function MediaPicker({ value, onChange, name = "photo", label = "Image", folder }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [dragging, setDragging] = useState(false)
@@ -86,6 +88,7 @@ export function MediaPicker({ value, onChange, name = "photo", label = "Image" }
     setUploading(true)
     const fd = new FormData()
     fd.set("file", file)
+    if (folder) fd.set("folder", folder)
     try {
       const res = await fetch("/api/upload", { method: "POST", body: fd })
       const data = await res.json()
@@ -182,8 +185,9 @@ export function MediaPickerField({ value, onChange, tone }: { value: string; onC
   if (value) {
     return (
       <div className="flex items-center gap-2">
-        <img src={value} alt=""
-          className={`h-9 max-w-[120px] rounded border object-contain p-1 ${tone === "dark" ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"}`} />
+        <SafeImg src={value} alt=""
+          className={`h-9 w-[80px] rounded border object-contain p-1 ${tone === "dark" ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"}`}
+          placeholderClassName={`h-9 w-[80px] rounded border ${tone === "dark" ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-gray-50"}`} />
         <button type="button" onClick={() => onChange("")}
           className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-500 hover:border-red-200 hover:text-red-500 transition">
           Remove

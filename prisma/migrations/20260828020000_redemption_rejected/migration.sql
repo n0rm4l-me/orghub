@@ -1,1 +1,0 @@
-ALTER TYPE "RedemptionStatus" ADD VALUE 'REJECTED';

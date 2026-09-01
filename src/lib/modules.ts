@@ -24,6 +24,11 @@ export const MODULES = {
     label: "Article translation",
     description: "On-demand AI translation of articles via configurable provider.",
   },
+  dining: {
+    id: "dining" as const,
+    label: "Dining",
+    description: "Canteen and cafe menus, weekly schedules, and monthly themed topics.",
+  },
 } as const
 
 export type ModuleId = keyof typeof MODULES

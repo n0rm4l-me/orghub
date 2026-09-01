@@ -48,6 +48,7 @@ export default async function AppearancePage() {
           pagesLayout={settings.pagesLayout}
           eventsLayout={settings.eventsLayout ?? "content"}
           kudosLayout={settings.kudosLayout ?? "content"}
+          diningLayout={settings.diningLayout ?? "content"}
           portalWidth={settings.portalWidth ?? "default"}
           feedPageSize={settings.feedPageSize ?? 15}
           feedCardStyle={settings.feedCardStyle ?? "preview"}

@@ -130,6 +130,9 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Geist covers Latin; system-ui provides CJK, Devanagari, and other scripts
+       that Geist lacks, so translated content renders properly instead of tofu. */
+    font-family: Geist, "Geist Fallback", system-ui, -apple-system, "Noto Sans", sans-serif;
   }
   html {
     @apply font-sans;
@@ -182,6 +185,18 @@
     outline: 2px solid var(--brand);
     outline-offset: 2px;
   }
+}
+
+/* Venue tags carry admin-set colors via CSS custom props.
+   Light mode: use the stored background directly.
+   Dark mode: tint from the text color so bright fills don't glare. */
+.venue-tag {
+  color: var(--tag-color);
+  background-color: var(--tag-bg);
+}
+.dark .venue-tag {
+  background-color: color-mix(in oklch, var(--tag-color) 18%, transparent);
+  border: 1px solid color-mix(in oklch, var(--tag-color) 35%, transparent);
 }
 
 /* Body dark mode override must be outside @layer to beat utility specificity */

@@ -31,6 +31,9 @@ model User {
 
   lastFeedVisitAt DateTime?
 
+  locationId String?
+  location   Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+
   accounts      Account[]
   sessions      Session[]
   articles      Article[]
@@ -184,12 +187,14 @@ model Media {
   url          String
   mimeType     String
   size         Int
+  context      String?
   uploadedById String
   uploadedBy   User     @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
   createdAt    DateTime @default(now())
 
   @@index([uploadedById])
   @@index([createdAt])
+  @@index([context])
 }
 
 model SiteSettings {
@@ -245,6 +250,10 @@ model SiteSettings {
   translationProvider  String  @default("mymemory")
   /// Translation: comma-separated target language codes enabled for users.
   translationLanguages String  @default("en,ru,ja,zh,es,fr,hi,uk")
+  /// Layout for the Dining portal page.
+  diningLayout String @default("content")
+  /// ISO 4217 currency code used for dining prices (e.g. "JPY", "USD", "EUR").
+  diningCurrency String @default("JPY")
 }
 
 model Comment {
@@ -446,4 +455,263 @@ model ArticleTranslation {
 
   @@unique([articleId, lang])
   @@index([articleId])
+}
+
+// ── Dining module ─────────────────────────────────────────────────────────────
+
+enum DayOfWeek {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+}
+
+model Location {
+  id        String   @id @default(cuid())
+  name      String
+  timezone  String   @default("America/New_York")
+  createdAt DateTime @default(now())
+  venues    Venue[]
+  users     User[]
+}
+
+model Venue {
+  id                String   @id @default(cuid())
+  locationId        String
+  location          Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  name              String
+  /// CAFETERIA | CAFE | RESTAURANT — affects defaults and portal layout
+  venueType         String   @default("CAFETERIA")
+  weeklyMenuEnabled Boolean  @default(true)
+  topicsEnabled     Boolean  @default(true)
+  orderingEnabled   Boolean  @default(false)
+  workingDays       String   @default("MON,TUE,WED,THU,FRI")
+  createdAt         DateTime @default(now())
+  categories        MealCategory[]
+  dishes            Dish[]
+  weekMenus         WeekMenu[]
+  topics            MonthlyTopic[]
+  mealSlots         MealSlot[]
+  venueTags         VenueTag[]
+  nutritionParams   NutritionParam[]
+}
+
+model MealSlot {
+  id         String         @id @default(cuid())
+  venueId    String
+  venue      Venue          @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  name       String
+  timeStart  String?
+  timeEnd    String?
+  order      Int
+  categories MealCategory[]
+  entries    WeekMenuEntry[]
+
+  @@index([venueId, order])
+}
+
+model VenueTag {
+  id      String @id @default(cuid())
+  venueId String
+  venue   Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  name    String
+  color   String @default("#374151")
+  bgColor String @default("#F3F4F6")
+  order   Int
+
+  @@index([venueId])
+}
+
+model NutritionParam {
+  id       String  @id @default(cuid())
+  venueId  String
+  venue    Venue   @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  name     String
+  unit     String  @default("")
+  featured Boolean @default(false)
+  order    Int
+
+  @@index([venueId])
+}
+
+model MealCategory {
+  id         String    @id @default(cuid())
+  venueId    String
+  venue      Venue     @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  mealSlotId String
+  mealSlot   MealSlot  @relation(fields: [mealSlotId], references: [id], onDelete: Cascade)
+  name       String
+  order      Int
+  entries    WeekMenuEntry[]
+
+  @@index([venueId, order])
+}
+
+model Dish {
+  id             String   @id @default(cuid())
+  venueId        String
+  venue          Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  name           String
+  description    String?
+  photo          String?
+  price          Decimal? @db.Decimal(10, 2)
+  nutrition      Json?
+  tagIds         String   @default("")
+  createdAt      DateTime @default(now())
+  entries        WeekMenuEntry[]
+  fixedEntries   FixedMenuEntry[]
+  modifierGroups DishModifierGroup[]
+
+  @@index([venueId])
+}
+
+model DishModifierGroup {
+  id          String   @id @default(cuid())
+  dishId      String
+  dish        Dish     @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  name        String
+  required    Boolean  @default(false)
+  multiSelect Boolean  @default(false)
+  order       Int
+  options     DishModifierOption[]
+
+  @@index([dishId, order])
+}
+
+model DishModifierOption {
+  id         String   @id @default(cuid())
+  groupId    String
+  group      DishModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  label      String
+  priceDelta Decimal  @default(0) @db.Decimal(10, 2)
+  isDefault  Boolean  @default(false)
+  order      Int
+
+  @@index([groupId, order])
+}
+
+model WeekMenu {
+  id          String    @id @default(cuid())
+  venueId     String
+  venue       Venue     @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  name        String?
+  menuType    String    @default("WEEKLY")
+  weekStart   DateTime
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  /// Comma-separated DayOfWeek values for days when the venue is closed this week
+  closedDays  String    @default("")
+  entries     WeekMenuEntry[]
+  fixedSections FixedMenuSection[]
+
+  @@index([venueId, createdAt])
+}
+
+model FixedMenuSection {
+  id         String          @id @default(cuid())
+  weekMenuId String
+  weekMenu   WeekMenu        @relation(fields: [weekMenuId], references: [id], onDelete: Cascade)
+  name       String
+  order      Int
+  entries    FixedMenuEntry[]
+
+  @@index([weekMenuId, order])
+}
+
+model FixedMenuEntry {
+  id          String   @id @default(cuid())
+  sectionId   String
+  section     FixedMenuSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  dishId      String?
+  dish        Dish?    @relation(fields: [dishId], references: [id], onDelete: SetNull)
+  name        String?
+  description String?
+  photo       String?
+  price       Decimal? @db.Decimal(10, 2)
+  nutrition   Json?
+  tagIds      String   @default("")
+  note        String?
+  soldOut     Boolean  @default(false)
+  order       Int
+  modifierGroups FixedMenuModifierGroup[]
+
+  @@index([sectionId, order])
+}
+
+model FixedMenuModifierGroup {
+  id          String   @id @default(cuid())
+  entryId     String
+  entry       FixedMenuEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  name        String
+  required    Boolean  @default(false)
+  multiSelect Boolean  @default(false)
+  order       Int
+  options     FixedMenuModifierOption[]
+
+  @@index([entryId, order])
+}
+
+model FixedMenuModifierOption {
+  id         String   @id @default(cuid())
+  groupId    String
+  group      FixedMenuModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  label      String
+  priceDelta Decimal  @default(0) @db.Decimal(10, 2)
+  isDefault  Boolean  @default(false)
+  color      String?
+  order      Int
+
+  @@index([groupId, order])
+}
+
+model WeekMenuEntry {
+  id          String       @id @default(cuid())
+  weekMenuId  String
+  weekMenu    WeekMenu     @relation(fields: [weekMenuId], references: [id], onDelete: Cascade)
+  day         DayOfWeek
+  mealSlotId  String
+  mealSlot    MealSlot     @relation(fields: [mealSlotId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    MealCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  dishId      String?
+  dish        Dish?        @relation(fields: [dishId], references: [id], onDelete: SetNull)
+  name        String?
+  description String?
+  photo       String?
+  nutrition   Json?
+  tagIds      String       @default("")
+  note        String?
+
+  @@unique([weekMenuId, day, mealSlotId, categoryId])
+  @@index([weekMenuId, day, mealSlotId])
+}
+
+model MonthlyTopic {
+  id          String   @id @default(cuid())
+  venueId     String
+  venue       Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  title       String
+  bannerImage String?
+  body        String?
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  highlights  MonthlyTopicHighlight[]
+
+  // The portal looks up the newest published topic for one venue on every
+  // dining page view; without this it is a sequential scan of the whole table.
+  @@index([venueId, publishedAt])
+}
+
+model MonthlyTopicHighlight {
+  id         String       @id @default(cuid())
+  topicId    String
+  topic      MonthlyTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  weekLabel  String
+  image      String?
+  name       String?
+  description String?
+  order      Int
+
+  @@index([topicId, order])
 }

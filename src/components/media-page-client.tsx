@@ -1,9 +1,11 @@
 "use client"
 
-import { useRef, useState, useEffect, useCallback } from "react"
+import { useRef, useState, useEffect, useCallback, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Upload, Loader2 } from "lucide-react"
+import { Upload, Loader2, FolderSync, Trash2 } from "lucide-react"
 import { toast } from "@/components/ui/toaster"
+import { runMediaMigration, cacheAllGravatars } from "@/lib/actions/media-migrate"
+import { deleteOrphanedObjects, type OrphanedObject } from "@/lib/actions/media"
 
 function useUploader() {
   const router = useRouter()
@@ -53,6 +55,131 @@ export function MediaUploadButton() {
         Upload
       </button>
     </>
+  )
+}
+
+export function MediaMigrateButton() {
+  const [pending, startTransition] = useTransition()
+  const router = useRouter()
+
+  function handleMigrate() {
+    startTransition(async () => {
+      const res = await runMediaMigration()
+      if (!res.ok) { toast.error(res.error ?? "Migration failed"); return }
+      toast.success(`Migration done: moved ${res.moved ?? 0}, created ${res.created ?? 0} records`)
+      router.refresh()
+    })
+  }
+
+  function handleGravatar() {
+    startTransition(async () => {
+      const res = await cacheAllGravatars()
+      if (!res.ok) { toast.error(res.error ?? "Failed"); return }
+      toast.success(`Gravatars: cached ${res.cached ?? 0}, skipped ${res.skipped ?? 0}`)
+      router.refresh()
+    })
+  }
+
+  return (
+    <div className="flex gap-2">
+      <button
+        type="button"
+        onClick={handleGravatar}
+        disabled={pending}
+        className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50 disabled:opacity-60"
+      >
+        {pending ? <Loader2 className="size-4 animate-spin" /> : <FolderSync className="size-4" />}
+        Cache Gravatars
+      </button>
+      <button
+        type="button"
+        onClick={handleMigrate}
+        disabled={pending}
+        className="inline-flex items-center gap-1.5 rounded-lg border border-brand/30 bg-brand/5 px-3 py-2 text-sm font-medium text-brand transition hover:bg-brand/10 disabled:opacity-60"
+      >
+        {pending ? <Loader2 className="size-4 animate-spin" /> : <FolderSync className="size-4" />}
+        Run Migration
+      </button>
+    </div>
+  )
+}
+
+function formatBytes(b: number) {
+  if (b < 1024) return `${b} B`
+  if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`
+  return `${(b / 1024 / 1024).toFixed(1)} MB`
+}
+
+export function OrphanedList({ orphans }: { orphans: OrphanedObject[] }) {
+  const [pending, startTransition] = useTransition()
+  const router = useRouter()
+
+  if (orphans.length === 0) return (
+    <div className="flex flex-col items-center py-16 text-center">
+      <p className="text-sm text-gray-400">No orphaned objects. Storage is clean.</p>
+    </div>
+  )
+
+  function handleDeleteAll() {
+    if (!confirm(`Delete all ${orphans.length} orphaned object${orphans.length === 1 ? "" : "s"}?`)) return
+    startTransition(async () => {
+      const res = await deleteOrphanedObjects(orphans.map((o) => o.key))
+      if (!res.ok) { toast.error(res.error ?? "Failed"); return }
+      toast.success(res.message ?? "Deleted")
+      router.refresh()
+    })
+  }
+
+  function handleDeleteOne(key: string) {
+    startTransition(async () => {
+      const res = await deleteOrphanedObjects([key])
+      if (!res.ok) { toast.error(res.error ?? "Failed"); return }
+      router.refresh()
+    })
+  }
+
+  return (
+    <div>
+      <div className="mb-3 flex items-center gap-3">
+        <span className="text-sm text-gray-500">{orphans.length} file{orphans.length === 1 ? "" : "s"}</span>
+        <button
+          type="button"
+          onClick={handleDeleteAll}
+          disabled={pending}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-100 disabled:opacity-60"
+        >
+          {pending ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
+          Delete all
+        </button>
+      </div>
+      <div className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200">
+        {orphans.map((o) => {
+          const name = o.key.split("/").pop() ?? o.key
+          const isImage = /\.(jpe?g|png|webp|gif|svg)$/i.test(o.key)
+          return (
+            <div key={o.key} className="flex items-center gap-3 px-4 py-2.5">
+              <div className="size-10 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+                {isImage && (
+                  <img src={`/uploads/${o.key}`} alt={name} className="h-full w-full object-cover" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-gray-800">{name}</p>
+                <p className="text-xs text-gray-400">{o.key.split("/")[0]} · {formatBytes(o.size)}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleDeleteOne(o.key)}
+                disabled={pending}
+                className="shrink-0 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600 transition hover:bg-red-100 disabled:opacity-50"
+              >
+                Delete
+              </button>
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 

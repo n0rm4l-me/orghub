@@ -45,6 +45,7 @@ export type AuditAction =
   | "kudos.redeem"
   | "kudos.delete"
   | "settings.kudos"
+  | "settings.dining"
 
 interface LogInput {
   userId: string

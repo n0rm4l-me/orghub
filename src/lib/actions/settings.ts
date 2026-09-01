@@ -10,6 +10,7 @@ const HEX_COLOR = /^#[0-9a-f]{6}$/i
 
 /** Rejects anything that is not an http(s) URL, including `javascript:` payloads. */
 function validImageUrl(raw: string): boolean {
+  if (raw.startsWith("/uploads/")) return true
   try {
     const url = new URL(raw)
     return url.protocol === "https:" || url.protocol === "http:"
@@ -89,7 +90,7 @@ export async function saveSidebarWidgets(
   return ok("Sidebar widgets saved.")
 }
 
-const NAV_ITEM_IDS = new Set(["events", "polls", "kudos"])
+const NAV_ITEM_IDS = new Set(["events", "polls", "kudos", "dining"])
 
 async function getCurrentNavOrder(): Promise<string[]> {
   const s = await db.siteSettings.findUnique({ where: { id: "singleton" }, select: { navOrder: true } })
@@ -176,11 +177,12 @@ export async function saveLayout(formData: FormData): Promise<ActionResult> {
   const pagesLayout   = (formData.get("pagesLayout")   as string) || "content"
   const kudosLayout   = (formData.get("kudosLayout")   as string) || "content"
   const eventsLayout  = (formData.get("eventsLayout")  as string) || "content"
+  const diningLayout  = (formData.get("diningLayout")  as string) || "content"
   const portalWidth   = (formData.get("portalWidth")   as string) || "default"
   const feedPageSize  = Number(formData.get("feedPageSize")) || 15
   const feedCardStyle = (formData.get("feedCardStyle") as string) || "preview"
 
-  if (!VALID_LAYOUTS.has(feedLayout) || !VALID_LAYOUTS.has(articleLayout) || !VALID_LAYOUTS.has(pagesLayout) || !VALID_LAYOUTS.has(kudosLayout) || !VALID_LAYOUTS.has(eventsLayout))
+  if (!VALID_LAYOUTS.has(feedLayout) || !VALID_LAYOUTS.has(articleLayout) || !VALID_LAYOUTS.has(pagesLayout) || !VALID_LAYOUTS.has(kudosLayout) || !VALID_LAYOUTS.has(eventsLayout) || !VALID_LAYOUTS.has(diningLayout))
     return fail("Invalid layout value.")
   if (!VALID_WIDTHS.has(portalWidth))
     return fail("Invalid width value.")
@@ -191,19 +193,44 @@ export async function saveLayout(formData: FormData): Promise<ActionResult> {
 
   await db.siteSettings.upsert({
     where: { id: "singleton" },
-    create: { id: "singleton", feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, portalWidth, feedPageSize, feedCardStyle },
-    update: { feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, portalWidth, feedPageSize, feedCardStyle },
+    create: { id: "singleton", feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, diningLayout, portalWidth, feedPageSize, feedCardStyle },
+    update: { feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, diningLayout, portalWidth, feedPageSize, feedCardStyle },
   })
 
   await logAudit({
     userId: user.id,
     action: "settings.layout",
     resourceType: "SiteSettings",
-    metadata: { feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, portalWidth, feedPageSize, feedCardStyle },
+    metadata: { feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, diningLayout, portalWidth, feedPageSize, feedCardStyle },
   })
 
   revalidatePath("/", "layout")
   return ok("Layout saved.")
+}
+
+const ISO4217 = /^[A-Z]{3}$/
+
+export async function saveDiningSettings(formData: FormData): Promise<ActionResult> {
+  const user = await requireRole("ADMIN")
+
+  const diningCurrency = ((formData.get("diningCurrency") as string) ?? "JPY").trim().toUpperCase()
+  if (!ISO4217.test(diningCurrency)) return fail("Enter a valid 3-letter currency code (e.g. JPY, USD, EUR).")
+
+  await db.siteSettings.upsert({
+    where: { id: "singleton" },
+    create: { id: "singleton", diningCurrency },
+    update: { diningCurrency },
+  })
+
+  await logAudit({
+    userId: user.id,
+    action: "settings.dining",
+    resourceType: "SiteSettings",
+    metadata: { diningCurrency },
+  })
+
+  revalidatePath("/", "layout")
+  return ok("Dining settings saved.")
 }
 
 export async function toggleGravatars(enabled: boolean): Promise<ActionResult> {

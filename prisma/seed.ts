@@ -51,17 +51,17 @@ async function main() {
 
   const articles = [
     {
-      title: "New Office Opening in Osaka — Join Us for the Celebration!",
-      slug: "osaka-office-opening",
-      excerpt: "We're thrilled to announce the opening of our new Osaka office. All employees are invited to the celebration event on September 5th.",
+      title: "New Office Opening in Austin — Join Us for the Celebration!",
+      slug: "austin-office-opening",
+      excerpt: "We're thrilled to announce the opening of our new Austin office. All employees are invited to the celebration event on September 5th.",
       body: {
         type: "doc",
         content: [
-          { type: "paragraph", content: [{ type: "text", text: "We're thrilled to announce the opening of our new Osaka office. All employees are invited to the celebration event on September 5th." }] },
+          { type: "paragraph", content: [{ type: "text", text: "We're thrilled to announce the opening of our new Austin office. All employees are invited to the celebration event on September 5th." }] },
           { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "What to expect" }] },
           { type: "paragraph", content: [{ type: "text", text: "The new office features 3 floors, 200 workstations, 2 large meeting rooms, and a rooftop terrace. The celebration will include a guided tour, refreshments, and a welcome speech from our CEO." }] },
           { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "How to attend" }] },
-          { type: "paragraph", content: [{ type: "text", text: "Register through the HR portal by August 30th. Shuttle buses will depart from the Tokyo office at 9am." }] },
+          { type: "paragraph", content: [{ type: "text", text: "Register through the HR portal by August 30th. Shuttle buses will depart from the New York office at 9am." }] },
         ],
       },
       published: true,
@@ -69,22 +69,22 @@ async function main() {
       categoryId: announcements.id,
     },
     {
-      title: "Migrating from HAProxy to Istio: Lessons Learned",
-      slug: "haproxy-to-istio-migration",
-      excerpt: "After six months of work, our infrastructure team has completed the migration. Here's what we learned and what we'd do differently.",
+      title: "Cutting Build Times by 70% with Remote Caching",
+      slug: "remote-caching-build-times",
+      excerpt: "After six months of effort, our platform team cut CI build times from 18 minutes to under 5. Here's the approach and what we'd do differently.",
       body: {
         type: "doc",
         content: [
-          { type: "paragraph", content: [{ type: "text", text: "After six months of work, our infrastructure team has completed the migration from HAProxy to Istio service mesh. Here's what we learned, what broke, and what we'd do differently." }] },
-          { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Why we migrated" }] },
-          { type: "paragraph", content: [{ type: "text", text: "HAProxy served us well for three years, but as our microservices count grew past 80 services, manual config updates became a bottleneck. Every new service required a PR to the Ansible repo, a review, and a deploy cycle." }] },
-          { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "The passthrough approach" }] },
-          { type: "paragraph", content: [{ type: "text", text: "We used a passthrough backend strategy: HAProxy forwards to Istio IngressGateway on port 31900. This let us migrate service by service without a big-bang cutover." }] },
+          { type: "paragraph", content: [{ type: "text", text: "As our monorepo grew past 200 packages, CI times ballooned to 18 minutes per PR. That's a lot of waiting. After evaluating several approaches, we landed on remote caching and cut times to under 5 minutes." }] },
+          { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Why builds were slow" }] },
+          { type: "paragraph", content: [{ type: "text", text: "Every CI run was rebuilding packages from scratch, even when only one file changed. With 200+ packages and no shared cache, every PR triggered a full rebuild." }] },
+          { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "The approach" }] },
+          { type: "paragraph", content: [{ type: "text", text: "We set up a shared remote cache that stores build outputs keyed by input hash. If nothing upstream changed, CI downloads the cached result instead of rebuilding. Cache hits are near-instant." }] },
           { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Key lessons" }] },
           { type: "bulletList", content: [
-            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Always test in pre environment first" }] }] },
-            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "EnvoyFilter for custom headers is complex but powerful" }] }] },
-            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Monitor canary traffic closely during cutover" }] }] },
+            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Start with a staging rollout — production cache misses are expensive" }] }] },
+            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Deterministic builds are a prerequisite — timestamps in output files break caching" }] }] },
+            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Monitor cache hit rate weekly; drops signal a flaky dependency" }] }] },
           ]},
         ],
       },
@@ -115,7 +115,7 @@ async function main() {
       body: {
         type: "doc",
         content: [
-          { type: "paragraph", content: [{ type: "text", text: "Join us this Friday at 3PM for our monthly Tech Talk series. This month Yamada Satoshi from the ML Platform team will share how we deploy and serve large language models at scale." }] },
+          { type: "paragraph", content: [{ type: "text", text: "Join us this Friday at 3PM for our monthly Tech Talk series. This month Alex Carter from the ML Platform team will share how we deploy and serve large language models at scale." }] },
           { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Details" }] },
           { type: "bulletList", content: [
             { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "When: Friday August 29, 3:00–4:00 PM" }] }] },
@@ -139,7 +139,7 @@ async function main() {
           { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Key changes" }] },
           { type: "bulletList", content: [
             { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Up to 3 days per week remote (previously 2)" }] }] },
-            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Core hours 10am–3pm JST regardless of location" }] }] },
+            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Core hours 10am–3pm ET regardless of location" }] }] },
             { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Monthly in-person team day required" }] }] },
           ]},
           { type: "paragraph", content: [{ type: "text", text: "Full policy document available on the HR portal." }] },
@@ -178,7 +178,7 @@ async function main() {
       body: {
         type: "doc",
         content: [
-          { type: "paragraph", content: [{ type: "text", text: "Our next company all-hands is scheduled for September 12 at 10AM JST. All offices will be connected via video conference, and remote employees can join via the usual Zoom link." }] },
+          { type: "paragraph", content: [{ type: "text", text: "Our next company all-hands is scheduled for September 12 at 10AM ET. All offices will be connected via video conference, and remote employees can join via the usual Zoom link." }] },
           { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Agenda" }] },
           { type: "bulletList", content: [
             { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "10:00 — CEO update: Q2 results and Q3 focus" }] }] },
@@ -215,11 +215,11 @@ async function main() {
     {
       title: "Employee Referral Bonus Doubled Through End of Year",
       slug: "employee-referral-bonus-doubled",
-      excerpt: "To help fill 30 open engineering and product roles, the referral bonus is increasing to ¥200,000 per successful hire.",
+      excerpt: "To help fill 30 open engineering and product roles, the referral bonus is increasing to $2,000 per successful hire.",
       body: {
         type: "doc",
         content: [
-          { type: "paragraph", content: [{ type: "text", text: "We're growing fast and need your help. For any candidate you refer who is hired and completes their 90-day probation before December 31, 2026, you'll receive a ¥200,000 referral bonus — double the usual amount." }] },
+          { type: "paragraph", content: [{ type: "text", text: "We're growing fast and need your help. For any candidate you refer who is hired and completes their 90-day probation before December 31, 2026, you'll receive a $2,000 referral bonus — double the usual amount." }] },
           { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Open roles" }] },
           { type: "bulletList", content: [
             { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "8 Backend Engineers (Go, Kotlin)" }] }] },
@@ -258,17 +258,17 @@ async function main() {
     {
       title: "New Benefits: Mental Health Stipend and Gym Allowance",
       slug: "new-benefits-mental-health-gym",
-      excerpt: "Starting October 1, all full-time employees receive a ¥20,000/month wellness stipend covering mental health apps, gym memberships, and more.",
+      excerpt: "Starting October 1, all full-time employees receive a $200/month wellness stipend covering mental health apps, gym memberships, and more.",
       body: {
         type: "doc",
         content: [
-          { type: "paragraph", content: [{ type: "text", text: "We've heard you. Employee wellbeing is a priority, and we're backing that with real budget. From October 1, every full-time employee will receive a ¥20,000 per month wellness stipend." }] },
+          { type: "paragraph", content: [{ type: "text", text: "We've heard you. Employee wellbeing is a priority, and we're backing that with real budget. From October 1, every full-time employee will receive a $200 per month wellness stipend." }] },
           { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "What's eligible" }] },
           { type: "bulletList", content: [
             { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Gym memberships and fitness classes" }] }] },
-            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Mental health apps (Calm, Headspace, Meditopia)" }] }] },
+            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Mental health apps (Calm, Headspace, Noom)" }] }] },
             { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Online therapy and counselling platforms" }] }] },
-            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Sports equipment up to ¥10,000/year" }] }] },
+            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Sports equipment up to $100/year" }] }] },
           ]},
           { type: "paragraph", content: [{ type: "text", text: "Submit receipts through the expense portal by the 25th of each month." }] },
         ],
@@ -299,17 +299,17 @@ async function main() {
       categoryId: engineering.id,
     },
     {
-      title: "Tokyo Office Rooftop BBQ — September 6",
-      slug: "tokyo-rooftop-bbq-september",
-      excerpt: "End-of-summer rooftop BBQ at the Tokyo office. Food, drinks, and games. Families welcome.",
+      title: "New York Office Rooftop BBQ — September 6",
+      slug: "nyc-rooftop-bbq-september",
+      excerpt: "End-of-summer rooftop BBQ at the New York office. Food, drinks, and games. Families welcome.",
       body: {
         type: "doc",
         content: [
-          { type: "paragraph", content: [{ type: "text", text: "Join us on the rooftop for our annual end-of-summer BBQ. All Tokyo office employees and their families are welcome. Food and non-alcoholic drinks are provided." }] },
+          { type: "paragraph", content: [{ type: "text", text: "Join us on the rooftop for our annual end-of-summer BBQ. All New York office employees and their families are welcome. Food and non-alcoholic drinks are provided." }] },
           { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Details" }] },
           { type: "bulletList", content: [
             { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "When: September 6, 5:00 PM onwards" }] }] },
-            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Where: Tokyo office rooftop terrace (21F)" }] }] },
+            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Where: New York office rooftop terrace (21F)" }] }] },
             { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "RSVP by September 3 so we can order enough food" }] }] },
           ]},
         ],
@@ -317,7 +317,7 @@ async function main() {
       published: true,
       publishedAt: new Date("2026-08-08"),
       eventDate: new Date("2026-09-06T17:00:00"),
-      eventLocation: "Tokyo office rooftop (21F)",
+      eventLocation: "New York office rooftop (21F)",
       categoryId: events.id,
     },
     {
@@ -355,7 +355,7 @@ async function main() {
             { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Must include numbers and special characters" }] }] },
             { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Cannot reuse any of your last 10 passwords" }] }] },
           ]},
-          { type: "paragraph", content: [{ type: "text", text: "Accounts that have not rotated by Friday 6PM JST will be locked and require an IT ticket to unlock. Don't leave it to the last minute." }] },
+          { type: "paragraph", content: [{ type: "text", text: "Accounts that have not rotated by Friday 6PM ET will be locked and require an IT ticket to unlock. Don't leave it to the last minute." }] },
         ],
       },
       published: true,
@@ -427,15 +427,15 @@ async function main() {
       categoryId: engineering.id,
     },
     {
-      title: "Office Closed August 11 — Mountain Day Holiday",
-      slug: "mountain-day-closure-2026",
-      excerpt: "All Japan offices will be closed on Monday August 11 for the Mountain Day national holiday. Remote employees should check local calendars.",
+      title: "Office Closed September 1 — Labor Day",
+      slug: "labor-day-closure-2026",
+      excerpt: "All US offices will be closed on Monday September 1 for Labor Day. Remote employees should check local calendars.",
       body: {
         type: "doc",
         content: [
-          { type: "paragraph", content: [{ type: "text", text: "All Japan-based offices will be closed on Monday, August 11 for the Mountain Day (山の日) national holiday." }] },
-          { type: "paragraph", content: [{ type: "text", text: "Employees based outside Japan should follow their local public holiday calendars. On-call schedules remain unchanged — PagerDuty rotations are not affected." }] },
-          { type: "paragraph", content: [{ type: "text", text: "Normal business resumes on Tuesday, August 12." }] },
+          { type: "paragraph", content: [{ type: "text", text: "All US-based offices will be closed on Monday, September 1 for Labor Day." }] },
+          { type: "paragraph", content: [{ type: "text", text: "Employees based outside the US should follow their local public holiday calendars. On-call schedules remain unchanged — PagerDuty rotations are not affected." }] },
+          { type: "paragraph", content: [{ type: "text", text: "Normal business resumes on Tuesday, September 2." }] },
         ],
       },
       published: true,
@@ -445,11 +445,11 @@ async function main() {
     {
       title: "Product Team Offsite Recap: What We Decided",
       slug: "product-offsite-recap-2026",
-      excerpt: "The product team spent two days in Hakone aligning on H2 priorities. Here are the key decisions and what they mean for engineering.",
+      excerpt: "The product team spent two days in Lake Tahoe aligning on H2 priorities. Here are the key decisions and what they mean for engineering.",
       body: {
         type: "doc",
         content: [
-          { type: "paragraph", content: [{ type: "text", text: "Last week the product team held its H2 planning offsite in Hakone. 24 PMs and designers spent two days pressure-testing roadmap assumptions and aligning on priorities. Here's what came out of it." }] },
+          { type: "paragraph", content: [{ type: "text", text: "Last week the product team held its H2 planning offsite in Lake Tahoe. 24 PMs and designers spent two days pressure-testing roadmap assumptions and aligning on priorities. Here's what came out of it." }] },
           { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Key decisions" }] },
           { type: "bulletList", content: [
             { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Search gets a dedicated squad for Q3 — it's now a top-3 priority" }] }] },
@@ -533,7 +533,7 @@ async function main() {
           { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Health" }] },
           { type: "paragraph", content: [{ type: "text", text: "Comprehensive health, dental, and vision insurance for you and your dependents. Enrolment happens within your first 30 days." }] },
           { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Wellness stipend" }] },
-          { type: "paragraph", content: [{ type: "text", text: "¥20,000/month for gym memberships, mental health apps, and fitness equipment. Submit receipts through the expense portal." }] },
+          { type: "paragraph", content: [{ type: "text", text: "$200/month for gym memberships, mental health apps, and fitness equipment. Submit receipts through the expense portal." }] },
         ],
       },
     },

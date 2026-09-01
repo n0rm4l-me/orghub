@@ -8,6 +8,7 @@ import { ModuleToggle } from "@/components/module-toggle"
 import { KudosSettingsForm } from "@/components/kudos-settings-form"
 import { KudosRedeemTypesPanel } from "@/components/kudos-redeem-types-panel"
 import { TranslationSettingsForm } from "@/components/translation-settings-form"
+import { DiningSettingsForm } from "@/components/dining/dining-settings-form"
 import { getRedeemTypes } from "@/lib/actions/kudos"
 
 interface Props {
@@ -112,6 +113,27 @@ export default async function ModuleSettingsPage({ params }: Props) {
             provider={settings.translationProvider}
             languages={settings.translationLanguages}
           />
+        )}
+
+        {mod.id === "dining" && (
+          <>
+            <DiningSettingsForm currency={settings.diningCurrency} />
+            <div className="rounded-xl border border-gray-200 bg-white px-5 py-5">
+              <h2 className="mb-3 text-sm font-semibold text-gray-900">Content</h2>
+              <p className="mb-4 text-xs leading-relaxed text-gray-500">
+                Manage locations, venues, weekly menus, dish library, and monthly topics.
+              </p>
+              <Link
+                href="/admin/dining"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white
+                  px-3 py-2 text-sm font-medium text-gray-700 transition hover:border-gray-300
+                  hover:bg-gray-50"
+              >
+                <ExternalLink className="size-3.5 text-gray-400" aria-hidden />
+                Manage dining
+              </Link>
+            </div>
+          </>
         )}
 
         {mod.id === "kudos" && (

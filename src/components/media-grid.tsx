@@ -13,6 +13,7 @@ export type MediaItem = {
   mimeType: string
   size: number
   createdAt: Date
+  context: string | null
   uploadedBy: { name: string | null } | null
 }
 
@@ -82,7 +83,12 @@ function MediaCard({
       <div className="flex items-center justify-between gap-1 px-2.5 py-2">
         <div className="min-w-0">
           <p className="truncate text-xs font-medium text-gray-800">{item.filename}</p>
-          <p className="text-[11px] text-gray-400">{formatBytes(item.size)}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="text-[11px] text-gray-400">{formatBytes(item.size)}</p>
+            {item.context && (
+              <span className="rounded-full bg-brand/10 px-1.5 py-px text-[10px] font-medium text-brand">{item.context}</span>
+            )}
+          </div>
         </div>
         <CopyIconButton url={item.url} />
       </div>

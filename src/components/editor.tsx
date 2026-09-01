@@ -24,6 +24,7 @@ import {
 interface Props {
   initialContent?: object
   onChange: (json: object) => void
+  folder?: string
 }
 
 export const EDITOR_EXTENSIONS = [
@@ -36,7 +37,7 @@ export const EDITOR_EXTENSIONS = [
   PollEmbed,
 ]
 
-export function Editor({ initialContent, onChange }: Props) {
+export function Editor({ initialContent, onChange, folder }: Props) {
   const editor = useEditor({
     extensions: [
       ...EDITOR_EXTENSIONS,
@@ -56,7 +57,7 @@ export function Editor({ initialContent, onChange }: Props) {
 
   return (
     <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
-      <Toolbar editor={editor} />
+      <Toolbar editor={editor} folder={folder} />
       <div className="px-6">
         <EditorContent editor={editor} />
       </div>
@@ -64,7 +65,7 @@ export function Editor({ initialContent, onChange }: Props) {
   )
 }
 
-function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
+function Toolbar({ editor, folder }: { editor: ReturnType<typeof useEditor>; folder?: string }) {
   if (!editor) return null
 
   const btn = (
@@ -120,7 +121,7 @@ function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
         Link2,
         "Link"
       )}
-      <InsertImageButton editor={editor} />
+      <InsertImageButton editor={editor} folder={folder} />
       {divider}
       {btn(false, () => editor.chain().focus().undo().run(), Undo, "Undo")}
       {btn(false, () => editor.chain().focus().redo().run(), Redo, "Redo")}
@@ -130,7 +131,7 @@ function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
   )
 }
 
-function InsertImageButton({ editor }: { editor: ReturnType<typeof useEditor> }) {
+function InsertImageButton({ editor, folder }: { editor: ReturnType<typeof useEditor>; folder?: string }) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [open, setOpen] = useState(false)
   const [media, setMedia] = useState<Array<{ id: string; url: string; filename: string; mimeType: string }> | null>(null)
@@ -170,6 +171,7 @@ function InsertImageButton({ editor }: { editor: ReturnType<typeof useEditor> })
     try {
       const fd = new FormData()
       fd.set("file", files[0])
+      if (folder) fd.set("folder", folder)
       const res = await fetch("/api/upload", { method: "POST", body: fd })
       const data = await res.json()
       if (res.ok) {
