@@ -413,7 +413,7 @@ function EntryEditor({
 
       {/* Photo */}
       <div className="mb-2.5">
-        <MediaPickerField value={photo} onChange={setPhoto} />
+        <MediaPickerField value={photo} onChange={setPhoto} folder="dining" />
       </div>
 
       {/* Price + note */}

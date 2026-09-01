@@ -193,7 +193,7 @@ function DishForm({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className={lbl}>Photo</label>
-          <MediaPickerField value={photo} onChange={setPhoto} />
+          <MediaPickerField value={photo} onChange={setPhoto} folder="dining" />
         </div>
         <div>
           <label className={lbl}>Base price ({getCurrencySymbol(currency)})</label>

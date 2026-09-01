@@ -43,7 +43,7 @@ function TopicForm({ venueId, topic, onDone }: { venueId: string; topic?: Topic;
       </div>
       <div>
         <label className={lbl}>Banner image</label>
-        <MediaPickerField value={banner} onChange={setBanner} />
+        <MediaPickerField value={banner} onChange={setBanner} folder="dining" />
       </div>
       <div>
         <label className={lbl}>Body</label>

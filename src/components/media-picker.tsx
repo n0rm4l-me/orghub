@@ -166,13 +166,14 @@ export function MediaPicker({ value, onChange, name = "photo", label = "Image", 
   )
 }
 
-export function MediaPickerField({ value, onChange, tone }: { value: string; onChange: (url: string) => void; tone?: "dark" }) {
+export function MediaPickerField({ value, onChange, tone, folder }: { value: string; onChange: (url: string) => void; tone?: "dark"; folder?: string }) {
   const [uploading, setUploading] = useState(false)
 
   async function handleFile(file: File) {
     setUploading(true)
     const fd = new FormData()
     fd.set("file", file)
+    if (folder) fd.set("folder", folder)
     try {
       const res = await fetch("/api/upload", { method: "POST", body: fd })
       const data = await res.json()
