@@ -17,7 +17,7 @@ export default function GlobalError(props: {
 }) {
   return (
     <html lang="en" className="h-full">
-      <body className="h-full bg-gray-50 antialiased">
+      <body className="h-full bg-background text-foreground antialiased">
         <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
           <ErrorState {...props} branded={false} />
         </main>

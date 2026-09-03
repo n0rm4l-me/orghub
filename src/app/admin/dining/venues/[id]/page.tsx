@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, Utensils, CalendarDays, Newspaper, Settings, Pencil, Search } from "lucide-react"
+import { Utensils, CalendarDays, Newspaper, Settings, Pencil, Search } from "lucide-react"
 import { db } from "@/lib/db"
 import { requireRole } from "@/lib/rbac"
 import { getSettings } from "@/lib/settings"
@@ -106,31 +106,31 @@ export default async function VenuePage({ params, searchParams }: Props) {
 
   return (
     <div className="max-w-4xl">
-      <div className="mb-6">
-        <Link href="/admin/dining" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800">
-          <ArrowLeft className="size-4" aria-hidden />
-          Dining
-        </Link>
-      </div>
+      <PageHeader
+        title={venue.name}
+        description={venue.location.name}
+        back={{ href: "/admin/dining", label: "Dining" }}
+      />
 
-      <PageHeader title={venue.name} description={venue.location.name} />
-
-      <div className="mb-6 flex gap-1 border-b border-gray-200">
+      <nav className="mb-6 flex gap-1 border-b border-border">
         {tabs.map((t) => {
           const active = t.id === tab
           return (
             <Link
               key={t.id}
               href={`?tab=${t.id}`}
-              className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition -mb-px
-                ${active ? "border-brand text-brand" : "border-transparent text-gray-500 hover:text-gray-800"}`}
+              className={`relative flex items-center gap-1.5 px-4 pb-3 text-sm font-medium transition-colors
+                ${active
+                  ? "text-foreground after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t-full after:bg-brand"
+                  : "text-muted-foreground hover:text-foreground"
+                }`}
             >
               <t.icon className="size-3.5" aria-hidden />
               {t.label}
             </Link>
           )
         })}
-      </div>
+      </nav>
 
       {tab === "settings" && (
         <div className="space-y-6">

@@ -27,24 +27,24 @@ export function ErrorState({ error, reset, branded = true }: Props) {
 
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
-      <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-red-50">
+      <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20">
         <AlertTriangle className="size-6 text-red-500" strokeWidth={1.5} />
       </div>
-      <h1 className="text-lg font-semibold text-gray-900">Something went wrong</h1>
-      <p className="mt-1 max-w-md text-sm text-gray-500">
+      <h1 className="text-lg font-semibold text-foreground">Something went wrong</h1>
+      <p className="mt-1 max-w-md text-sm text-muted-foreground">
         The page failed to load. Retrying often resolves it. If it keeps happening,
         share the reference below with your IT team.
       </p>
       {error.digest && (
-        <code className="mt-3 rounded bg-gray-100 px-2 py-1 font-mono text-xs text-gray-500">
+        <code className="mt-3 rounded bg-muted px-2 py-1 font-mono text-xs text-muted-foreground">
           {error.digest}
         </code>
       )}
       <button
         onClick={reset}
-        className={`mt-6 inline-flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2 text-sm
-          font-medium text-white transition hover:brightness-95 active:brightness-90 ${
-            branded ? "bg-brand" : "bg-gray-900"
+        className={`mt-6 inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg px-4 text-sm
+          font-medium transition hover:brightness-95 active:brightness-90 ${
+            branded ? "bg-brand text-white" : "bg-foreground text-background"
           }`}
       >
         <RotateCcw className="size-4" />

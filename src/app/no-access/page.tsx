@@ -32,12 +32,12 @@ export default async function NoAccessPage({
     <div className="mx-auto flex max-w-md flex-col items-center py-20 text-center">
       <span
         aria-hidden
-        className="mb-5 grid size-12 place-items-center rounded-xl bg-amber-50 text-amber-600"
+        className="mb-5 grid size-12 place-items-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400"
       >
         <Icon className="size-6" />
       </span>
 
-      <h1 className="text-lg font-semibold text-gray-900">{title}</h1>
+      <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h1>
       <p className="mt-2 text-sm leading-relaxed text-gray-500">{body}</p>
 
       {variant === "role" && need && (
@@ -70,7 +70,7 @@ export default async function NoAccessPage({
           <button
             type="submit"
             className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium
-              text-gray-700 transition hover:bg-gray-50"
+              text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
           >
             Sign in as someone else
           </button>

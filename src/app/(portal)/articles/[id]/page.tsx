@@ -9,7 +9,7 @@ import { SidebarBlocks, type ActivePollData } from "@/components/sidebar-blocks"
 import { getCurrentUser, hasRole } from "@/lib/rbac"
 import { LikeButton } from "@/components/like-button"
 import { CommentForm } from "@/components/comment-form"
-import { DeleteCommentButton } from "@/components/delete-comment-button"
+import { CommentThread } from "@/components/comment-thread"
 import { getQuickLinks, getUpcomingEvents } from "@/lib/nav"
 import { getSettings } from "@/lib/settings"
 import { parseModules } from "@/lib/modules"
@@ -35,17 +35,29 @@ export default async function ArticlePage({ params }: Props) {
         eventEndDate: true,
         eventLocation: true,
         commentsEnabled: true,
-        author: { select: { name: true, email: true } },
+        author: { select: { name: true, email: true, avatarUrl: true } },
         categories: { include: { category: true } },
-        _count: { select: { reactions: true, views: true } },
+        _count: { select: { reactions: true, views: true, comments: true } },
         comments: {
+          where: { parentId: null },
           select: {
             id: true,
             body: true,
             createdAt: true,
-            author: { select: { id: true, name: true, email: true } },
+            articleId: true,
+            author: { select: { id: true, name: true, email: true, avatarUrl: true } },
+            replies: {
+              select: {
+                id: true,
+                body: true,
+                createdAt: true,
+                author: { select: { id: true, name: true, email: true, avatarUrl: true } },
+              },
+              orderBy: { createdAt: "asc" },
+            },
           },
           orderBy: { createdAt: "asc" },
+          take: 50,
         },
       },
     }),
@@ -191,7 +203,9 @@ export default async function ArticlePage({ params }: Props) {
         <div className="mt-8 flex items-center justify-between border-t border-gray-100 pt-6 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <Avatar className="size-9">
-              {settings.gravatarsEnabled && <AvatarImage src={gravatarUrl(article.author.email, 36)} alt="" />}
+              {(article.author.avatarUrl || settings.gravatarsEnabled) && (
+                <AvatarImage src={article.author.avatarUrl ?? gravatarUrl(article.author.email, 36)} alt="" />
+              )}
               <AvatarFallback className="bg-gray-100 text-gray-600 font-semibold text-sm dark:bg-gray-700 dark:text-gray-300">
                 {initials}
               </AvatarFallback>
@@ -229,52 +243,24 @@ export default async function ArticlePage({ params }: Props) {
           <h2 className="mb-5 flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-gray-100">
             <MessageSquare className="size-4 text-gray-400 dark:text-gray-500" aria-hidden />
             Comments
-            {article.comments.length > 0 && (
+            {article._count.comments > 0 && (
               <span className="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500 dark:bg-gray-700 dark:text-gray-400">
-                {article.comments.length}
+                {article._count.comments}
               </span>
             )}
           </h2>
 
           {article.comments.length > 0 ? (
             <ul className="mb-6 space-y-5">
-              {article.comments.map((comment) => {
-                const commentInitials = (comment.author.name ?? "?")
-                  .split(/\s+/)
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()
-                  .slice(0, 2)
-                const canDelete = user?.id === comment.author.id || canModerate
-                return (
-                  <li key={comment.id} className="flex gap-3">
-                    <Avatar className="size-8 shrink-0">
-                      {settings.gravatarsEnabled && <AvatarImage src={gravatarUrl(comment.author.email, 32)} alt="" />}
-                      <AvatarFallback className="bg-gray-100 text-[11px] font-bold text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                        {commentInitials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {comment.author.name}
-                        </span>
-                        <span className="text-xs text-gray-400 dark:text-gray-500">
-                          {new Date(comment.createdAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </span>
-                        {canDelete && <DeleteCommentButton id={comment.id} />}
-                      </div>
-                      <p className="mt-1 text-sm leading-relaxed text-gray-700 whitespace-pre-line dark:text-gray-300">
-                        {comment.body}
-                      </p>
-                    </div>
-                  </li>
-                )
-              })}
+              {article.comments.map((comment) => (
+                <CommentThread
+                  key={comment.id}
+                  comment={comment}
+                  userId={user?.id ?? null}
+                  canModerate={canModerate}
+                  gravatarsEnabled={!!settings.gravatarsEnabled}
+                />
+              ))}
             </ul>
           ) : (
             <p className="mb-6 text-sm text-gray-400 dark:text-gray-500">No comments yet.</p>

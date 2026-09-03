@@ -7,7 +7,6 @@ import {
   FileText,
   Layers,
   Users,
-  Tag,
   ShieldCheck,
   Paintbrush,
   ScrollText,
@@ -19,6 +18,7 @@ import {
   Award,
   Images,
   UtensilsCrossed,
+  Lightbulb,
   type LucideIcon,
 } from "lucide-react"
 
@@ -28,30 +28,31 @@ interface Item {
   icon: LucideIcon
 }
 
-const BASE_CONTENT: Item[] = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/articles", label: "Articles", icon: FileText },
-  { href: "/admin/pages", label: "Pages", icon: Layers },
-  { href: "/admin/categories", label: "Categories", icon: Tag },
-  { href: "/admin/navigation", label: "Navigation", icon: Compass },
-  { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
+const DASHBOARD: Item = { href: "/admin", label: "Dashboard", icon: LayoutDashboard }
+
+const CONTENT_BASE: Item[] = [
+  { href: "/admin/articles",      label: "Articles",      icon: FileText      },
+  { href: "/admin/pages",         label: "Pages",         icon: Layers        },
+  { href: "/admin/announcements", label: "Announcements", icon: Megaphone     },
 ]
 
-const EVENTS_ITEM:  Item = { href: "/admin/events",  label: "Events",  icon: CalendarDays     }
-const POLLS_ITEM:   Item = { href: "/admin/polls",   label: "Polls",   icon: BarChart2        }
-const KUDOS_ITEM:   Item = { href: "/admin/kudos",   label: "Kudos",   icon: Award            }
-const DINING_ITEM:  Item = { href: "/admin/dining",  label: "Dining",  icon: UtensilsCrossed  }
+const EVENTS_ITEM: Item = { href: "/admin/events", label: "Events", icon: CalendarDays }
+const POLLS_ITEM:  Item = { href: "/admin/polls",  label: "Polls",  icon: BarChart2    }
+const KUDOS_ITEM:       Item = { href: "/admin/kudos",       label: "Kudos",       icon: Award          }
+const DINING_ITEM:      Item = { href: "/admin/dining",      label: "Dining",      icon: UtensilsCrossed }
+const SUGGESTIONS_ITEM: Item = { href: "/admin/suggestions", label: "Suggestions", icon: Lightbulb       }
 
 const ADMINISTRATION: Item[] = [
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/media", label: "Media", icon: Images },
-  { href: "/admin/audit", label: "Audit log", icon: ScrollText },
+  { href: "/admin/users",  label: "Users",     icon: Users      },
+  { href: "/admin/media",  label: "Media",     icon: Images     },
+  { href: "/admin/audit",  label: "Audit log", icon: ScrollText },
 ]
 
 const SYSTEM: Item[] = [
-  { href: "/admin/modules", label: "Modules", icon: LayoutGrid },
-  { href: "/admin/appearance", label: "Appearance", icon: Paintbrush },
-  { href: "/admin/auth-providers", label: "Authentication", icon: ShieldCheck },
+  { href: "/admin/modules",         label: "Modules",        icon: LayoutGrid  },
+  { href: "/admin/appearance",      label: "Appearance",     icon: Paintbrush  },
+  { href: "/admin/navigation",      label: "Navigation",     icon: Compass     },
+  { href: "/admin/auth-providers",  label: "Authentication", icon: ShieldCheck },
 ]
 
 /** `/admin` must not light up for every child route, so it matches exactly. */
@@ -66,28 +67,37 @@ export function AdminNav({
   pollsEnabled,
   kudosEnabled,
   diningEnabled,
+  suggestionsEnabled,
 }: {
   canAdminister: boolean
   eventsEnabled: boolean
   pollsEnabled: boolean
   kudosEnabled?: boolean
   diningEnabled?: boolean
+  suggestionsEnabled?: boolean
 }) {
   const pathname = usePathname()
 
-  const content = [
-    BASE_CONTENT[0],
-    BASE_CONTENT[1],
-    ...(eventsEnabled ? [EVENTS_ITEM]  : []),
-    ...(pollsEnabled  ? [POLLS_ITEM]   : []),
-    ...(kudosEnabled  ? [KUDOS_ITEM]   : []),
-    ...(diningEnabled ? [DINING_ITEM]  : []),
-    ...BASE_CONTENT.slice(2),
+  const content: Item[] = [
+    ...CONTENT_BASE.slice(0, 1),
+    ...(eventsEnabled ? [EVENTS_ITEM] : []),
+    ...CONTENT_BASE.slice(1),
+    ...(pollsEnabled ? [POLLS_ITEM] : []),
+  ]
+
+  const engagement: Item[] = [
+    ...(kudosEnabled       ? [KUDOS_ITEM]       : []),
+    ...(diningEnabled      ? [DINING_ITEM]      : []),
+    ...(suggestionsEnabled ? [SUGGESTIONS_ITEM] : []),
   ]
 
   return (
-    <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-4" aria-label="Admin">
-      <Group items={content} pathname={pathname} />
+    <nav className="scrollbar-on-dark flex-1 space-y-6 overflow-y-auto px-3 py-4" aria-label="Admin">
+      <Group items={[DASHBOARD]} pathname={pathname} />
+      <Group label="Content" items={content} pathname={pathname} />
+      {engagement.length > 0 && (
+        <Group label="Engagement" items={engagement} pathname={pathname} />
+      )}
       {canAdminister && (
         <>
           <Group label="Administration" items={ADMINISTRATION} pathname={pathname} />
@@ -128,7 +138,6 @@ function Group({
                   : "text-gray-400 hover:bg-white/5 hover:text-white"
               }`}
           >
-            {/* Brand rail marks the current section without shifting the label. */}
             <span
               aria-hidden
               className={`absolute top-1/2 left-0 h-4 w-0.5 -translate-y-1/2 rounded-r-full

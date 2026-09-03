@@ -22,11 +22,7 @@ export function WeekPickerCreate({ venueId }: { venueId: string }) {
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (open) {
-      setName("")
-      setMenuType("WEEKLY")
-      setTimeout(() => inputRef.current?.focus(), 50)
-    }
+    if (open) setTimeout(() => inputRef.current?.focus(), 50)
   }, [open])
 
   function handleCreate() {
@@ -43,7 +39,7 @@ export function WeekPickerCreate({ venueId }: { venueId: string }) {
   return (
     <>
       <button
-        onClick={() => setOpen(true)}
+        onClick={() => { setName(""); setMenuType("WEEKLY"); setOpen(true) }}
         className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:brightness-95"
       >
         <Plus className="size-4" aria-hidden />

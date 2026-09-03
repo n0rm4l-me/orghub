@@ -1,14 +1,15 @@
 import type { ReactNode } from "react"
 import { cn } from "@/lib/utils"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 
 /** Shared input chrome so every text field in the app focuses identically. */
 export const inputClass =
-  "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-base sm:text-sm text-gray-900 " +
-  "placeholder:text-gray-400 transition " +
-  "hover:border-gray-300 " +
+  "w-full rounded-lg border border-border bg-card px-3 py-2 text-base sm:text-sm text-foreground " +
+  "placeholder:text-muted-foreground/70 transition " +
+  "hover:border-muted-foreground/40 " +
   "focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 " +
-  "disabled:bg-gray-50 disabled:text-gray-400 " +
-  "aria-[invalid=true]:border-red-400 aria-[invalid=true]:ring-red-100"
+  "disabled:bg-muted disabled:text-muted-foreground " +
+  "aria-[invalid=true]:border-destructive aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-destructive/20"
 
 interface Props {
   label: string
@@ -23,21 +24,28 @@ interface Props {
 export function Field({ label, htmlFor, hint, required, children, className }: Props) {
   return (
     <div className={cn("space-y-1.5", className)}>
-      <label htmlFor={htmlFor} className="block text-sm font-medium text-gray-700">
+      <label htmlFor={htmlFor} className="block text-sm font-medium text-foreground">
         {label}
         {required && (
-          <span className="ml-0.5 text-red-500" aria-hidden>
+          <span className="ml-0.5 text-destructive" aria-hidden>
             *
           </span>
         )}
       </label>
       {children}
-      {hint && <p className="text-xs leading-relaxed text-gray-400">{hint}</p>}
+      {hint && <p className="text-xs leading-relaxed text-muted-foreground">{hint}</p>}
     </div>
   )
 }
 
-/** Grouped settings block: white card, heading, body. */
+/**
+ * Grouped settings block: a `Card` with the page-level spacing (5) and an
+ * optional heading and footer. A shorthand, not a second primitive: the card
+ * chrome itself lives in `ui/card`.
+ *
+ * `text-base` cancels the card's own `text-sm` so body copy keeps following the
+ * root font size, which the portal's font-size preference scales.
+ */
 export function Panel({
   title,
   description,
@@ -50,19 +58,17 @@ export function Panel({
   footer?: ReactNode
 }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+    <Card className="gap-0 text-base [--card-spacing:--spacing(5)]">
       {title && (
-        <div className="border-b border-gray-100 px-5 py-4">
-          <h2 className="text-sm font-semibold text-gray-900">{title}</h2>
-          {description && <p className="mt-0.5 text-xs text-gray-500">{description}</p>}
-        </div>
+        <CardHeader className="border-b">
+          <CardTitle className="text-sm font-semibold">{title}</CardTitle>
+          {description && <CardDescription className="text-xs">{description}</CardDescription>}
+        </CardHeader>
       )}
-      <div className="px-5 py-4">{children}</div>
+      <CardContent className={title ? "pt-(--card-spacing)" : undefined}>{children}</CardContent>
       {footer && (
-        <div className="flex items-center justify-end gap-2 border-t border-gray-100 bg-gray-50/60 px-5 py-3">
-          {footer}
-        </div>
+        <CardFooter className="justify-end gap-2 px-(--card-spacing) py-3">{footer}</CardFooter>
       )}
-    </section>
+    </Card>
   )
 }

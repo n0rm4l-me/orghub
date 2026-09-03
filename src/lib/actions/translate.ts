@@ -1,6 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
+import { requireRole } from "@/lib/rbac"
 import { getSettings } from "@/lib/settings"
 import { parseModules } from "@/lib/modules"
 import { getProvider } from "@/lib/translation"
@@ -24,6 +25,11 @@ function leafText(node: TiptapNode): string {
 function extractBlocks(doc: TiptapNode): TranslatedBlock[] {
   const blocks: TranslatedBlock[] = []
   for (const node of doc.content ?? []) {
+    if (node.type === "image") {
+      const src = node.attrs?.src as string | undefined
+      if (src) blocks.push({ type: "image", src, alt: node.attrs?.alt as string | undefined })
+      continue
+    }
     const text = leafText(node).trim()
     if (!text) continue
     if (node.type === "heading") {
@@ -44,9 +50,6 @@ function extractBlocks(doc: TiptapNode): TranslatedBlock[] {
         const t = leafText(item).trim()
         if (t) blocks.push({ type: "ordered", text: t })
       }
-    } else if (node.type === "image") {
-      const src = node.attrs?.src as string | undefined
-      if (src) blocks.push({ type: "image", src, alt: node.attrs?.alt as string | undefined })
     }
   }
   return blocks
@@ -56,6 +59,7 @@ export async function translateArticle(
   articleId: string,
   target: string,
 ): Promise<{ ok: true; translatedTitle: string; blocks: TranslatedBlock[] } | { ok: false; error: string }> {
+  await requireRole("VIEWER")
   const settings = await getSettings()
 
   const enabled = parseModules(settings.enabledModules)
@@ -126,7 +130,7 @@ export async function translateArticle(
     })
 
     return { ok: true, translatedTitle, blocks: translatedBlocks }
-  } catch (err) {
-    return { ok: false, error: String(err) }
+  } catch {
+    return { ok: false, error: "Translation failed. Please try again." }
   }
 }

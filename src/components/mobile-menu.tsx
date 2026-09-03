@@ -27,8 +27,11 @@ interface Props {
 export function MobileMenu({ items }: Props) {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
-
-  useEffect(() => { setOpen(false) }, [pathname])
+  const [prevPathname, setPrevPathname] = useState(pathname)
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname)
+    if (open) setOpen(false)
+  }
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : ""

@@ -9,18 +9,20 @@ interface Props {
   className?: string
   /** Extra classes for the placeholder div. Defaults to `className`. */
   placeholderClassName?: string
+  width?: number
+  height?: number
+  loading?: "lazy" | "eager"
 }
 
-export function SafeImg({ src, alt, className, placeholderClassName }: Props) {
-  const [failed, setFailed] = useState(false)
+export function SafeImg({ src, alt, className, placeholderClassName, width, height, loading }: Props) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null)
+  const failed = !!src && failedSrc === src
   const imgRef = useRef<HTMLImageElement>(null)
 
   useEffect(() => {
-    setFailed(false)
     // Image may have already failed before React hydrated and attached onError.
-    // After mount/src-change, check the img element directly.
-    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth === 0) {
-      setFailed(true)
+    if (imgRef.current?.complete && imgRef.current?.naturalWidth === 0 && src) {
+      setFailedSrc(src)
     }
   }, [src])
 
@@ -38,7 +40,10 @@ export function SafeImg({ src, alt, className, placeholderClassName }: Props) {
       src={src}
       alt={alt}
       className={className}
-      onError={() => setFailed(true)}
+      width={width}
+      height={height}
+      loading={loading}
+      onError={() => setFailedSrc(src ?? null)}
     />
   )
 }

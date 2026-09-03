@@ -56,13 +56,18 @@
   /* Overridden per-request in the root layout from SiteSettings.primaryColor.
      Declared here so styles resolve during the initial paint. */
   --brand: #2563eb;
-  --background: oklch(1 0 0);
+  /* Slightly off-white so cards (--card, pure white) read as raised surfaces
+     against the page. Replaces the bg-gray-50 / bg-white pairing written by hand
+     on every page. */
+  --background: oklch(0.985 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  /* Primary IS the brand: a neutral primary would give bg-primary buttons a
+     black fill that ignores SiteSettings.primaryColor. */
+  --primary: var(--brand);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -97,8 +102,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: var(--brand);
+  --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -199,12 +204,6 @@
   border: 1px solid color-mix(in oklch, var(--tag-color) 35%, transparent);
 }
 
-/* Body dark mode override must be outside @layer to beat utility specificity */
-.dark body {
-  background-color: oklch(0.13 0 0);
-  color: oklch(0.94 0 0);
-}
-
 html.font-sm { font-size: 14px; }
 html.font-lg { font-size: 18px; }
 
@@ -236,6 +235,52 @@ html.font-lg { font-size: 18px; }
     .animate-fade-in,
     .animate-pulse {
       animation: none;
+    }
+  }
+
+  /* For scroll containers on a light surface (notification panel, popovers). */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(0 0 0 / 0.15) transparent;
+  }
+  @supports not (scrollbar-color: transparent transparent) {
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 6px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      border-radius: 9999px;
+      background-color: rgb(0 0 0 / 0.15);
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+      background-color: rgb(0 0 0 / 0.25);
+    }
+  }
+
+  /* For scroll containers on a dark surface (admin sidebar), where the native
+     light scrollbar reads as a foreign element. */
+  .scrollbar-on-dark {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 0.16) transparent;
+  }
+  /* Fallback for engines without the standard properties. Kept behind @supports
+     because ::-webkit-scrollbar forces a permanent gutter, replacing the
+     overlay scrollbars modern WebKit shows by default. */
+  @supports not (scrollbar-color: transparent transparent) {
+    .scrollbar-on-dark::-webkit-scrollbar {
+      width: 8px;
+    }
+    .scrollbar-on-dark::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .scrollbar-on-dark::-webkit-scrollbar-thumb {
+      border-radius: 9999px;
+      background-color: rgb(255 255 255 / 0.16);
+    }
+    .scrollbar-on-dark::-webkit-scrollbar-thumb:hover {
+      background-color: rgb(255 255 255 / 0.28);
     }
   }
 }

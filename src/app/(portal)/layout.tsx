@@ -27,6 +27,13 @@ export default async function PortalLayout({ children }: { children: React.React
       <AnnouncementBanner />
       <Header />
       <PortalMain>{children}</PortalMain>
+      {process.env.SOURCE_URL && (
+        <footer className="mt-8 pb-6 text-center">
+          <a href={process.env.SOURCE_URL} className="text-xs text-gray-400 hover:underline" target="_blank" rel="noopener noreferrer">
+            Source code (AGPL v3)
+          </a>
+        </footer>
+      )}
     </PortalWidthProvider>
   )
 }

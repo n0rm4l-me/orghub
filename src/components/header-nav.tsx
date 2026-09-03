@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useRef } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ChevronDown } from "lucide-react"
@@ -41,8 +41,11 @@ function DropdownNavItem({ item, active }: { item: NavItem; active: boolean }) {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
   const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => { setOpen(false) }, [pathname])
+  const [prevPathname, setPrevPathname] = useState(pathname)
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname)
+    if (open) setOpen(false)
+  }
 
   return (
     <div

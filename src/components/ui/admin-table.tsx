@@ -14,9 +14,9 @@ const HEADER_CLASS: Record<ColType, string> = {
 
 const CELL_CLASS: Record<ColType, string> = {
   text:    "px-4 sm:px-5 py-3",
-  date:    "px-4 sm:px-5 py-3 text-sm whitespace-nowrap text-gray-600",
+  date:    "px-4 sm:px-5 py-3 text-sm whitespace-nowrap text-muted-foreground",
   center:  "px-4 sm:px-5 py-3 text-center",
-  number:  "px-2 py-3 text-center text-sm font-medium text-gray-600",
+  number:  "px-2 py-3 text-center text-sm font-medium text-muted-foreground",
   icon:    "px-0.5 py-3 !align-middle text-center",
   reorder: "px-1.5 py-2 !align-middle",
   actions: "px-2 sm:px-5 py-3",
@@ -44,10 +44,10 @@ export function AdminTable<T,>({
   rowAlign?: "top" | "middle"
 }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+    <div className="overflow-x-auto rounded-xl border border-border bg-card text-card-foreground">
       <table className="w-full table-fixed">
         <thead>
-          <tr className="border-b border-gray-100 text-xs font-semibold tracking-wide text-gray-400 uppercase">
+          <tr className="border-b border-border text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             {columns.map((col) => {
               const type = col.type ?? "text"
               const mobile = col.hideOnMobile ? " hidden sm:table-cell" : ""
@@ -63,9 +63,9 @@ export function AdminTable<T,>({
             })}
           </tr>
         </thead>
-        <tbody className={`divide-y divide-gray-100 ${rowAlign === "middle" ? "[&_td]:align-middle" : "[&_td]:align-top"}`}>
+        <tbody className={`divide-y divide-border ${rowAlign === "middle" ? "[&_td]:align-middle" : "[&_td]:align-top"}`}>
           {rows.map((row) => (
-            <tr key={rowKey(row)} className="group transition-colors hover:bg-gray-50/70">
+            <tr key={rowKey(row)} className="group transition-colors hover:bg-muted/60">
               {columns.map((col) => {
                 const type = col.type ?? "text"
                 const content = col.render(row)

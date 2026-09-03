@@ -11,7 +11,7 @@ const NAME_MAX = 60
 
 function revalidateCategoryRoutes() {
   revalidatePath("/")
-  revalidatePath("/admin/categories")
+  revalidatePath("/admin/articles/categories")
   revalidatePath("/admin/articles")
 }
 

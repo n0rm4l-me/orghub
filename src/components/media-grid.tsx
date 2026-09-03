@@ -73,7 +73,7 @@ function MediaCard({
       {/* thumbnail */}
       <div className="flex h-40 items-center justify-center bg-gray-50">
         {isImage ? (
-          <img src={item.url} alt={item.filename} className="h-full w-full object-cover" />
+          <img src={`${item.url}?w=320`} alt={item.filename} className="h-full w-full object-cover" width={160} height={160} loading="lazy" />
         ) : (
           <FileText className="size-10 text-gray-300" />
         )}

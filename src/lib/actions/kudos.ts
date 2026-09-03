@@ -7,6 +7,7 @@ import { parseModules } from "@/lib/modules"
 import { createNotification } from "@/lib/notifications"
 import { revalidatePath } from "next/cache"
 import { type ActionResult, ok, okWith, fail } from "@/lib/actions/types"
+import { logAudit } from "@/lib/audit"
 
 // ─── Public queries ───────────────────────────────────────────────────────────
 
@@ -119,23 +120,26 @@ export async function sendKudos(formData: FormData): Promise<ActionResult> {
   const recipient = await db.user.findUnique({ where: { id: toId }, select: { id: true } })
   if (!recipient) return fail("Recipient not found.", "toId")
 
-  // Budget check
-  if (settings.kudosMonthlyBudget > 0) {
-    const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-    const spent = await db.kudos.aggregate({
-      where: { fromId: user.id, createdAt: { gte: monthStart } },
-      _sum: { amount: true },
-    })
-    const spentSoFar = spent._sum.amount ?? 0
-    if (spentSoFar + amount > settings.kudosMonthlyBudget) {
-      return fail(`You only have ${settings.kudosMonthlyBudget - spentSoFar} coins left this month.`)
+  const txResult = await db.$transaction(async (tx) => {
+    if (settings.kudosMonthlyBudget > 0) {
+      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+      const spent = await tx.kudos.aggregate({
+        where: { fromId: user.id, createdAt: { gte: monthStart } },
+        _sum: { amount: true },
+      })
+      const spentSoFar = spent._sum.amount ?? 0
+      if (spentSoFar + amount > settings.kudosMonthlyBudget) {
+        return { error: `You only have ${settings.kudosMonthlyBudget - spentSoFar} coins left this month.` }
+      }
     }
-  }
-
-  const kudos = await db.kudos.create({
-    data: { fromId: user.id, toId, amount, message, value },
-    select: { from: { select: { name: true, email: true } } },
+    const kudos = await tx.kudos.create({
+      data: { fromId: user.id, toId, amount, message, value },
+      select: { from: { select: { name: true, email: true } } },
+    })
+    return { kudos }
   })
+  if ("error" in txResult) return fail(txResult.error as string)
+  const kudos = txResult.kudos
 
   const fromName = kudos.from.name ?? kudos.from.email.split("@")[0]
   await createNotification(
@@ -146,7 +150,9 @@ export async function sendKudos(formData: FormData): Promise<ActionResult> {
     "/kudos",
   ).catch(() => {})
 
+  await logAudit({ userId: user.id, action: "kudos.send", resourceType: "Kudos", metadata: { toId, amount } })
   revalidatePath("/kudos")
+  revalidatePath("/admin/kudos")
   revalidatePath("/")
   return ok("Kudos sent!")
 }
@@ -173,20 +179,25 @@ export async function redeemKudos(amount: number, typeId?: string): Promise<Acti
     if (redeemType.webhook) webhookUrl = redeemType.webhook
   }
 
-  const [received, redeemed] = await Promise.all([
-    db.kudos.aggregate({ where: { toId: user.id }, _sum: { amount: true } }),
-    db.kudosRedemption.aggregate({
-      where: { userId: user.id, status: { in: ["PENDING", "DONE"] } },
-      _sum: { amount: true },
-    }),
-  ])
-
-  const available = (received._sum.amount ?? 0) - (redeemed._sum.amount ?? 0)
-  if (amount > available) return fail(`You only have ${available} coins available to redeem.`)
-
-  const redemption = await db.kudosRedemption.create({
-    data: { userId: user.id, amount, status: "PENDING", typeId: resolvedTypeId },
+  const txResult = await db.$transaction(async (tx) => {
+    const [received, redeemed] = await Promise.all([
+      tx.kudos.aggregate({ where: { toId: user.id }, _sum: { amount: true } }),
+      tx.kudosRedemption.aggregate({
+        where: { userId: user.id, status: { in: ["PENDING", "DONE"] } },
+        _sum: { amount: true },
+      }),
+    ])
+    const available = (received._sum.amount ?? 0) - (redeemed._sum.amount ?? 0)
+    if (amount > available) {
+      return { error: `You only have ${available} coins available to redeem.` }
+    }
+    const redemption = await tx.kudosRedemption.create({
+      data: { userId: user.id, amount, status: "PENDING", typeId: resolvedTypeId },
+    })
+    return { redemption }
   })
+  if ("error" in txResult) return fail(txResult.error as string)
+  const redemption = txResult.redemption
 
   if (webhookUrl) {
     try {
@@ -211,7 +222,9 @@ export async function redeemKudos(amount: number, typeId?: string): Promise<Acti
     }
   }
 
+  await logAudit({ userId: user.id, action: "kudos.redeem", resourceType: "KudosRedemption", resourceId: redemption.id, metadata: { amount } })
   revalidatePath("/kudos")
+  revalidatePath("/admin/kudos/redemptions")
   return ok("Redemption submitted!")
 }
 
@@ -407,8 +420,9 @@ export async function rejectRedemption(id: string): Promise<ActionResult> {
 }
 
 export async function deleteKudos(id: string): Promise<ActionResult> {
-  await requireRole("ADMIN")
+  const user = await requireRole("ADMIN")
   await db.kudos.delete({ where: { id } })
+  await logAudit({ userId: user.id, action: "kudos.delete", resourceType: "Kudos", resourceId: id })
   revalidatePath("/admin/kudos")
   revalidatePath("/kudos")
   return ok("Deleted.")

@@ -29,6 +29,11 @@ export const MODULES = {
     label: "Dining",
     description: "Canteen and cafe menus, weekly schedules, and monthly themed topics.",
   },
+  suggestions: {
+    id: "suggestions" as const,
+    label: "Suggestions",
+    description: "Employee idea box: submit, upvote, and track status of suggestions.",
+  },
 } as const
 
 export type ModuleId = keyof typeof MODULES

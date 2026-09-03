@@ -223,8 +223,8 @@ export default async function KudosPage({ searchParams }: Props) {
       ) : (
         <ul className="space-y-3">
           {rows.map((k) => {
-            const fromSrc = settings.gravatarsEnabled ? gravatarUrl(k.from.email, 40) : undefined
-            const toSrc   = settings.gravatarsEnabled ? gravatarUrl(k.to.email,   40) : undefined
+            const fromSrc = k.from.avatarUrl ?? (settings.gravatarsEnabled ? gravatarUrl(k.from.email, 40) : undefined)
+            const toSrc   = k.to.avatarUrl   ?? (settings.gravatarsEnabled ? gravatarUrl(k.to.email,   40) : undefined)
             const fromInitials = initialsOf(k.from.name ?? k.from.email)
             const toInitials   = initialsOf(k.to.name   ?? k.to.email)
             return (

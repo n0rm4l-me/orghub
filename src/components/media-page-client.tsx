@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Upload, Loader2, FolderSync, Trash2 } from "lucide-react"
 import { toast } from "@/components/ui/toaster"
-import { runMediaMigration, cacheAllGravatars } from "@/lib/actions/media-migrate"
+import { runMediaMigration } from "@/lib/actions/media-migrate"
 import { deleteOrphanedObjects, type OrphanedObject } from "@/lib/actions/media"
 
 function useUploader() {
@@ -71,36 +71,16 @@ export function MediaMigrateButton() {
     })
   }
 
-  function handleGravatar() {
-    startTransition(async () => {
-      const res = await cacheAllGravatars()
-      if (!res.ok) { toast.error(res.error ?? "Failed"); return }
-      toast.success(`Gravatars: cached ${res.cached ?? 0}, skipped ${res.skipped ?? 0}`)
-      router.refresh()
-    })
-  }
-
   return (
-    <div className="flex gap-2">
-      <button
-        type="button"
-        onClick={handleGravatar}
-        disabled={pending}
-        className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50 disabled:opacity-60"
-      >
-        {pending ? <Loader2 className="size-4 animate-spin" /> : <FolderSync className="size-4" />}
-        Cache Gravatars
-      </button>
-      <button
-        type="button"
-        onClick={handleMigrate}
-        disabled={pending}
-        className="inline-flex items-center gap-1.5 rounded-lg border border-brand/30 bg-brand/5 px-3 py-2 text-sm font-medium text-brand transition hover:bg-brand/10 disabled:opacity-60"
-      >
-        {pending ? <Loader2 className="size-4 animate-spin" /> : <FolderSync className="size-4" />}
-        Run Migration
-      </button>
-    </div>
+    <button
+      type="button"
+      onClick={handleMigrate}
+      disabled={pending}
+      className="inline-flex items-center gap-1.5 rounded-lg border border-brand/30 bg-brand/5 px-3 py-2 text-sm font-medium text-brand transition hover:bg-brand/10 disabled:opacity-60"
+    >
+      {pending ? <Loader2 className="size-4 animate-spin" /> : <FolderSync className="size-4" />}
+      Run Migration
+    </button>
   )
 }
 

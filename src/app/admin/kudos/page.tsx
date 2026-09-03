@@ -8,9 +8,8 @@ import { DeleteButton } from "@/components/ui/delete-button"
 import { TablePagination } from "@/components/ui/table-pagination"
 import { EmptyState } from "@/components/ui/empty-state"
 import { AdminFilters } from "@/components/admin-filters"
-import { Award, TrendingUp, Users, History } from "lucide-react"
+import { Award, TrendingUp, Users } from "lucide-react"
 import { StatCard } from "@/components/ui/stat-card"
-import Link from "next/link"
 
 export const metadata = { title: "Kudos" }
 
@@ -126,15 +125,6 @@ export default async function AdminKudosPage({ searchParams }: Props) {
       <PageHeader
         title="Kudos"
         description={`${total} entr${total === 1 ? "y" : "ies"}${query ? " matched" : " total"}`}
-        action={
-          <Link
-            href="/admin/kudos/redemptions"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-          >
-            <History className="size-4" aria-hidden />
-            Redemptions
-          </Link>
-        }
       />
 
       {/* Stats */}

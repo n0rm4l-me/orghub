@@ -53,10 +53,11 @@ export async function Header() {
   }
 
   const NAV_META: Record<string, { href: string; label: string; module: string }> = {
-    events: { href: "/events",  label: "Calendar", module: "events"  },
-    polls:  { href: "/polls",   label: "Polls",    module: "polls"   },
-    kudos:  { href: "/kudos",   label: "Kudos",    module: "kudos"   },
-    dining: { href: "/dining",  label: "Dining",   module: "dining"  },
+    events:      { href: "/events",      label: "Calendar",    module: "events"      },
+    polls:       { href: "/polls",       label: "Polls",       module: "polls"       },
+    kudos:       { href: "/kudos",       label: "Kudos",       module: "kudos"       },
+    dining:      { href: "/dining",      label: "Dining",      module: "dining"      },
+    suggestions: { href: "/suggestions", label: "Suggestions", module: "suggestions" },
   }
   const navOrder = (settings.navOrder ?? "events,polls").split(",").filter(Boolean)
 
@@ -119,7 +120,7 @@ export async function Header() {
           {user ? (
             <UserMenu
               initials={initials}
-              gravatarUrl={settings.gravatarsEnabled ? gravatarUrl(user.email, 28) : undefined}
+              gravatarUrl={user.avatarUrl ?? (settings.gravatarsEnabled ? gravatarUrl(user.email, 28) : undefined)}
               name={user.name ?? user.email ?? ""}
               canAdmin={can.manageContent(user)}
               signOutAction={async () => {

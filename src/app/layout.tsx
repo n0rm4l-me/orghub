@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import type { Metadata, Viewport } from "next"
 import { GeistSans } from "geist/font/sans"
 import "./globals.css"
@@ -5,9 +7,6 @@ import { getSettings } from "@/lib/settings"
 import { ToastProvider } from "@/components/ui/toaster"
 
 const geist = GeistSans
-
-// Layout reads from DB (site settings), so all pages must be dynamic
-export const dynamic = "force-dynamic"
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -34,14 +33,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const settings = await getSettings()
 
   return (
-    <html lang="en" className="h-full bg-gray-50 dark:bg-[oklch(0.13_0_0)]" suppressHydrationWarning>
+    <html lang="en" className="h-full bg-background" suppressHydrationWarning>
       <head>
         <style>{`:root { --brand: ${settings.primaryColor}; }`}</style>
         {/* Blocking script: applies portal theme/fontSize before first paint to prevent FOUC.
             Skips /admin paths — the admin always uses light mode at default font size. */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){if(location.pathname.startsWith('/admin'))return;var t=localStorage.getItem('theme'),d=window.matchMedia('(prefers-color-scheme:dark)').matches;if(t==='dark'||(t!=='light'&&d))document.documentElement.classList.add('dark');var f=localStorage.getItem('fontSize');if(f==='sm')document.documentElement.classList.add('font-sm');else if(f==='lg')document.documentElement.classList.add('font-lg')})()` }} />
       </head>
-      <body className={`${geist.className} min-h-full bg-gray-50 dark:bg-gray-950 antialiased`}>
+      <body className={`${geist.className} min-h-full bg-background text-foreground antialiased`}>
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>

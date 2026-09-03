@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand, ListObjectsV2Command, CopyObjectCommand } from "@aws-sdk/client-s3"
+import { S3Client, PutObjectCommand, DeleteObjectCommand, ListObjectsV2Command, CopyObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3"
 
 function getClient() {
   const endpoint = process.env.S3_ENDPOINT
@@ -31,6 +31,17 @@ export async function uploadToStorage(
     CacheControl: "public, max-age=31536000, immutable",
   }))
   return `/uploads/${key}`
+}
+
+export async function getFromStorage(key: string): Promise<Buffer | null> {
+  const client = getClient()
+  try {
+    const res = await client.send(new GetObjectCommand({ Bucket: BUCKET(), Key: key }))
+    if (!res.Body) return null
+    return Buffer.from(await res.Body.transformToByteArray())
+  } catch {
+    return null
+  }
 }
 
 export async function deleteFromStorage(key: string): Promise<void> {

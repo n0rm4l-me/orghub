@@ -218,7 +218,7 @@ export function SidebarBlocks({
                   const initials = (entry.name ?? entry.email)
                     .split(/[\s@.]+/).filter(Boolean)
                     .map((p) => p[0]).join("").toUpperCase().slice(0, 2) || "?"
-                  const avatarSrc = gravatarsEnabled ? gravatarUrl(entry.email, 32) : undefined
+                  const avatarSrc = entry.avatarUrl ?? (gravatarsEnabled ? gravatarUrl(entry.email, 32) : undefined)
                   return (
                     <li key={entry.userId} className="flex items-center gap-2.5">
                       <span className="flex h-7 w-4 shrink-0 items-center justify-center text-[11px] font-semibold text-gray-400">{i + 1}</span>

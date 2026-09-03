@@ -7,8 +7,7 @@ import { TablePagination } from "@/components/ui/table-pagination"
 import { EmptyState } from "@/components/ui/empty-state"
 import { AdminFilters } from "@/components/admin-filters"
 import { RejectButton } from "@/components/ui/reject-button"
-import { Coins, ArrowLeft } from "lucide-react"
-import Link from "next/link"
+import { Coins } from "lucide-react"
 
 export const metadata = { title: "Redemptions" }
 
@@ -119,16 +118,6 @@ export default async function AdminRedemptionsPage({ searchParams }: Props) {
 
   return (
     <div>
-      <div className="mb-4">
-        <Link
-          href="/admin/kudos"
-          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
-        >
-          <ArrowLeft className="size-3.5" aria-hidden />
-          Back to kudos
-        </Link>
-      </div>
-
       <PageHeader
         title="Redemptions"
         description={`${total} request${total === 1 ? "" : "s"}${query || status ? " matched" : " total"}`}

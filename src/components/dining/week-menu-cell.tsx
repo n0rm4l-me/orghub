@@ -63,7 +63,7 @@ function DishSearch({ venueId, onPick }: { venueId: string; onPick: (d: Dish) =>
               onClick={() => { onPick(d); setQ(""); setResults([]) }}
               className="flex w-full items-center gap-2.5 px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700/60"
             >
-              <SafeImg src={d.photo} alt="" className="size-9 shrink-0 rounded-lg object-cover" placeholderClassName="size-9 shrink-0 rounded-lg" />
+              <SafeImg src={d.photo ? `${d.photo}?w=72` : d.photo} alt="" className="size-9 shrink-0 rounded-lg object-cover" placeholderClassName="size-9 shrink-0 rounded-lg" width={36} height={36} loading="lazy" />
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{d.name}</p>
                 {d.description && <p className="truncate text-xs text-gray-400 dark:text-gray-500">{d.description}</p>}
@@ -201,7 +201,7 @@ export function WeekMenuCell({
           }`}
         >
           {filled ? (
-            <SafeImg src={entry?.photo} alt="" className="size-full object-cover" />
+            <SafeImg src={entry?.photo ? `${entry.photo}?w=128` : entry?.photo} alt="" className="size-full object-cover" width={64} height={64} loading="lazy" />
           ) : (
             <div className="flex size-full items-center justify-center text-gray-300 dark:text-gray-600">
               <Plus className="size-4" />

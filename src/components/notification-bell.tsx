@@ -146,7 +146,7 @@ export function NotificationBell() {
             <Bell className="size-4 text-gray-400" />
           </div>
 
-          <div className="max-h-96 overflow-y-auto">
+          <div className="scrollbar-thin max-h-96 overflow-y-auto">
             {loading ? (
               <div className="py-8 text-center text-xs text-gray-400">Loading…</div>
             ) : items.length === 0 ? (

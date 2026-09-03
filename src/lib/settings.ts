@@ -1,22 +1,21 @@
-import { cache } from "react"
+import { unstable_cache } from "next/cache"
 import { db } from "@/lib/db"
+
+export const SETTINGS_CACHE_TAG = "settings"
 
 /**
  * Reads the site settings singleton.
  *
- * This is a pure read: the row is seeded by migration
- * `20260827083000_seed_site_settings_singleton` and the initContainer runs
- * `prisma migrate deploy` before the app accepts traffic, so it always exists. It used
- * to be an upsert, which took a row lock on one row on every render and so serialised
- * renders across every replica.
- *
- * `cache()` dedupes the call within a single request, so a page that needs settings in
- * the layout and again in a child component issues one query instead of several.
+ * `unstable_cache` caches across requests (1 h TTL) so the root layout no longer
+ * forces the entire app to be dynamic. Mutations that change settings call
+ * `revalidateTag(SETTINGS_CACHE_TAG)` to bust the cache immediately.
  *
  * It throws rather than falling back to hardcoded defaults on purpose: several fields
  * are security-relevant (`localAuthEnabled` in particular), and silently serving a
  * default that re-enables password login would be worse than a visible failure.
  */
-export const getSettings = cache(async () => {
-  return db.siteSettings.findUniqueOrThrow({ where: { id: "singleton" } })
-})
+export const getSettings = unstable_cache(
+  async () => db.siteSettings.findUniqueOrThrow({ where: { id: "singleton" } }),
+  [SETTINGS_CACHE_TAG],
+  { tags: [SETTINGS_CACHE_TAG], revalidate: 3600 },
+)

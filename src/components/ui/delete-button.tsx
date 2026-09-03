@@ -38,8 +38,8 @@ export function DeleteButton({ onDelete, entity, name, note, variant = "link" }:
           type="button"
           onClick={() => setOpen(true)}
           aria-label={`Delete ${name ?? entity}`}
-          className="grid size-7 place-items-center rounded-md text-gray-400 transition
-            hover:bg-red-50 hover:text-red-600"
+          className="grid size-7 place-items-center rounded-lg text-muted-foreground transition
+            hover:bg-destructive/10 hover:text-destructive"
         >
           <Trash2 className="size-3.5" />
         </button>
@@ -47,7 +47,7 @@ export function DeleteButton({ onDelete, entity, name, note, variant = "link" }:
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="text-xs font-medium text-gray-500 transition hover:text-red-600"
+          className="text-xs font-medium text-muted-foreground transition hover:text-destructive"
         >
           Delete
         </button>

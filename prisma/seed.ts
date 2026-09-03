@@ -7,15 +7,18 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
 const db = new PrismaClient({ adapter })
 
 const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL ?? "admin@orghub.dev"
-const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? "admin"
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD
+if (!ADMIN_PASSWORD) {
+  console.error("SEED_ADMIN_PASSWORD is required. Set it in your environment before running the seed.")
+  process.exit(1)
+}
 
 async function main() {
-  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10)
+  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD!, 10)
 
   const admin = await db.user.upsert({
     where: { email: ADMIN_EMAIL },
-    // The hash is refreshed on re-seed so rotating SEED_ADMIN_PASSWORD takes effect.
-    update: { passwordHash },
+    update: {},
     create: {
       email: ADMIN_EMAIL,
       name: "Admin User",

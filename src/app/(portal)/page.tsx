@@ -18,20 +18,6 @@ interface Props {
   searchParams: Promise<{ category?: string; q?: string; page?: string }>
 }
 
-function extractBodyText(body: unknown, maxLen = 120): string {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function walk(node: any): string {
-    if (!node) return ""
-    if (node.type === "text") return node.text ?? ""
-    if (!node.content) return ""
-    return (node.content as unknown[]).reduce((acc: string, child) => {
-      if (acc.length >= maxLen) return acc
-      return acc + walk(child)
-    }, "")
-  }
-  const raw = walk(body).replace(/\s+/g, " ").trim()
-  return raw.length > maxLen ? raw.slice(0, maxLen) + "…" : raw
-}
 
 function initialsOf(name: string | null): string {
   return (
@@ -90,7 +76,7 @@ function FeaturedCard({
       <Link href={`/articles/${article.id}`} className="block">
         {article.coverImage ? (
           <div className="relative h-48 overflow-hidden">
-            <img src={article.coverImage} alt="" className="h-full w-full object-cover" />
+            <img src={`${article.coverImage}?w=800`} alt="" className="h-full w-full object-cover" loading="lazy" />
             <div
               className={`absolute inset-x-0 bottom-0 h-1.5 ${article.important ? "bg-amber-400/80" : "bg-brand/80"}`}
               aria-hidden
@@ -182,7 +168,7 @@ export default async function FeedPage({ searchParams }: Props) {
     slug: true,
     title: true,
     excerpt: true,
-    body: true,
+    wordCount: true,
     publishedAt: true,
     eventDate: true,
     eventLocation: true,
@@ -212,11 +198,14 @@ export default async function FeedPage({ searchParams }: Props) {
       getQuickLinks(),
       getUpcomingEvents(),
       getCurrentUser(),
-      db.article.findMany({
-        where: { published: true, pinned: true, eventDate: null },
-        orderBy: { publishedAt: "desc" },
-        select: articleSelect,
-      }),
+      isHomeFeed
+        ? db.article.findMany({
+            where: { published: true, pinned: true, eventDate: null },
+            orderBy: { publishedAt: "desc" },
+            select: articleSelect,
+            take: 3,
+          })
+        : Promise.resolve([]),
     ])
 
   const allArticleIds = [...articles.map((a) => a.id), ...pinnedRaw.map((a) => a.id)]
@@ -243,11 +232,11 @@ export default async function FeedPage({ searchParams }: Props) {
       id: a.id,
       title: a.title,
       excerpt: a.excerpt ?? "",
-      snippet: a.excerpt ?? extractBodyText(a.body, 120),
+      snippet: a.excerpt ?? "",
       category: a.categories[0]?.category ?? null,
       author: { name: a.author.name ?? "Unknown", initials: initialsOf(a.author.name) },
       date: a.publishedAt ? new Date(a.publishedAt).toLocaleDateString("en-US", dateFormat) : "",
-      readTime: `${Math.max(1, Math.round(JSON.stringify(a.body).split(/\s+/).length / WORDS_PER_MINUTE))} min read`,
+      readTime: `${Math.max(1, Math.round(a.wordCount / WORDS_PER_MINUTE))} min read`,
       eventDate: a.eventDate ?? null,
       coverImage: a.coverImage ?? null,
       reactionCount: a._count.reactions,
@@ -344,7 +333,7 @@ export default async function FeedPage({ searchParams }: Props) {
         {query && (
           <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
             {total} result{total === 1 ? "" : "s"} for{" "}
-            <span className="font-medium text-gray-900 dark:text-gray-100">"{query}"</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100">&quot;{query}&quot;</span>
             {" · "}
             <Link href="/" className="font-medium text-brand hover:underline">
               Clear
@@ -398,9 +387,12 @@ export default async function FeedPage({ searchParams }: Props) {
                   >
                     {cardStyle === "preview" && article.coverImage && (
                       <img
-                        src={article.coverImage}
+                        src={`${article.coverImage}?w=112`}
                         alt=""
                         className="size-14 shrink-0 rounded-md object-cover"
+                        width={56}
+                        height={56}
+                        loading="lazy"
                       />
                     )}
                     <div className="min-w-0 flex-1">

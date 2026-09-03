@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { X } from "lucide-react"
 
 type Announcement = {
@@ -35,11 +35,7 @@ function addDismissed(id: string) {
 }
 
 export function AnnouncementBannerClient({ announcement }: { announcement: Announcement }) {
-  const [visible, setVisible] = useState(true)
-
-  useEffect(() => {
-    if (getDismissed().has(announcement.id)) setVisible(false)
-  }, [announcement.id])
+  const [visible, setVisible] = useState(() => !getDismissed().has(announcement.id))
 
   if (!visible) return null
 

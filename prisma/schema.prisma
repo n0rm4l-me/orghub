@@ -49,6 +49,13 @@ model User {
   notifications    Notification[]
   pushSubscriptions PushSubscription[]
   media            Media[]
+  suggestions         Suggestion[]
+  suggestionVotes     SuggestionVote[]
+  suggestionComments  SuggestionComment[]
+
+  @@index([role, createdAt])
+  @@index([active, name])
+  @@index([role, active])
 }
 
 model Account {
@@ -106,6 +113,8 @@ model Article {
   important        Boolean   @default(false)
   commentsEnabled  Boolean   @default(true)
 
+  wordCount  Int       @default(0)
+
   authorId   String
   author     User                   @relation(fields: [authorId], references: [id])
   categories CategoriesOnArticles[]
@@ -116,6 +125,8 @@ model Article {
 
   @@index([published, publishedAt])
   @@index([published, eventDate])
+  @@index([published, pinned, publishedAt])
+  @@index([eventDate, createdAt])
   @@index([organizationId])
 }
 
@@ -169,6 +180,8 @@ model Category {
   name     String
   slug     String                 @unique
   articles CategoriesOnArticles[]
+
+  @@index([name])
 }
 
 model CategoriesOnArticles {
@@ -178,6 +191,7 @@ model CategoriesOnArticles {
   category   Category @relation(fields: [categoryId], references: [id])
 
   @@id([articleId, categoryId])
+  @@index([categoryId])
 }
 
 model Media {
@@ -252,6 +266,8 @@ model SiteSettings {
   translationLanguages String  @default("en,ru,ja,zh,es,fr,hi,uk")
   /// Layout for the Dining portal page.
   diningLayout String @default("content")
+  /// Layout for the Suggestions portal page.
+  suggestionsLayout String @default("content")
   /// ISO 4217 currency code used for dining prices (e.g. "JPY", "USD", "EUR").
   diningCurrency String @default("JPY")
 }
@@ -266,7 +282,12 @@ model Comment {
   articleId String
   article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
+  parentId  String?
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
+
   @@index([articleId])
+  @@index([parentId])
 }
 
 model ArticleReaction {
@@ -563,6 +584,7 @@ model Dish {
   fixedEntries   FixedMenuEntry[]
   modifierGroups DishModifierGroup[]
 
+  @@index([venueId, name])
   @@index([venueId])
 }
 
@@ -605,6 +627,8 @@ model WeekMenu {
   entries     WeekMenuEntry[]
   fixedSections FixedMenuSection[]
 
+  @@unique([venueId, weekStart])
+  @@index([venueId, publishedAt])
   @@index([venueId, createdAt])
 }
 
@@ -714,4 +738,69 @@ model MonthlyTopicHighlight {
   order      Int
 
   @@index([topicId, order])
+}
+
+enum SuggestionStatus {
+  OPEN
+  UNDER_REVIEW
+  PLANNED
+  DONE
+  DECLINED
+}
+
+model SuggestionCategory {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  suggestions Suggestion[]
+}
+
+model Suggestion {
+  id         String           @id @default(cuid())
+  title      String
+  body       String           @db.Text
+  categoryId String?
+  status     SuggestionStatus @default(OPEN)
+  adminNote  String?
+  hidden     Boolean          @default(false)
+  authorId   String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  anonymous Boolean          @default(false)
+
+  author   User?               @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  category SuggestionCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  votes    SuggestionVote[]
+  comments SuggestionComment[]
+
+  @@index([status, createdAt])
+  @@index([hidden, createdAt])
+}
+
+model SuggestionComment {
+  id           String     @id @default(cuid())
+  suggestionId String
+  authorId     String?
+  body         String     @db.Text
+  isAdminReply Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  suggestion Suggestion @relation(fields: [suggestionId], references: [id], onDelete: Cascade)
+  author     User?      @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([suggestionId])
+}
+
+model SuggestionVote {
+  id           String     @id @default(cuid())
+  suggestionId String
+  userId       String
+  createdAt    DateTime   @default(now())
+
+  suggestion Suggestion @relation(fields: [suggestionId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([suggestionId, userId])
+  @@index([suggestionId])
 }

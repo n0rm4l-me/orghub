@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { ChevronDown, ChevronRight } from "lucide-react"
 import { getMealStatus } from "@/lib/dining-hours"
 
@@ -19,15 +19,9 @@ export function CollapsibleMealSlot({
   badge?: React.ReactNode
   children: React.ReactNode
 }) {
-  const [collapsed, setCollapsed] = useState(false)
-
-  useEffect(() => {
-    if (isWeekday && getMealStatus(hours, timezone).status === "ended") {
-      setCollapsed(true)
-    }
-    // Mount-only: the auto-collapse reflects the time of first paint.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const [collapsed, setCollapsed] = useState(
+    () => isWeekday && getMealStatus(hours, timezone).status === "ended"
+  )
 
   return (
     <div>

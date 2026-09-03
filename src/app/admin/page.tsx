@@ -87,7 +87,7 @@ export default async function AdminDashboard() {
         />
         <StatCard href="/admin/pages" icon={Files} label="Pages" value={pageCount} sub="Reference content" />
         <StatCard
-          href="/admin/categories"
+          href="/admin/articles/categories"
           icon={Tag}
           label="Categories"
           value={categoryCount}

@@ -35,7 +35,7 @@ Open-source self-hosted employee portal. News feed, events calendar, wiki pages,
 - Role-based access: admin, editor, viewer
 - Local password auth with bcrypt and timing-safe login
 - Active Directory / LDAP auth via service-account bind + user-bind verify
-- SSO via Okta, Google, or any OIDC provider
+- SSO via Okta or any OIDC provider
 - Self-hosted with Docker Compose
 - Health endpoint at `/api/health` for Kubernetes liveness/readiness probes
 - PWA: installable on mobile
@@ -44,12 +44,14 @@ Open-source self-hosted employee portal. News feed, events calendar, wiki pages,
 
 ```bash
 cp .env.example .env
-# Edit .env: DATABASE_URL, NEXTAUTH_SECRET, and optional SSO settings
+# Edit .env: DATABASE_URL, AUTH_SECRET, SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD
 
 docker compose up -d
 ```
 
-App runs at http://localhost:3000. Default admin: `admin@orghub.dev` / `admin`.
+App runs at http://localhost:3000.
+
+On first run, set `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` in `.env` before running `npx prisma db seed`.
 
 ## Development
 

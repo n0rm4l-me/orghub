@@ -5,6 +5,8 @@ import Okta from "next-auth/providers/okta"
 import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
 import { authenticateLdap } from "@/lib/ldap"
+import { uploadToStorage } from "@/lib/storage"
+import sharp from "sharp"
 
 /**
  * A valid bcrypt hash of a value nothing will ever match.
@@ -94,6 +96,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               })
 
               if (!user.active) return null
+
+              if (ldapUser.photo) {
+                try {
+                  const resized = await sharp(ldapUser.photo)
+                    .resize(256, 256, { fit: "cover" })
+                    .jpeg({ quality: 85 })
+                    .toBuffer()
+                  const avatarUrl = await uploadToStorage(
+                    `avatars/${user.id}.jpg`,
+                    resized,
+                    "image/jpeg",
+                  )
+                  await db.user.update({ where: { id: user.id }, data: { avatarUrl } })
+                } catch {}
+              }
 
               return { id: user.id, email: user.email, name: user.name, role: user.role }
             },

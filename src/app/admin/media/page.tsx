@@ -17,7 +17,6 @@ const FOLDERS = [
   { id: "articles", label: "Articles" },
   { id: "pages", label: "Pages" },
   { id: "dining", label: "Dining" },
-  { id: "avatars", label: "Avatars" },
   { id: "logos", label: "Logos" },
   { id: "orphaned", label: "Orphaned" },
 ]
@@ -38,7 +37,7 @@ export default async function MediaPage({ searchParams }: Props) {
 
   const [{ rows, total, perPage }, orphans] = await Promise.all([
     isOrphanedTab ? Promise.resolve({ rows: [], total: 0, perPage: 40 }) : getMediaList(page, query, folder || undefined),
-    user.role === "ADMIN" ? findOrphanedObjects() : Promise.resolve([]),
+    isOrphanedTab ? findOrphanedObjects() : Promise.resolve([]),
   ])
 
   function tabHref(folderId: string) {

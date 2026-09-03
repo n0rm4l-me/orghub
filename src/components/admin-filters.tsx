@@ -81,14 +81,14 @@ export function AdminFilters({
 
   const tab = (active: boolean) =>
     `rounded-md px-2.5 py-1 text-xs font-medium transition ${
-      active ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-900"
+      active ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
     }`
 
   return (
     <div className="mb-4 flex items-center gap-3">
       <div className="relative flex-1">
         <Search
-          className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400"
+          className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
           aria-hidden
         />
         <input
@@ -101,15 +101,15 @@ export function AdminFilters({
           }}
           placeholder={placeholder}
           aria-label={placeholder}
-          className="h-9 w-full rounded-lg border border-gray-200 bg-white pr-9 pl-9 text-sm
-            text-gray-900 transition placeholder:text-gray-400 hover:border-gray-300
+          className="h-9 w-full rounded-lg border border-border bg-card pr-9 pl-9 text-sm
+            text-foreground transition placeholder:text-muted-foreground/70 hover:border-muted-foreground/40
             focus:border-brand focus:ring-2 focus:ring-brand/20 focus:outline-none"
         />
         {/* One reserved slot holds either the spinner or the clear button, so
             the input's inner edge never moves. */}
         <span className="absolute top-1/2 right-2.5 grid size-5 -translate-y-1/2 place-items-center">
           {isPending ? (
-            <Loader2 className="size-3.5 animate-spin text-gray-400" aria-hidden />
+            <Loader2 className="size-3.5 animate-spin text-muted-foreground" aria-hidden />
           ) : (
             value && (
               <button
@@ -119,8 +119,8 @@ export function AdminFilters({
                   inputRef.current?.focus()
                 }}
                 aria-label="Clear search"
-                className="grid size-5 place-items-center rounded text-gray-400 transition
-                  hover:bg-gray-100 hover:text-gray-700"
+                className="grid size-5 place-items-center rounded text-muted-foreground transition
+                  hover:bg-muted hover:text-foreground"
               >
                 <X className="size-3.5" />
               </button>
@@ -131,7 +131,7 @@ export function AdminFilters({
 
       {showStatus && (
         <div
-          className="flex shrink-0 items-center gap-0.5 rounded-lg bg-gray-100 p-0.5"
+          className="flex shrink-0 items-center gap-0.5 rounded-lg bg-muted p-0.5"
           role="group"
           aria-label="Filter by status"
         >

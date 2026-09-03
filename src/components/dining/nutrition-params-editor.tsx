@@ -107,7 +107,7 @@ export function NutritionParamsEditor({
       </div>
 
       <div className="mt-3 text-xs text-gray-400">
-        "Featured" params are shown as a prominent badge (like kcal). Others are shown inline.
+        &quot;Featured&quot; params are shown as a prominent badge (like kcal). Others are shown inline.
       </div>
 
       <div className="mt-4 flex items-center justify-between">

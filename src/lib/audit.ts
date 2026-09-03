@@ -46,6 +46,11 @@ export type AuditAction =
   | "kudos.delete"
   | "settings.kudos"
   | "settings.dining"
+  | "dining.create"
+  | "dining.update"
+  | "dining.delete"
+  | "media.upload"
+  | "media.delete"
 
 interface LogInput {
   userId: string

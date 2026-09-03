@@ -10,6 +10,11 @@ import { type ActionResult, ok, okWith, fail } from "@/lib/actions/types"
 const TITLE_MAX = 200
 const EXCERPT_MAX = 300
 
+function countWords(body: unknown): number {
+  if (!body) return 0
+  return JSON.stringify(body).split(/\s+/).filter(Boolean).length
+}
+
 const LOCATION_MAX = 200
 
 interface ParsedInput {
@@ -76,11 +81,11 @@ function parse(formData: FormData): ParsedInput | { error: string; field: string
   }
 }
 
-function revalidateArticle(slug?: string) {
+function revalidateArticle(id?: string) {
   revalidatePath("/")
   revalidatePath("/admin/articles")
   revalidatePath("/admin")
-  if (slug) revalidatePath(`/articles/${slug}`)
+  if (id) revalidatePath(`/articles/${id}`)
 }
 
 export async function createArticle(
@@ -106,6 +111,7 @@ export async function createArticle(
       eventEndDate: parsed.eventEndDate,
       eventLocation: parsed.eventLocation,
       coverImage: parsed.coverImage,
+      wordCount: countWords(parsed.body),
       authorId: user.id,
       categories: parsed.categoryId ? { create: { categoryId: parsed.categoryId } } : undefined,
     },
@@ -120,7 +126,7 @@ export async function createArticle(
     metadata: { title: parsed.title, published: parsed.published },
   })
 
-  revalidateArticle(article.slug)
+  revalidateArticle(article.id)
   return okWith(
     { id: article.id },
     parsed.published ? "Article published." : "Draft saved."
@@ -163,12 +169,15 @@ export async function updateArticle(
       eventEndDate: parsed.eventEndDate,
       eventLocation: parsed.eventLocation,
       coverImage: parsed.coverImage,
+      wordCount: countWords(parsed.body),
       categories: {
         deleteMany: {},
         ...(parsed.categoryId ? { create: { categoryId: parsed.categoryId } } : {}),
       },
     },
   })
+
+  await db.articleTranslation.deleteMany({ where: { articleId: id } })
 
   await logAudit({
     userId: user.id,
@@ -178,8 +187,7 @@ export async function updateArticle(
     metadata: { title: parsed.title, slugChanged: slug !== existing.slug },
   })
 
-  revalidateArticle(slug)
-  if (existing.slug !== slug) revalidatePath(`/articles/${existing.slug}`)
+  revalidateArticle(id)
   return okWith({ id }, "Changes saved.")
 }
 
@@ -202,7 +210,7 @@ export async function deleteArticle(id: string): Promise<ActionResult> {
     metadata: { title: existing.title },
   })
 
-  revalidateArticle(existing.slug)
+  revalidateArticle(id)
   return ok(`"${existing.title}" was deleted.`)
 }
 
@@ -287,6 +295,6 @@ export async function togglePublish(
     metadata: { title: existing.title },
   })
 
-  revalidateArticle(existing.slug)
+  revalidateArticle(id)
   return ok(published ? "Article is now live." : "Article moved to drafts.")
 }

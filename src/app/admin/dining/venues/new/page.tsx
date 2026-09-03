@@ -1,6 +1,4 @@
 import { redirect } from "next/navigation"
-import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
 import { db } from "@/lib/db"
 import { requireRole } from "@/lib/rbac"
 import { PageHeader } from "@/components/ui/page-header"
@@ -19,14 +17,8 @@ export default async function NewVenuePage({ searchParams }: Props) {
   if (locations.length === 0) redirect("/admin/dining")
 
   return (
-    <div className="max-w-xl">
-      <div className="mb-6">
-        <Link href="/admin/dining" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800">
-          <ArrowLeft className="size-4" aria-hidden />
-          Dining
-        </Link>
-      </div>
-      <PageHeader title="New venue" />
+    <div className="max-w-2xl">
+      <PageHeader title="New venue" back={{ href: "/admin/dining", label: "Dining" }} />
       <NewVenueForm locations={locations} defaultLocationId={sp.locationId} />
     </div>
   )

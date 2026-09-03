@@ -67,7 +67,7 @@ export default async function LoginPage({ searchParams }: Props) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 dark:bg-gray-950">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center">
           <BrandLogo
@@ -80,7 +80,7 @@ export default async function LoginPage({ searchParams }: Props) {
           <p className="mt-4 text-sm text-gray-500">Sign in to continue</p>
         </div>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-700 dark:bg-gray-900">
           {/* Reserved so the card does not grow and shift on a failed attempt. */}
           {params.error && (
             <p
@@ -105,7 +105,8 @@ export default async function LoginPage({ searchParams }: Props) {
                 <SubmitButton
                   pendingLabel="Redirecting…"
                   className="mb-6 w-full border border-gray-200 bg-white text-gray-700
-                    hover:bg-gray-50 hover:brightness-100"
+                    hover:bg-gray-50 hover:brightness-100
+                    dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
                 >
                   <svg className="size-5" viewBox="0 0 24 24" fill="none" aria-hidden>
                     <circle cx="12" cy="12" r="5" fill="#007DC1" />
@@ -125,7 +126,7 @@ export default async function LoginPage({ searchParams }: Props) {
                     <div className="w-full border-t border-gray-100" />
                   </div>
                   <div className="relative flex justify-center">
-                    <span className="bg-white px-2 text-xs text-gray-400">
+                    <span className="bg-white px-2 text-xs text-gray-400 dark:bg-gray-900">
                       {localEnabled ? "or use your email" : "or sign in with Active Directory"}
                     </span>
                   </div>
@@ -137,7 +138,7 @@ export default async function LoginPage({ searchParams }: Props) {
           {localEnabled && (
             <form action={handleCredentials} className="space-y-4">
               <div className="space-y-1.5">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Email
                 </label>
                 <input
@@ -152,7 +153,7 @@ export default async function LoginPage({ searchParams }: Props) {
                 />
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Password
                 </label>
                 <input
@@ -179,7 +180,7 @@ export default async function LoginPage({ searchParams }: Props) {
                     <div className="w-full border-t border-gray-100" />
                   </div>
                   <div className="relative flex justify-center">
-                    <span className="bg-white px-2 text-xs text-gray-400">
+                    <span className="bg-white px-2 text-xs text-gray-400 dark:bg-gray-900">
                       or sign in with Active Directory
                     </span>
                   </div>
@@ -187,7 +188,7 @@ export default async function LoginPage({ searchParams }: Props) {
               )}
               <form action={handleLdap} className="space-y-4">
                 <div className="space-y-1.5">
-                  <label htmlFor="ad-email" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="ad-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Email
                   </label>
                   <input
@@ -202,7 +203,7 @@ export default async function LoginPage({ searchParams }: Props) {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label htmlFor="ad-password" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="ad-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Password
                   </label>
                   <input

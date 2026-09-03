@@ -14,6 +14,7 @@ interface Props {
   pollsEnabled: boolean
   kudosEnabled?: boolean
   diningEnabled?: boolean
+  suggestionsEnabled?: boolean
   userName: string
   userRole: string
   gravatarUrl?: string
@@ -27,6 +28,7 @@ export function AdminMobileSidebar({
   pollsEnabled,
   kudosEnabled,
   diningEnabled,
+  suggestionsEnabled,
   userName,
   userRole,
   gravatarUrl,
@@ -35,8 +37,11 @@ export function AdminMobileSidebar({
 }: Props) {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
-
-  useEffect(() => { setOpen(false) }, [pathname])
+  const [prevPathname, setPrevPathname] = useState(pathname)
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname)
+    if (open) setOpen(false)
+  }
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : ""
@@ -101,6 +106,7 @@ export function AdminMobileSidebar({
               pollsEnabled={pollsEnabled}
               kudosEnabled={kudosEnabled}
               diningEnabled={diningEnabled}
+              suggestionsEnabled={suggestionsEnabled}
             />
 
             {/* Bottom: view portal + user */}

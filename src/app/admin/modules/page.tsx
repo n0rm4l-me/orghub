@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ChevronRight, CalendarDays, FileText, BarChart2, Award, Languages, UtensilsCrossed, type LucideIcon } from "lucide-react"
+import { ChevronRight, CalendarDays, FileText, BarChart2, Award, Languages, UtensilsCrossed, Lightbulb, type LucideIcon } from "lucide-react"
 import { requireRole } from "@/lib/rbac"
 import { getSettings } from "@/lib/settings"
 import { PageHeader } from "@/components/ui/page-header"
@@ -12,6 +12,7 @@ const MODULE_ICONS: Record<ModuleId, LucideIcon> = {
   kudos:       Award,
   translation: Languages,
   dining:      UtensilsCrossed,
+  suggestions: Lightbulb,
 }
 
 export const metadata = { title: "Modules" }

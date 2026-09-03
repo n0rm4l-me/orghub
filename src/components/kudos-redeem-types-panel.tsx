@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition, useEffect } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react"
 import { createRedeemType, updateRedeemType, deleteRedeemType } from "@/lib/actions/kudos"
@@ -74,12 +74,16 @@ function TypeForm({
 
 export function KudosRedeemTypesPanel({ initialTypes }: Props) {
   const router = useRouter()
+  const [prevInitialTypes, setPrevInitialTypes] = useState(initialTypes)
   const [types, setTypes] = useState(initialTypes)
   const [addOpen, setAddOpen] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
-  useEffect(() => { setTypes(initialTypes) }, [initialTypes])
+  if (prevInitialTypes !== initialTypes) {
+    setPrevInitialTypes(initialTypes)
+    setTypes(initialTypes)
+  }
 
   function handleCreate(s: FormState) {
     startTransition(async () => {

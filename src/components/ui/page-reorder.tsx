@@ -17,8 +17,8 @@ export function PageReorder({
 }) {
   const move = useAction(movePage)
   const base =
-    "grid size-5 place-items-center rounded text-gray-400 transition enabled:hover:bg-gray-100 " +
-    "enabled:hover:text-gray-700 disabled:opacity-25"
+    "grid size-5 place-items-center rounded text-muted-foreground transition enabled:hover:bg-muted " +
+    "enabled:hover:text-foreground disabled:opacity-25"
 
   return (
     <div className="flex shrink-0 flex-col" aria-hidden={move.pending}>

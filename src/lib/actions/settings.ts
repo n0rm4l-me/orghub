@@ -3,8 +3,14 @@
 import { db } from "@/lib/db"
 import { requireRole } from "@/lib/rbac"
 import { logAudit } from "@/lib/audit"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag } from "next/cache"
+import { SETTINGS_CACHE_TAG } from "@/lib/settings"
 import { type ActionResult, ok, fail } from "@/lib/actions/types"
+
+function revalidateSettings() {
+  revalidatePath("/", "layout")
+  revalidateTag(SETTINGS_CACHE_TAG, {})
+}
 
 const HEX_COLOR = /^#[0-9a-f]{6}$/i
 
@@ -54,7 +60,7 @@ export async function saveSettings(formData: FormData): Promise<ActionResult> {
     metadata: { siteName, ...logos, ...color },
   })
 
-  revalidatePath("/", "layout")
+  revalidateSettings()
   return ok("Branding saved.")
 }
 
@@ -86,11 +92,11 @@ export async function saveSidebarWidgets(
     metadata: { rightSidebar: right, leftSidebar: left },
   })
 
-  revalidatePath("/", "layout")
+  revalidateSettings()
   return ok("Sidebar widgets saved.")
 }
 
-const NAV_ITEM_IDS = new Set(["events", "polls", "kudos", "dining"])
+const NAV_ITEM_IDS = new Set(["events", "polls", "kudos", "dining", "suggestions"])
 
 async function getCurrentNavOrder(): Promise<string[]> {
   const s = await db.siteSettings.findUnique({ where: { id: "singleton" }, select: { navOrder: true } })
@@ -104,7 +110,7 @@ async function persistNavOrder(user: { id: string }, order: string[]): Promise<v
     update: { navOrder: order.join(",") },
   })
   await logAudit({ userId: user.id, action: "settings.navigation", resourceType: "SiteSettings", metadata: { navOrder: order } })
-  revalidatePath("/", "layout")
+  revalidateSettings()
 }
 
 export async function saveNavOrder(order: string[]): Promise<ActionResult> {
@@ -159,7 +165,7 @@ export async function saveEnabledModules(modules: string[]): Promise<ActionResul
     metadata: { enabledModules: modules },
   })
 
-  revalidatePath("/", "layout")
+  revalidateSettings()
   return ok("Module settings saved.")
 }
 
@@ -177,12 +183,13 @@ export async function saveLayout(formData: FormData): Promise<ActionResult> {
   const pagesLayout   = (formData.get("pagesLayout")   as string) || "content"
   const kudosLayout   = (formData.get("kudosLayout")   as string) || "content"
   const eventsLayout  = (formData.get("eventsLayout")  as string) || "content"
-  const diningLayout  = (formData.get("diningLayout")  as string) || "content"
-  const portalWidth   = (formData.get("portalWidth")   as string) || "default"
+  const diningLayout        = (formData.get("diningLayout")        as string) || "content"
+  const suggestionsLayout   = (formData.get("suggestionsLayout")   as string) || "content"
+  const portalWidth         = (formData.get("portalWidth")         as string) || "default"
   const feedPageSize  = Number(formData.get("feedPageSize")) || 15
   const feedCardStyle = (formData.get("feedCardStyle") as string) || "preview"
 
-  if (!VALID_LAYOUTS.has(feedLayout) || !VALID_LAYOUTS.has(articleLayout) || !VALID_LAYOUTS.has(pagesLayout) || !VALID_LAYOUTS.has(kudosLayout) || !VALID_LAYOUTS.has(eventsLayout) || !VALID_LAYOUTS.has(diningLayout))
+  if (!VALID_LAYOUTS.has(feedLayout) || !VALID_LAYOUTS.has(articleLayout) || !VALID_LAYOUTS.has(pagesLayout) || !VALID_LAYOUTS.has(kudosLayout) || !VALID_LAYOUTS.has(eventsLayout) || !VALID_LAYOUTS.has(diningLayout) || !VALID_LAYOUTS.has(suggestionsLayout))
     return fail("Invalid layout value.")
   if (!VALID_WIDTHS.has(portalWidth))
     return fail("Invalid width value.")
@@ -193,18 +200,18 @@ export async function saveLayout(formData: FormData): Promise<ActionResult> {
 
   await db.siteSettings.upsert({
     where: { id: "singleton" },
-    create: { id: "singleton", feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, diningLayout, portalWidth, feedPageSize, feedCardStyle },
-    update: { feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, diningLayout, portalWidth, feedPageSize, feedCardStyle },
+    create: { id: "singleton", feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, diningLayout, suggestionsLayout, portalWidth, feedPageSize, feedCardStyle },
+    update: { feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, diningLayout, suggestionsLayout, portalWidth, feedPageSize, feedCardStyle },
   })
 
   await logAudit({
     userId: user.id,
     action: "settings.layout",
     resourceType: "SiteSettings",
-    metadata: { feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, diningLayout, portalWidth, feedPageSize, feedCardStyle },
+    metadata: { feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, diningLayout, suggestionsLayout, portalWidth, feedPageSize, feedCardStyle },
   })
 
-  revalidatePath("/", "layout")
+  revalidateSettings()
   return ok("Layout saved.")
 }
 
@@ -229,7 +236,7 @@ export async function saveDiningSettings(formData: FormData): Promise<ActionResu
     metadata: { diningCurrency },
   })
 
-  revalidatePath("/", "layout")
+  revalidateSettings()
   return ok("Dining settings saved.")
 }
 
@@ -249,7 +256,7 @@ export async function toggleGravatars(enabled: boolean): Promise<ActionResult> {
     metadata: { gravatarsEnabled: enabled },
   })
 
-  revalidatePath("/", "layout")
+  revalidateSettings()
   return ok(enabled ? "Gravatar enabled." : "Gravatar disabled.")
 }
 
@@ -282,6 +289,7 @@ export async function toggleLocalAuth(enabled: boolean): Promise<ActionResult> {
   })
 
   revalidatePath("/login")
+  revalidateTag(SETTINGS_CACHE_TAG, {})
   return ok(enabled ? "Password login enabled." : "Password login disabled.")
 }
 
@@ -305,6 +313,6 @@ export async function saveTheme(formData: FormData): Promise<ActionResult> {
     metadata: { primaryColor },
   })
 
-  revalidatePath("/", "layout")
+  revalidateSettings()
   return ok("Theme applied.")
 }

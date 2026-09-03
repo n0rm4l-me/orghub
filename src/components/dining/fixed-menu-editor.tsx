@@ -602,7 +602,7 @@ function EntryRow({
       </div>
       <div className="flex shrink-0 items-center gap-1">
         {entry.soldOut && (
-          <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-600 dark:bg-red-900/20 dark:text-red-400">
+          <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-600 dark:bg-red-900/30 dark:text-red-400">
             Sold out
           </span>
         )}
@@ -616,7 +616,7 @@ function EntryRow({
               else { toast.success(res.message ?? "Done."); onToggleSoldOut(!entry.soldOut) }
             })}
             title={entry.soldOut ? "Mark available" : "Mark as sold out"}
-            className={`grid size-7 place-items-center rounded-lg text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 ${entry.soldOut ? "text-orange-500 opacity-100! dark:text-orange-400" : "hover:bg-orange-50 dark:hover:bg-orange-900/20"}`}
+            className={`grid size-7 place-items-center rounded-lg text-gray-400 hover:text-red-600 dark:hover:text-red-400 ${entry.soldOut ? "text-red-500 opacity-100! dark:text-red-400" : "hover:bg-red-50 dark:hover:bg-red-900/20"}`}
           >
             <Ban className="size-3.5" />
           </button>

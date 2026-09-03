@@ -27,9 +27,9 @@ export function TablePagination({ basePath, page, totalPages, params, pageParam 
     return qs ? `${basePath}?${qs}` : basePath
   }
 
-  const base = "rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium transition"
-  const enabled = `${base} bg-white text-gray-700 hover:bg-gray-50`
-  const disabled = `${base} cursor-not-allowed bg-gray-50 text-gray-300`
+  const base = "rounded-lg border border-border px-3 py-1.5 text-sm font-medium transition"
+  const enabled = `${base} bg-card text-foreground hover:bg-muted`
+  const disabled = `${base} cursor-not-allowed bg-muted text-muted-foreground/50`
 
   return (
     <nav className="mt-4 flex items-center justify-between" aria-label="Pagination">
@@ -43,7 +43,7 @@ export function TablePagination({ basePath, page, totalPages, params, pageParam 
         </span>
       )}
 
-      <span className="text-xs text-gray-400">
+      <span className="text-xs text-muted-foreground">
         Page {page} of {totalPages}
       </span>
 

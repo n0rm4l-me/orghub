@@ -12,6 +12,8 @@ import { gravatarUrl } from "@/lib/gravatar"
 import { getSettings } from "@/lib/settings"
 import { AdminTable } from "@/components/ui/admin-table"
 import type { AdminTableCol } from "@/components/ui/admin-table"
+import { SyncAdPhotosButton } from "@/components/sync-ad-photos-button"
+import { CacheGravatarsButton } from "@/components/cache-gravatars-button"
 
 export const metadata = { title: "Users" }
 
@@ -25,6 +27,7 @@ type UserRow = {
   active: boolean
   provider: string | null
   createdAt: Date
+  avatarUrl: string | null
 }
 
 interface Props {
@@ -59,6 +62,7 @@ export default async function UsersPage({ searchParams }: Props) {
         active: true,
         provider: true,
         createdAt: true,
+        avatarUrl: true,
       },
       skip: (page - 1) * PER_PAGE,
       take: PER_PAGE,
@@ -85,8 +89,8 @@ export default async function UsersPage({ searchParams }: Props) {
         return (
           <div className="flex items-center gap-3">
             <Avatar className="size-8 shrink-0">
-              {settings.gravatarsEnabled && (
-                <AvatarImage src={gravatarUrl(user.email, 32)} alt="" />
+              {(user.avatarUrl || settings.gravatarsEnabled) && (
+                <AvatarImage src={user.avatarUrl ?? gravatarUrl(user.email, 32)} alt="" />
               )}
               <AvatarFallback className="bg-brand/10 text-[11px] font-bold text-brand">
                 {initials}
@@ -188,6 +192,14 @@ export default async function UsersPage({ searchParams }: Props) {
         description={`${total} account${total === 1 ? "" : "s"} · ${admins} admin${
           admins === 1 ? "" : "s"
         }`}
+        action={
+          (process.env.LDAP_URL || settings.gravatarsEnabled) ? (
+            <div className="flex items-center gap-2">
+              {process.env.LDAP_URL && <SyncAdPhotosButton />}
+              {settings.gravatarsEnabled && <CacheGravatarsButton />}
+            </div>
+          ) : undefined
+        }
       />
 
       <AdminFilters

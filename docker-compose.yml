@@ -1,4 +1,14 @@
 services:
+  migrate:
+    build:
+      context: .
+      target: migrator
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/orghub
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   app:
     build: .
     ports:
@@ -10,6 +20,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   postgres:
     image: postgres:16-alpine

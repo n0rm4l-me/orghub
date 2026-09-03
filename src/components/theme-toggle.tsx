@@ -16,12 +16,13 @@ function applyTheme(t: Theme) {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("system")
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === "undefined") return "system"
+    const saved = localStorage.getItem("theme") as Theme | null
+    return saved === "light" || saved === "dark" || saved === "system" ? saved : "system"
+  })
 
   useEffect(() => {
-    const saved = localStorage.getItem("theme") as Theme | null
-    if (saved === "light" || saved === "dark" || saved === "system") setTheme(saved)
-
     const mq = window.matchMedia("(prefers-color-scheme: dark)")
     function onSystem() {
       if ((localStorage.getItem("theme") ?? "system") === "system") applyTheme("system")

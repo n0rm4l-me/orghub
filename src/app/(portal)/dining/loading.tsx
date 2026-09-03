@@ -10,7 +10,7 @@ export default function Loading() {
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="flex flex-col items-center gap-3 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900"
+                className="flex flex-col items-center gap-3 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900"
               >
                 <div className="size-12 animate-pulse rounded-xl bg-gray-200 dark:bg-gray-800" />
                 <div className="h-3.5 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-800" />

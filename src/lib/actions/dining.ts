@@ -6,6 +6,7 @@ import { requireRole } from "@/lib/rbac"
 import { locationFilter } from "@/lib/dining-scope"
 import { revalidatePath } from "next/cache"
 import { type ActionResult, ok, okWith, fail } from "@/lib/actions/types"
+import { logAudit } from "@/lib/audit"
 import type { DayOfWeek, Role } from "@prisma/client"
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -53,8 +54,9 @@ export async function updateLocation(id: string, formData: FormData): Promise<Ac
 }
 
 export async function deleteLocation(id: string): Promise<ActionResult> {
-  await requireRole("ADMIN")
+  const user = await requireRole("ADMIN")
   await db.location.delete({ where: { id } })
+  await logAudit({ userId: user.id, action: "dining.delete", resourceType: "Location", resourceId: id })
   revalidatePath("/admin/dining")
   revalidatePath("/dining", "layout")
   return ok("Location deleted.")
@@ -91,8 +93,9 @@ export async function updateVenue(id: string, formData: FormData): Promise<Actio
 }
 
 export async function deleteVenue(id: string): Promise<ActionResult> {
-  await requireRole("ADMIN")
+  const user = await requireRole("ADMIN")
   await db.venue.delete({ where: { id } })
+  await logAudit({ userId: user.id, action: "dining.delete", resourceType: "Venue", resourceId: id })
   revalidatePath("/admin/dining")
   revalidatePath(`/dining/${id}`)
   revalidatePath("/dining", "layout")
@@ -415,6 +418,7 @@ export async function deleteDish(id: string): Promise<ActionResult> {
   if (!dish) return fail("Dish not found.")
   if (!(await canEditLocation(user.id, user.role, dish.venue.locationId))) return fail("Not authorized.")
   await db.dish.delete({ where: { id } })
+  await logAudit({ userId: user.id, action: "dining.delete", resourceType: "Dish", resourceId: id, metadata: { name: dish.name } })
   revalidatePath(`/admin/dining/venues/${dish.venueId}`)
   // A deleted dish leaves entries with dishId = null, dropping their fallbacks.
   revalidatePath(`/dining/${dish.venueId}`)
@@ -594,6 +598,7 @@ export async function deleteWeekMenu(weekMenuId: string): Promise<ActionResult> 
   if (!menu) return fail("Menu not found.")
   if (!(await canEditLocation(user.id, user.role, menu.venue.locationId))) return fail("Not authorized.")
   await db.weekMenu.delete({ where: { id: weekMenuId } })
+  await logAudit({ userId: user.id, action: "dining.delete", resourceType: "WeekMenu", resourceId: weekMenuId })
   revalidatePath(`/admin/dining/venues/${menu.venueId}`)
   revalidatePath(`/dining/${menu.venue.id}`)
   return ok("Menu deleted.")
@@ -661,6 +666,7 @@ export async function upsertTopic(
   revalidatePath(`/admin/dining/venues/${venueId}`)
   revalidatePath(`/dining/${venueId}`)
   revalidatePath(`/dining/${venueId}/topics`)
+  revalidatePath(`/dining/${venueId}/announcements`)
   return ok("Topic saved.")
 }
 
@@ -679,6 +685,7 @@ export async function publishTopic(id: string): Promise<ActionResult> {
   revalidatePath(`/admin/dining/venues/${topic.venueId}`)
   revalidatePath(`/dining/${topic.venue.id}`)
   revalidatePath(`/dining/${topic.venue.id}/topics`)
+  revalidatePath(`/dining/${topic.venue.id}/announcements`)
   return ok("Topic set as current.")
 }
 
@@ -691,6 +698,7 @@ export async function unpublishTopic(id: string): Promise<ActionResult> {
   revalidatePath(`/admin/dining/venues/${topic.venueId}`)
   revalidatePath(`/dining/${topic.venueId}`)
   revalidatePath(`/dining/${topic.venueId}/topics`)
+  revalidatePath(`/dining/${topic.venueId}/announcements`)
   return ok("Topic unpublished.")
 }
 
@@ -700,10 +708,12 @@ export async function deleteTopic(id: string): Promise<ActionResult> {
   if (!topic) return fail("Topic not found.")
   if (!(await canEditLocation(user.id, user.role, topic.venue.locationId))) return fail("Not authorized.")
   await db.monthlyTopic.delete({ where: { id } })
+  await logAudit({ userId: user.id, action: "dining.delete", resourceType: "MonthlyTopic", resourceId: id })
   // Topics render at /admin/dining/venues/{id}?tab=topics; the /topics route is a redirect stub.
   revalidatePath(`/admin/dining/venues/${topic.venueId}`)
   revalidatePath(`/dining/${topic.venueId}`)
   revalidatePath(`/dining/${topic.venueId}/topics`)
+  revalidatePath(`/dining/${topic.venueId}/announcements`)
   return ok("Topic deleted.")
 }
 
@@ -839,6 +849,7 @@ export async function toggleSoldOut(entryId: string, soldOut: boolean): Promise<
   if (!(await canEditLocation(user.id, user.role, entry.section.weekMenu.venue.locationId))) return fail("Not authorized.")
   await db.fixedMenuEntry.update({ where: { id: entryId }, data: { soldOut } })
   revalidatePath(`/dining/${entry.section.weekMenu.venueId}`)
+  revalidatePath(`/admin/dining/venues/${entry.section.weekMenu.venueId}/menus/${entry.section.weekMenuId}`)
   return ok(soldOut ? "Marked as sold out." : "Item available again.")
 }
 
@@ -851,6 +862,7 @@ export async function deleteFixedEntry(entryId: string): Promise<ActionResult> {
   if (!entry) return fail("Entry not found.")
   if (!(await canEditLocation(user.id, user.role, entry.section.weekMenu.venue.locationId))) return fail("Not authorized.")
   await db.fixedMenuEntry.delete({ where: { id: entryId } })
+  await logAudit({ userId: user.id, action: "dining.delete", resourceType: "FixedMenuEntry", resourceId: entryId })
   revalidatePath(`/admin/dining/venues/${entry.section.weekMenu.venueId}/menus/${entry.section.weekMenuId}`)
   revalidatePath(`/dining/${entry.section.weekMenu.venueId}`)
   return ok("Entry deleted.")

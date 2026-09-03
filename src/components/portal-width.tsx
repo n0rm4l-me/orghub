@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useState } from "react"
 import { ChevronsLeftRight } from "lucide-react"
 
 const WIDTHS = ["narrow", "default", "wide"] as const
@@ -35,12 +35,11 @@ export function PortalWidthProvider({
   defaultWidth: string
   children: React.ReactNode
 }) {
-  const [width, setWidth] = useState<Width>(toWidth(defaultWidth))
-
-  useEffect(() => {
+  const [width, setWidth] = useState<Width>(() => {
+    if (typeof window === "undefined") return toWidth(defaultWidth)
     const stored = localStorage.getItem("portal-width")
-    if (stored) setWidth(toWidth(stored))
-  }, [])
+    return stored ? toWidth(stored) : toWidth(defaultWidth)
+  })
 
   const cycle = () => {
     const next = WIDTHS[(WIDTHS.indexOf(width) + 1) % WIDTHS.length]!

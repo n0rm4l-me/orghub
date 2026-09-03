@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { headers } from "next/headers"
 import { signOut } from "@/auth"
 import Link from "next/link"
@@ -23,12 +25,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       .toUpperCase()
       .slice(0, 2) || "?"
 
-  const modules       = parseModules(settings.enabledModules)
-  const eventsEnabled = modules.has("events")
-  const pollsEnabled  = modules.has("polls")
-  const kudosEnabled  = modules.has("kudos")
-  const diningEnabled = modules.has("dining")
-  const canAdminister = can.manageUsers(user)
+  const modules            = parseModules(settings.enabledModules)
+  const eventsEnabled      = modules.has("events")
+  const pollsEnabled       = modules.has("polls")
+  const kudosEnabled       = modules.has("kudos")
+  const diningEnabled      = modules.has("dining")
+  const suggestionsEnabled = modules.has("suggestions")
+  const canAdminister      = can.manageUsers(user)
 
   async function signOutAction() {
     "use server"
@@ -39,7 +42,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-background">
       {/* Mobile top bar + drawer */}
       <AdminMobileSidebar
         canAdminister={canAdminister}
@@ -47,9 +50,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         pollsEnabled={pollsEnabled}
         kudosEnabled={kudosEnabled}
         diningEnabled={diningEnabled}
+        suggestionsEnabled={suggestionsEnabled}
         userName={user.name ?? user.email}
         userRole={user.role}
-        gravatarUrl={settings.gravatarsEnabled ? gravatarUrl(user.email, 28) : undefined}
+        gravatarUrl={user.avatarUrl ?? (settings.gravatarsEnabled ? gravatarUrl(user.email, 28) : undefined)}
         signOutAction={signOutAction}
         siteName={settings.siteName}
       />
@@ -71,6 +75,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           pollsEnabled={pollsEnabled}
           kudosEnabled={kudosEnabled}
           diningEnabled={diningEnabled}
+          suggestionsEnabled={suggestionsEnabled}
         />
 
         <div className="shrink-0 border-t border-white/5 p-3">
@@ -85,7 +90,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
           <div className="flex items-center gap-2.5 rounded-lg px-3 py-2">
             <Avatar className="size-7 shrink-0">
-              {settings.gravatarsEnabled && <AvatarImage src={gravatarUrl(user.email, 28)} alt="" />}
+              {(user.avatarUrl || settings.gravatarsEnabled) && (
+                <AvatarImage src={user.avatarUrl ?? gravatarUrl(user.email, 28)} alt="" />
+              )}
               <AvatarFallback className="bg-brand text-[11px] font-semibold text-white">
                 {initials}
               </AvatarFallback>

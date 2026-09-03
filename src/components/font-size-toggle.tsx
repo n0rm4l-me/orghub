@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 type FontSize = "sm" | "md" | "lg"
 
@@ -18,12 +18,11 @@ const options: { value: FontSize; label: string; cls: string }[] = [
 ]
 
 export function FontSizeToggle() {
-  const [size, setSize] = useState<FontSize>("md")
-
-  useEffect(() => {
+  const [size, setSize] = useState<FontSize>(() => {
+    if (typeof window === "undefined") return "md"
     const saved = localStorage.getItem("fontSize") as FontSize | null
-    if (saved === "sm" || saved === "md" || saved === "lg") setSize(saved)
-  }, [])
+    return saved === "sm" || saved === "md" || saved === "lg" ? saved : "md"
+  })
 
   function pick(f: FontSize) {
     setSize(f)

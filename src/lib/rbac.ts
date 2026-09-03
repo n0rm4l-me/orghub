@@ -17,6 +17,7 @@ export type CurrentUser = {
   name: string | null
   role: Role
   active: boolean
+  avatarUrl: string | null
 }
 
 const getSession = cache(auth)
@@ -37,7 +38,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
 
   const user = await db.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, email: true, name: true, role: true, active: true },
+    select: { id: true, email: true, name: true, role: true, active: true, avatarUrl: true },
   })
 
   if (!user || !user.active) return null

@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server"
 import { randomUUID } from "crypto"
+import { revalidatePath } from "next/cache"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { uploadToStorage } from "@/lib/storage"
+import { logAudit } from "@/lib/audit"
 
 const MAX_BYTES = 10 * 1024 * 1024  // 10 MB
 const ALLOWED_TYPES: Record<string, string> = {
@@ -108,5 +110,7 @@ export async function POST(req: Request) {
     },
   })
 
+  await logAudit({ userId: session.user.id, action: "media.upload", resourceType: "Media", resourceId: media.id, metadata: { filename: file.name, context: folder } })
+  revalidatePath("/admin/media")
   return NextResponse.json({ id: media.id, url, key, filename: file.name })
 }
