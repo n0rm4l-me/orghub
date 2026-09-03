@@ -1,57 +1,55 @@
 # OrgHub
 
-Open-source self-hosted employee portal. News feed, events calendar, wiki pages, and a full-featured CMS for your intranet.
+Self-hosted employee portal for teams that want to own their intranet.
 
-## Features
+## What's included
 
-**Content**
-- News feed with categories, full-text search, pagination, and pinned hero cards
-- Rich text article editor (Tiptap): headings, lists, code blocks, inline images
-- Cover images, excerpts, and per-article "Important" flag
-- Article reactions (likes) and threaded comments
-- Unique view tracking: per-user read counts, view counter on the article page
-- Events calendar: monthly grid, sidebar widget, article reader banner, and feed integration
-- Site-wide announcement banners with configurable schedule, colour, and call-to-action link
-- CMS-managed static pages with one-level parent/child hierarchy and dropdown navigation
+**News and content**  
+Rich text article editor, categories, pinned posts, reactions, threaded comments, view tracking.
 
-**Appearance**
-- Branding: site name, two logo slots (header and sign-in screen), live preview
-- Brand colour picker: 8 presets plus custom hex input, live preview
-- Portal width: narrow (1024 px), default (1152 px), wide (1280 px)
-- Feed layout: content only, right sidebar, left sidebar, or both sidebars
-- Feed card style: title only, title with description, or with thumbnail preview
-- Configurable articles-per-page: 5 / 10 / 15 / 20 / 25 / 30
-- Sidebar widget placement with separate left and right columns
+**Events**  
+Monthly calendar grid, upcoming events sidebar widget, event articles.
 
-**Admin**
-- Dashboard with stats: total articles, reactions, comments, views, and most-read articles
-- Full CRUD for articles, pages, categories, quick links, navigation, announcements, users
-- Audit log for all content and settings changes, with filter tabs
-- Module system: events and pages can be toggled on/off per instance
-- Auth providers page: shows Okta configuration and local password status
-- Skeleton loading states on all admin routes; error boundaries in portal and admin shells
+**Polls**  
+Multiple-choice polls, embeddable in articles or standalone.
 
-**Access and deployment**
-- Role-based access: admin, editor, viewer
-- Local password auth with bcrypt and timing-safe login
-- Active Directory / LDAP auth via service-account bind + user-bind verify
-- SSO via Okta or any OIDC provider
-- Self-hosted with Docker Compose
-- Health endpoint at `/api/health` for Kubernetes liveness/readiness probes
-- PWA: installable on mobile
+**Kudos**  
+Employee recognition with a coin budget. Employees send kudos with a value tag; admin manages redemption types and a webhook-backed fulfilment flow.
+
+**Suggestions**  
+Anonymous or attributed suggestion box. Voting, threaded comments, status workflow, admin moderation.
+
+**Dining**  
+Multi-location cafeteria menus: weekly grid editor, dish library, fixed menus with modifier groups, nutrition params, allergen tags, operating hours.
+
+**Notifications**  
+Web Push (VAPID) for article and kudos events. In-app bell with unread badge.
+
+**Translation**  
+On-demand article translation via OpenAI, DeepL, or LibreTranslate. Results cached in the database.
+
+**Media**  
+S3-compatible image library (MinIO or AWS S3). Images are reusable across all content.
+
+**Admin**  
+Dashboard, full CRUD for all content types, audit log, module toggles, user management, auth providers, appearance settings (brand colour, logo, layout, dark mode).
+
+**Mobile REST API**  
+JWT auth, article feed and detail, events, dining, translation.
+
+**Access**  
+Roles: admin, editor, viewer. Local passwords, LDAP/Active Directory, Okta or any OIDC provider. Rate limiting on auth endpoints. Security headers (CSP, HSTS, X-Frame-Options).
 
 ## Quick start
 
 ```bash
 cp .env.example .env
-# Edit .env: DATABASE_URL, AUTH_SECRET, SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD
+# Set DATABASE_URL, AUTH_SECRET, SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD
 
 docker compose up -d
 ```
 
-App runs at http://localhost:3000.
-
-On first run, set `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` in `.env` before running `npx prisma db seed`.
+Runs at `http://localhost:3000`. On first launch, run `npx prisma db seed` to create the admin account.
 
 ## Development
 
@@ -63,13 +61,9 @@ npx prisma db seed
 npm run dev
 ```
 
-## Tech stack
+## Stack
 
-- [Next.js 16](https://nextjs.org) with App Router and React Server Components
-- [Prisma 7](https://prisma.io) + PostgreSQL
-- [Auth.js v5](https://authjs.dev)
-- [Tiptap v3](https://tiptap.dev)
-- [Tailwind CSS v4](https://tailwindcss.com)
+Next.js 16, Prisma 7, PostgreSQL, Auth.js v5, Tiptap v3, Tailwind CSS v4.
 
 ## License
 
