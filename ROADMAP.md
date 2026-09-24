@@ -555,21 +555,30 @@ Smaller items, independent of the design-unification phases above:
   once with a fully stripped environment (`env -i`, no `DATABASE_URL` or
   anything else set) to confirm it'll actually pass in GitHub Actions' clean
   runner, not just this machine.
-- **PARTIAL 2026-09-25.** Added
+- **PARTIAL, extended 2026-09-25.** Added
   [src/__tests__/actions.roles.test.ts](src/__tests__/actions.roles.test.ts):
   a VIEWER rejected from an ADMIN-only action (`createLocation`,
   `deleteKudos`), an ADMIN allowed (`deleteKudos`), and the case that
   actually matters, since it's the one bug pattern that silently over- or
   under-scopes instead of just failing: an EDITOR rejected from a venue
-  under a *different* location (`upsertMealSlots`) alongside an EDITOR
-  allowed on their *own* location's venue, so the scoping filter is proven
-  to reject correctly without also locking out legitimate access. Followed
-  the existing `actions.auth.test.ts` mocking style (no DB, no seed data);
-  the venue-scoping mock's `findFirst` actually inspects `where.locationId`
+  under a *different* location (`upsertSlotsAndCategories`) alongside an
+  EDITOR allowed on their *own* location's venue, so the scoping filter is
+  proven to reject correctly without also locking out legitimate access.
+  The venue-scoping mock's `findFirst` actually inspects `where.locationId`
   rather than always returning the row, otherwise the out-of-scope test
-  would pass without exercising anything. Still open: dining, polls,
-  suggestions have zero coverage beyond this, and the matrix only covers 2
-  of the ~15 action files.
+  would pass without exercising anything.
+  Added [actions.polls.test.ts](src/__tests__/actions.polls.test.ts) (VIEWER
+  rejected / EDITOR allowed on `createPoll`, unauthenticated rejected from
+  `castVote`) and
+  [actions.suggestions.test.ts](src/__tests__/actions.suggestions.test.ts)
+  (EDITOR rejected / ADMIN allowed on `deleteSuggestion`, and
+  `deleteComment`'s ownership-or-role check: a VIEWER can delete their own
+  comment, can't delete someone else's, an EDITOR can delete anyone's).
+  All follow the same no-DB mocking style as `actions.auth.test.ts`. Still
+  open: kudos beyond `deleteKudos`, and most non-authorization logic
+  (validation, notification side effects, the `isAdminReply` flag
+  `addComment` computes from the caller's role) have no coverage; the
+  matrix now covers 4 of ~15 action files.
 - **PENDING AUDIT. Input validation and IDOR review never finished.** No
   validation library in `package.json` (no zod, no valibot). Server actions
   read `formData.get(...) as string` directly and generally don't check that a
