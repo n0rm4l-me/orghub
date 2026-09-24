@@ -430,6 +430,7 @@ export async function deleteRedeemType(id: string): Promise<ActionResult> {
   await requireRole("ADMIN")
   await db.kudosRedeemType.delete({ where: { id } })
   revalidatePath("/admin/modules/kudos")
+  revalidatePath("/kudos")
   return ok("Type deleted.")
 }
 

@@ -222,5 +222,9 @@ export async function castVote(pollId: string, optionIds: string[]): Promise<Act
 
   revalidatePath("/polls")
   revalidatePath(`/admin/polls/${pollId}`)
+  revalidatePath("/")
+  revalidatePath("/events")
+  revalidatePath("/kudos")
+  revalidatePath("/articles/[id]", "page")
   return ok("Vote recorded.")
 }

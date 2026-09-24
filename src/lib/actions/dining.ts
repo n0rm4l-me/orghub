@@ -75,7 +75,7 @@ export async function createVenue(formData: FormData): Promise<ActionResult> {
   const venueType = ((formData.get("venueType") as string) ?? "CAFETERIA").trim()
   await db.venue.create({ data: { name, locationId, weeklyMenuEnabled, topicsEnabled, venueType } })
   revalidatePath("/admin/dining")
-  revalidatePath("/dining", "layout")
+  revalidatePath("/dining")
   return ok("Venue created.")
 }
 
@@ -87,8 +87,8 @@ export async function updateVenue(id: string, formData: FormData): Promise<Actio
   await db.venue.update({ where: { id }, data: { name, venueType } })
   revalidatePath("/admin/dining")
   revalidatePath(`/admin/dining/venues/${id}`)
+  revalidatePath("/dining")
   revalidatePath(`/dining/${id}`)
-  revalidatePath("/dining", "layout")
   return ok("Venue updated.")
 }
 
@@ -97,8 +97,8 @@ export async function deleteVenue(id: string): Promise<ActionResult> {
   await db.venue.delete({ where: { id } })
   await logAudit({ userId: user.id, action: "dining.delete", resourceType: "Venue", resourceId: id })
   revalidatePath("/admin/dining")
+  revalidatePath("/dining")
   revalidatePath(`/dining/${id}`)
-  revalidatePath("/dining", "layout")
   return ok("Venue deleted.")
 }
 

@@ -224,7 +224,9 @@ export async function saveDiningSettings(formData: FormData): Promise<ActionResu
     metadata: { diningCurrency },
   })
 
-  revalidateSettings()
+  revalidateTag(SETTINGS_CACHE_TAG, {})
+  revalidatePath("/dining", "layout")
+  revalidatePath("/admin/dining", "layout")
   return ok("Dining settings saved.")
 }
 
