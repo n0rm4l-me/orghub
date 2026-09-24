@@ -324,11 +324,15 @@ Everything else, roughly ordered by blast radius:
   stages after their main `Promise.all` (reactions, poll, votes, top-kudos,
   etc.) instead of parallelizing what doesn't actually depend on prior
   results.
-- **OPEN** [src/lib/views.ts](src/lib/views.ts) `recordView` and
-  [src/app/(portal)/kudos/page.tsx:67](src/app/(portal)/kudos/page.tsx#L67)
-  (`createNotification` → web push) both still block the response with a
-  write during render. Zero uses of `after()` (`next/server`) anywhere.
-  Move both there.
+- **FIXED 2026-09-25** [src/lib/views.ts](src/lib/views.ts) `recordView`
+  (called from
+  [articles/[id]/page.tsx:74](<src/app/(portal)/articles/[id]/page.tsx#L74>))
+  and the kudos page's monthly-reset `createNotification` → web push
+  ([kudos/page.tsx:60](<src/app/(portal)/kudos/page.tsx#L60>)) no longer block
+  the response. Both moved into `after()` (`next/server`) — nothing rendered
+  on either page depended on their result (the view *count* shown is read
+  from an earlier query, before this visit's view is recorded). Verified with
+  `tsc --noEmit`, `eslint`, and a full `npx next build`.
 - **OPEN** [src/app/admin/page.tsx](src/app/admin/page.tsx): the dashboard's
   top-articles query still does `orderBy: { views: { _count: "desc" } }` over
   the entire `ArticleView` relation to take 5. Add a denormalized `viewCount`

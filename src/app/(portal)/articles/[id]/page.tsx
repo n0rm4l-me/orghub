@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation"
+import { after } from "next/server"
 import { db } from "@/lib/db"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { gravatarUrl } from "@/lib/gravatar"
@@ -71,7 +72,7 @@ export default async function ArticlePage({ params }: Props) {
   if (!article) notFound()
 
   if (user) {
-    await recordView(article.id, user.id)
+    after(() => recordView(article.id, user.id))
   }
 
   const liked = user

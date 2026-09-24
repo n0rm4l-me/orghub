@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation"
+import { after } from "next/server"
 import { Award } from "lucide-react"
 import { db } from "@/lib/db"
 import { getSettings } from "@/lib/settings"
@@ -57,21 +58,25 @@ export default async function KudosPage({ searchParams }: Props) {
 
   // Lazy monthly coins reset notification
   if (user && balance && balance.budget > 0 && balance.spentThisMonth === 0) {
-    const now = new Date()
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-    const alreadyNotified = await db.notification.findFirst({
-      where: { userId: user.id, type: "kudos.month_reset", createdAt: { gte: monthStart } },
-      select: { id: true },
+    const currentUser = user
+    const currentBalance = balance
+    after(async () => {
+      const now = new Date()
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+      const alreadyNotified = await db.notification.findFirst({
+        where: { userId: currentUser.id, type: "kudos.month_reset", createdAt: { gte: monthStart } },
+        select: { id: true },
+      })
+      if (!alreadyNotified) {
+        await createNotification(
+          currentUser.id,
+          "kudos.month_reset",
+          "Your monthly kudos coins are ready",
+          `You have ${currentBalance.budget} coins to send this month.`,
+          "/kudos",
+        ).catch(() => {})
+      }
     })
-    if (!alreadyNotified) {
-      await createNotification(
-        user.id,
-        "kudos.month_reset",
-        "Your monthly kudos coins are ready",
-        `You have ${balance.budget} coins to send this month.`,
-        "/kudos",
-      ).catch(() => {})
-    }
   }
 
   const kudosValues = settings.kudosValues.split(",").map((v) => v.trim()).filter(Boolean)
