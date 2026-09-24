@@ -60,7 +60,7 @@ export function AnnouncementForm({ values, action, redirectAfterSave }: Props) {
         <div className="min-w-0 w-full flex-1">
           <div className="overflow-hidden rounded-xl border border-border bg-card p-6">
             <label htmlFor="message" className="mb-1.5 block text-sm font-semibold text-foreground">
-              Message <span className="text-red-500">*</span>
+              Message <span className="text-red-500" aria-hidden="true">*</span>
             </label>
             <textarea
               id="message"

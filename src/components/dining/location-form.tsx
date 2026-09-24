@@ -90,7 +90,7 @@ export function LocationForm({ location, trigger }: Props) {
             </h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <div>
-                <label className={lbl}>Name *</label>
+                <label className={lbl}>Name <span aria-hidden="true">*</span></label>
                 <input name="name" defaultValue={location?.name} placeholder="Chicago Office" required className={inputClass} />
               </div>
               <div>

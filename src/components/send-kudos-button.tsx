@@ -104,7 +104,7 @@ export function SendKudosButton({ values, monthlyBudget, remaining }: Props) {
               {/* Recipient */}
               <div>
                 <label id="kudos-to-label" className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  To <span className="text-red-500">*</span>
+                  To <span className="text-red-500" aria-hidden="true">*</span>
                 </label>
                 {selectedUser ? (
                   <div className="flex items-center justify-between rounded-lg border border-brand bg-brand/5 px-3 py-2">
@@ -208,7 +208,7 @@ export function SendKudosButton({ values, monthlyBudget, remaining }: Props) {
               {/* Message */}
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Message <span className="text-red-500">*</span>
+                  Message <span className="text-red-500" aria-hidden="true">*</span>
                 </label>
                 <textarea
                   name="message"

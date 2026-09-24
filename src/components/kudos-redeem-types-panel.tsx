@@ -41,7 +41,7 @@ function TypeForm({
   return (
     <div className="space-y-3 rounded-lg border border-border bg-muted p-3">
       <div>
-        <label className={lbl}>Label *</label>
+        <label className={lbl}>Label <span aria-hidden="true">*</span></label>
         <input type="text" value={s.label} onChange={(e) => set("label", e.target.value)} placeholder="Gift Card" className={inputCls} />
       </div>
       <div>

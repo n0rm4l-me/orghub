@@ -400,13 +400,19 @@ Smaller items, independent of the design-unification phases above:
   class string instead:
   `kudos-redeem-types-panel.tsx`, `new-venue-form.tsx`, `dish-list.tsx`,
   `venue-settings-form.tsx`, `location-form.tsx`, `topics-list.tsx`.
-- **OPEN.** Required-field asterisks aren't accessible in 10 places: 7 files
-  put a literal `*` inside the label's own text (screen readers read it as
-  "asterisk"), 3 use `<span className="text-red-500">*</span>` with no
-  `aria-hidden`
-  (`_form.tsx:63`, `send-kudos-button.tsx:103,207`, `week-picker-create.tsx:79`).
-  `Field` already does this correctly at field.tsx:29, nothing routes through
-  it yet.
+- **FIXED 2026-09-25.** Required-field asterisks are accessible everywhere
+  now: the 7 files that put a literal `*` inside the label's own text
+  (`kudos-redeem-types-panel.tsx`, `dish-list.tsx`, `new-venue-form.tsx` x2,
+  `venue-settings-form.tsx`, `add-venue-dialog.tsx`, `location-form.tsx`,
+  `topics-list.tsx`) now wrap it in `<span aria-hidden="true">`, and the 4
+  (not 3, `week-picker-create.tsx:79` used `text-red-400` not `-500` so an
+  exact-string search had missed it) that already used a styled span just
+  needed the `aria-hidden` attribute added
+  (`_form.tsx:63`, `send-kudos-button.tsx:107,211`, `week-picker-create.tsx:79`).
+  Zero visual change (`aria-hidden` doesn't affect rendering), verified with
+  `tsc`, `eslint`, the test suite, and `npx next build`. `Field`
+  (field.tsx:29) still does this correctly for anything that routes through
+  it, which remains just the one file noted below.
 - **PARTIAL.** [src/components/dining/location-form.tsx:83](src/components/dining/location-form.tsx#L83):
   the delete trigger is still a `<span onClick>`, not keyboard-focusable, and
   its delete flow still hand-rolls confirm buttons instead of `ConfirmDialog`.

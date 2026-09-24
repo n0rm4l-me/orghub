@@ -76,7 +76,7 @@ export function WeekPickerCreate({ venueId }: { venueId: string }) {
               {/* Name */}
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Name <span className="text-red-400">*</span>
+                  Name <span className="text-red-400" aria-hidden="true">*</span>
                 </label>
                 <input
                   ref={inputRef}

@@ -38,7 +38,7 @@ function TopicForm({ venueId, topic, onDone }: { venueId: string; topic?: Topic;
     <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-gray-200 bg-white px-5 py-5">
       <h3 className="text-sm font-semibold text-gray-900">{topic ? "Edit announcement" : "New announcement"}</h3>
       <div>
-        <label className={lbl}>Title *</label>
+        <label className={lbl}>Title <span aria-hidden="true">*</span></label>
         <input name="title" defaultValue={topic?.title} required placeholder="August theme" className={inputClass} />
       </div>
       <div>

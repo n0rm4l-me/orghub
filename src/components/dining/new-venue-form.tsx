@@ -40,14 +40,14 @@ export function NewVenueForm({ locations, defaultLocationId }: { locations: Loca
   return (
     <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-gray-200 bg-white px-5 py-5 dark:border-gray-700 dark:bg-gray-900">
       <div>
-        <label className={lbl}>Location *</label>
+        <label className={lbl}>Location <span aria-hidden="true">*</span></label>
         <select name="locationId" defaultValue={defaultLocationId ?? ""} required className={inputClass}>
           <option value="" disabled>Select location</option>
           {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
         </select>
       </div>
       <div>
-        <label className={lbl}>Name *</label>
+        <label className={lbl}>Name <span aria-hidden="true">*</span></label>
         <input name="name" required placeholder="1st Floor Cafeteria" className={inputClass} />
       </div>
 

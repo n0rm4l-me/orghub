@@ -70,7 +70,7 @@ export function VenueSettingsForm({ venue }: { venue: Venue }) {
       <h2 className="mb-4 text-sm font-semibold text-gray-900 dark:text-gray-100">Venue settings</h2>
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className={lbl}>Name *</label>
+          <label className={lbl}>Name <span aria-hidden="true">*</span></label>
           <input name="name" defaultValue={venue.name} required className={inputClass} />
         </div>
 
