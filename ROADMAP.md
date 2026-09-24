@@ -403,10 +403,25 @@ Everything else, roughly ordered by blast radius:
   on either page depended on their result (the view *count* shown is read
   from an earlier query, before this visit's view is recorded). Verified with
   `tsc --noEmit`, `eslint`, and a full `npx next build`.
-- **OPEN** [src/app/admin/page.tsx](src/app/admin/page.tsx): the dashboard's
-  top-articles query still does `orderBy: { views: { _count: "desc" } }` over
-  the entire `ArticleView` relation to take 5. Add a denormalized `viewCount`
-  incremented in `recordView`.
+- **CHECKED AGAINST REAL DATA, NOT ACTIONABLE YET, 2026-09-25.**
+  [src/app/admin/page.tsx](src/app/admin/page.tsx)'s top-articles query does
+  `orderBy: { views: { _count: "desc" } }` over the entire `ArticleView`
+  relation to take 5, and a denormalized `viewCount` incremented in
+  `recordView` would avoid that. Checked the live staging DB before doing the
+  migration: `ArticleView` currently has **6 rows** across 20 published
+  articles. This query is a `GROUP BY`+`ORDER BY`+`LIMIT 5` with a foreign-key
+  index on `articleId`; at 6 rows it's microseconds regardless of indexing.
+  There's no current performance problem to fix. A denormalized counter also
+  isn't free to add correctly: `_count.views` counts *distinct viewers*
+  (`ArticleView` is upserted per `{articleId,userId}`, not per pageview,
+  per `recordView`'s own upsert semantics), so a `viewCount` column would
+  need to increment only on a genuinely new viewer, not on a repeat
+  visitor's `viewedAt` touch, meaning `recordView`'s `upsert` would need to
+  become a `create`-and-catch-P2002-on-conflict instead (upsert's return
+  value doesn't distinguish which branch fired). That's real complexity and
+  a real place to introduce a silent counting bug, for zero measured benefit
+  today. Revisit if `ArticleView` actually grows large enough for this
+  specific query to show up in a slow-query log, not preemptively.
 - **FIXED 2026-09-25** revalidation gaps: `deleteRedeemType` now revalidates
   `/kudos` too ([kudos.ts:429-435](src/lib/actions/kudos.ts#L429)); `castVote`
   now also revalidates the 4 portal sidebar render sites (`/`, `/events`,
