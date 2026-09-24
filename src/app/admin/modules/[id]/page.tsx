@@ -11,6 +11,7 @@ import { KudosRedeemTypesPanel } from "@/components/kudos-redeem-types-panel"
 import { TranslationSettingsForm } from "@/components/translation-settings-form"
 import { DiningSettingsForm } from "@/components/dining/dining-settings-form"
 import { getRedeemTypes } from "@/lib/actions/kudos"
+import { Panel } from "@/components/ui/field"
 
 interface Props {
   params: Promise<{ id: string }>
@@ -44,11 +45,11 @@ export default async function ModuleSettingsPage({ params }: Props) {
       />
 
       <div className="space-y-4">
-        <div className="rounded-xl border border-gray-200 bg-white px-5 py-4">
+        <Panel>
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-medium text-gray-900">Enable module</p>
-              <p className="mt-0.5 text-xs text-gray-500">
+              <p className="text-sm font-medium text-foreground">Enable module</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 {enabled.has(mod.id)
                   ? `${mod.label} is currently active.`
                   : `${mod.label} is currently disabled site-wide.`}
@@ -60,44 +61,42 @@ export default async function ModuleSettingsPage({ params }: Props) {
               allEnabled={[...enabled]}
             />
           </div>
-        </div>
+        </Panel>
 
         {mod.id === "pages" && (
-          <div className="rounded-xl border border-gray-200 bg-white px-5 py-4">
-            <h2 className="mb-3 text-sm font-semibold text-gray-900">Content</h2>
-            <p className="mb-4 text-xs leading-relaxed text-gray-500">
+          <Panel title="Content">
+            <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
               Manage your wiki pages, set parent/child relationships, and control which pages
               appear in the navigation.
             </p>
             <Link
               href="/admin/pages"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white
-                px-3 py-2 text-sm font-medium text-gray-700 transition hover:border-gray-300
-                hover:bg-gray-50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card
+                px-3 py-2 text-sm font-medium text-foreground transition hover:border-muted-foreground/40
+                hover:bg-muted"
             >
-              <ExternalLink className="size-3.5 text-gray-400" aria-hidden />
+              <ExternalLink className="size-3.5 text-muted-foreground" aria-hidden />
               Manage pages
             </Link>
-          </div>
+          </Panel>
         )}
 
         {mod.id === "events" && (
-          <div className="rounded-xl border border-gray-200 bg-white px-5 py-4">
-            <h2 className="mb-3 text-sm font-semibold text-gray-900">Content</h2>
-            <p className="mb-4 text-xs leading-relaxed text-gray-500">
+          <Panel title="Content">
+            <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
               Events are articles with an event date attached. They appear on the calendar and in the
               upcoming events sidebar widget.
             </p>
             <Link
               href="/admin/events"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white
-                px-3 py-2 text-sm font-medium text-gray-700 transition hover:border-gray-300
-                hover:bg-gray-50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card
+                px-3 py-2 text-sm font-medium text-foreground transition hover:border-muted-foreground/40
+                hover:bg-muted"
             >
-              <ExternalLink className="size-3.5 text-gray-400" aria-hidden />
+              <ExternalLink className="size-3.5 text-muted-foreground" aria-hidden />
               Manage events
             </Link>
-          </div>
+          </Panel>
         )}
 
         {mod.id === "translation" && (
@@ -110,21 +109,20 @@ export default async function ModuleSettingsPage({ params }: Props) {
         {mod.id === "dining" && (
           <>
             <DiningSettingsForm currency={settings.diningCurrency} />
-            <div className="rounded-xl border border-gray-200 bg-white px-5 py-4">
-              <h2 className="mb-3 text-sm font-semibold text-gray-900">Content</h2>
-              <p className="mb-4 text-xs leading-relaxed text-gray-500">
+            <Panel title="Content">
+              <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
                 Manage locations, venues, weekly menus, dish library, and monthly topics.
               </p>
               <Link
                 href="/admin/dining"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white
-                  px-3 py-2 text-sm font-medium text-gray-700 transition hover:border-gray-300
-                  hover:bg-gray-50"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card
+                  px-3 py-2 text-sm font-medium text-foreground transition hover:border-muted-foreground/40
+                  hover:bg-muted"
               >
-                <ExternalLink className="size-3.5 text-gray-400" aria-hidden />
+                <ExternalLink className="size-3.5 text-muted-foreground" aria-hidden />
                 Manage dining
               </Link>
-            </div>
+            </Panel>
           </>
         )}
 
@@ -138,21 +136,20 @@ export default async function ModuleSettingsPage({ params }: Props) {
               redeemRateLabel={settings.kudosRedeemRateLabel ?? ""}
             />
             <KudosRedeemTypesPanel initialTypes={redeemTypes} />
-            <div className="rounded-xl border border-gray-200 bg-white px-5 py-4">
-              <h2 className="mb-3 text-sm font-semibold text-gray-900">History</h2>
-              <p className="mb-4 text-xs leading-relaxed text-gray-500">
+            <Panel title="History">
+              <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
                 Browse all kudos sent across the portal. Admins can delete individual entries.
               </p>
               <Link
                 href="/admin/kudos"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white
-                  px-3 py-2 text-sm font-medium text-gray-700 transition hover:border-gray-300
-                  hover:bg-gray-50"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card
+                  px-3 py-2 text-sm font-medium text-foreground transition hover:border-muted-foreground/40
+                  hover:bg-muted"
               >
-                <ExternalLink className="size-3.5 text-gray-400" aria-hidden />
+                <ExternalLink className="size-3.5 text-muted-foreground" aria-hidden />
                 View kudos log
               </Link>
-            </div>
+            </Panel>
           </>
         )}
       </div>

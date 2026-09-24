@@ -101,11 +101,11 @@ export default async function AdminPagesPage({ searchParams }: Props) {
         <div className={row.indent ? "pl-4" : ""}>
           <Link
             href={`/admin/pages/${row.id}/edit`}
-            className="block truncate text-sm font-medium text-gray-900 transition-colors hover:text-brand"
+            className="block truncate text-sm font-medium text-foreground transition-colors hover:text-brand"
             title={row.title}
           >
             {row.indent && (
-              <span className="mr-1 select-none text-gray-300" aria-hidden>
+              <span className="mr-1 select-none text-muted-foreground" aria-hidden>
                 {"└ "}
               </span>
             )}
@@ -121,7 +121,7 @@ export default async function AdminPagesPage({ searchParams }: Props) {
       type: "text",
       hideOnMobile: true,
       render: (row) => (
-        <span className="block truncate font-mono text-xs text-gray-400">
+        <span className="block truncate font-mono text-xs text-muted-foreground">
           /pages/{row.slug}
         </span>
       ),
@@ -146,9 +146,9 @@ export default async function AdminPagesPage({ searchParams }: Props) {
       hideOnMobile: true,
       render: (row) =>
         row.showInNav && row.published ? (
-          <span className="text-xs font-medium text-gray-600">Yes</span>
+          <span className="text-xs font-medium text-muted-foreground">Yes</span>
         ) : (
-          <span className="text-xs text-gray-300">No</span>
+          <span className="text-xs text-muted-foreground">No</span>
         ),
     },
     {
@@ -176,8 +176,8 @@ export default async function AdminPagesPage({ searchParams }: Props) {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="View live page"
-              className="grid size-7 place-items-center rounded-md text-gray-400 transition
-                hover:bg-gray-100 hover:text-brand"
+              className="grid size-7 place-items-center rounded-md text-muted-foreground transition
+                hover:bg-muted hover:text-brand"
             >
               <ExternalLink className="size-3.5" aria-hidden />
             </Link>
@@ -185,8 +185,8 @@ export default async function AdminPagesPage({ searchParams }: Props) {
           <Link
             href={`/admin/pages/${row.id}/edit`}
             aria-label="Edit page"
-            className="grid size-7 place-items-center rounded-md text-gray-400 transition
-              hover:bg-gray-100 hover:text-gray-700"
+            className="grid size-7 place-items-center rounded-md text-muted-foreground transition
+              hover:bg-muted hover:text-foreground"
           >
             <Pencil className="size-3.5" aria-hidden />
           </Link>
@@ -212,8 +212,8 @@ export default async function AdminPagesPage({ searchParams }: Props) {
           <div className="flex items-center gap-2">
             <Link
               href="/admin/navigation"
-              className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-3.5 py-2
-                text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+              className="inline-flex items-center rounded-lg border border-border bg-card px-3.5 py-2
+                text-sm font-medium text-foreground transition hover:bg-muted"
             >
               Manage menu
             </Link>

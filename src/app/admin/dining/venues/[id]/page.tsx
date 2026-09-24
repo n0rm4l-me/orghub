@@ -173,25 +173,25 @@ export default async function VenuePage({ params, searchParams }: Props) {
           <div className="flex items-center justify-between gap-3">
             <form method="GET" className="relative flex-1 max-w-xs">
               <input type="hidden" name="tab" value="menus" />
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" aria-hidden />
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden />
               <input
                 type="search"
                 name="q"
                 defaultValue={q ?? ""}
                 placeholder="Search menus…"
-                className="w-full rounded-lg border border-gray-200 bg-white py-1.5 pl-9 pr-3 text-sm text-gray-700 outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                className="w-full rounded-lg border border-border bg-card py-1.5 pl-9 pr-3 text-sm text-foreground outline-none focus:border-brand focus:ring-1 focus:ring-brand"
               />
             </form>
             <WeekPickerCreate venueId={id} />
           </div>
 
           {menus.length === 0 ? (
-            <p className="text-sm text-gray-400">{q ? "No menus match your search." : "No menus yet."}</p>
+            <p className="text-sm text-muted-foreground">{q ? "No menus match your search." : "No menus yet."}</p>
           ) : (
-            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+            <div className="overflow-hidden rounded-xl border border-border bg-card">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50 text-xs font-medium text-gray-500">
+                  <tr className="border-b border-border bg-muted text-xs font-medium text-muted-foreground">
                     <th className="px-5 py-3 text-left">Name</th>
                     <th className="w-20 px-3 py-3 text-left">Type</th>
                     <th className="w-16 px-3 py-3 text-center">Items</th>
@@ -199,17 +199,17 @@ export default async function VenuePage({ params, searchParams }: Props) {
                     <th className="w-16 px-3 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-border">
                   {menus.map((m) => {
                     const isFixed = m.menuType === "FIXED"
                     const count = isFixed
                       ? m.fixedSections.reduce((s, sec) => s + sec._count.entries, 0)
                       : m._count.entries
                     return (
-                    <tr key={m.id} className="hover:bg-gray-50">
-                      <td className="px-5 py-3 font-medium text-gray-900">
+                    <tr key={m.id} className="hover:bg-muted">
+                      <td className="px-5 py-3 font-medium text-foreground">
                         <Link href={`/admin/dining/venues/${id}/menus/${m.id}`} className="hover:text-brand hover:underline">
-                          {m.name ?? <span className="text-gray-400">—</span>}
+                          {m.name ?? <span className="text-muted-foreground">—</span>}
                         </Link>
                       </td>
                       <td className="w-20 px-3 py-3">
@@ -217,7 +217,7 @@ export default async function VenuePage({ params, searchParams }: Props) {
                           {isFixed ? "Fixed" : "Weekly"}
                         </span>
                       </td>
-                      <td className="w-16 px-3 py-3 text-center text-gray-600">{count}</td>
+                      <td className="w-16 px-3 py-3 text-center text-muted-foreground">{count}</td>
                       <td className="w-28 px-3 py-3 text-center">
                         <MenuPublishToggle menuId={m.id} published={!!m.publishedAt} />
                       </td>
@@ -225,7 +225,7 @@ export default async function VenuePage({ params, searchParams }: Props) {
                         <div className="flex items-center justify-end gap-1">
                           <Link
                             href={`/admin/dining/venues/${id}/menus/${m.id}`}
-                            className="inline-flex items-center justify-center rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                            className="inline-flex items-center justify-center rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
                             title="Edit"
                           >
                             <Pencil className="size-3.5" />

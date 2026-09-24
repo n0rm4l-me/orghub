@@ -131,12 +131,12 @@ export default async function AdminDashboard() {
         )}
       </div>
 
-      <section className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-        <div className="flex h-12 items-center justify-between border-b border-gray-100 px-5">
-          <h2 className="text-sm font-semibold text-gray-900">Recently published</h2>
+      <section className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="flex h-12 items-center justify-between border-b border-border px-5">
+          <h2 className="text-sm font-semibold text-foreground">Recently published</h2>
           <Link
             href="/admin/articles"
-            className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 transition
+            className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition
               hover:text-brand"
           >
             All articles
@@ -152,12 +152,12 @@ export default async function AdminDashboard() {
             action={{ label: "Write an article", href: "/admin/articles/new" }}
           />
         ) : (
-          <ul className="divide-y divide-gray-100">
+          <ul className="divide-y divide-border">
             {recent.map((article) => (
               <li key={article.id}>
                 <Link
                   href={`/admin/articles/${article.id}/edit`}
-                  className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-gray-50/70"
+                  className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/70"
                 >
                   <span
                     aria-hidden
@@ -168,13 +168,13 @@ export default async function AdminDashboard() {
                   {article.coverImage && (
                     <img src={article.coverImage} alt="" className="size-8 shrink-0 rounded object-cover" />
                   )}
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-gray-900">
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
                     {article.title}
                   </span>
-                  <span className="shrink-0 text-xs text-gray-400">
+                  <span className="shrink-0 text-xs text-muted-foreground">
                     {article.author.name ?? article.author.email}
                   </span>
-                  <span className="w-16 shrink-0 text-right text-xs text-gray-300">
+                  <span className="w-16 shrink-0 text-right text-xs text-muted-foreground">
                     {article.publishedAt
                       ? article.publishedAt.toLocaleDateString("en-US", {
                           month: "short",
@@ -190,38 +190,38 @@ export default async function AdminDashboard() {
       </section>
 
       {topArticles.length > 0 && (
-        <section className="mt-6 overflow-hidden rounded-xl border border-gray-200 bg-white">
-          <div className="flex h-12 items-center justify-between border-b border-gray-100 px-5">
-            <h2 className="flex items-center gap-1.5 text-sm font-semibold text-gray-900">
-              <Eye className="size-3.5 text-gray-400" aria-hidden />
+        <section className="mt-6 overflow-hidden rounded-xl border border-border bg-card">
+          <div className="flex h-12 items-center justify-between border-b border-border px-5">
+            <h2 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+              <Eye className="size-3.5 text-muted-foreground" aria-hidden />
               Most read
             </h2>
             <Link
               href="/admin/articles"
-              className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 transition
+              className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition
                 hover:text-brand"
             >
               All articles
               <ArrowRight className="size-3" aria-hidden />
             </Link>
           </div>
-          <ul className="divide-y divide-gray-100">
+          <ul className="divide-y divide-border">
             {topArticles.map((article, i) => (
               <li key={article.id}>
                 <Link
                   href={`/admin/articles/${article.id}/edit`}
-                  className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-gray-50/70"
+                  className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/70"
                 >
-                  <span className="w-4 shrink-0 text-center text-xs font-semibold text-gray-300">
+                  <span className="w-4 shrink-0 text-center text-xs font-semibold text-muted-foreground">
                     {i + 1}
                   </span>
                   {article.coverImage && (
                     <img src={article.coverImage} alt="" className="size-8 shrink-0 rounded object-cover" />
                   )}
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-gray-900">
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
                     {article.title}
                   </span>
-                  <span className="flex shrink-0 items-center gap-1 text-xs text-gray-400">
+                  <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
                     <Eye className="size-3" aria-hidden />
                     {article._count.views}
                   </span>

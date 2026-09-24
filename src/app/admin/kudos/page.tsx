@@ -36,7 +36,7 @@ const columns: AdminTableCol<KudosRow>[] = [
     width: "w-24 sm:w-40",
     type: "text",
     render: (k) => (
-      <div className="truncate text-sm text-gray-700" title={k.from.name ?? k.from.email}>
+      <div className="truncate text-sm text-foreground" title={k.from.name ?? k.from.email}>
         {k.from.name ?? k.from.email.split("@")[0]}
       </div>
     ),
@@ -47,7 +47,7 @@ const columns: AdminTableCol<KudosRow>[] = [
     width: "w-24 sm:w-40",
     type: "text",
     render: (k) => (
-      <div className="truncate text-sm text-gray-700" title={k.to.name ?? k.to.email}>
+      <div className="truncate text-sm text-foreground" title={k.to.name ?? k.to.email}>
         {k.to.name ?? k.to.email.split("@")[0]}
       </div>
     ),
@@ -70,14 +70,14 @@ const columns: AdminTableCol<KudosRow>[] = [
       <span className="inline-block whitespace-nowrap rounded-full bg-brand/10 px-2 py-0.5 text-xs font-medium text-brand">
         {k.value}
       </span>
-    ) : <span className="text-xs text-gray-400">—</span>,
+    ) : <span className="text-xs text-muted-foreground">—</span>,
   },
   {
     id: "message",
     header: "Message",
     type: "text",
     render: (k) => (
-      <div className="truncate text-sm text-gray-700" title={k.message}>{k.message}</div>
+      <div className="truncate text-sm text-foreground" title={k.message}>{k.message}</div>
     ),
   },
   {
@@ -87,7 +87,7 @@ const columns: AdminTableCol<KudosRow>[] = [
     type: "text",
     hideOnMobile: true,
     render: (k) => (
-      <span className="text-xs text-gray-400">
+      <span className="text-xs text-muted-foreground">
         {new Date(k.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
       </span>
     ),
@@ -131,34 +131,34 @@ export default async function AdminKudosPage({ searchParams }: Props) {
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard icon={Award}       label="Sent this month" value={stats.totalThisMonth} sub="Recognitions" />
         <StatCard icon={TrendingUp}  label="All time"        value={stats.totalAllTime}   sub="Total recognitions" />
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <div className="rounded-xl border border-border bg-card p-4">
           <div className="flex items-start justify-between">
-            <p className="text-sm text-gray-500">Top recipients</p>
-            <Users className="size-4 text-gray-300" aria-hidden />
+            <p className="text-sm text-muted-foreground">Top recipients</p>
+            <Users className="size-4 text-muted-foreground" aria-hidden />
           </div>
           {stats.topRecipients.length === 0
-            ? <p className="mt-2 text-xs text-gray-400">No data yet</p>
+            ? <p className="mt-2 text-xs text-muted-foreground">No data yet</p>
             : <ol className="mt-2 space-y-1.5">
                 {stats.topRecipients.map((r, i) => (
                   <li key={r.user?.id ?? i} className="flex items-center justify-between gap-2 text-xs">
-                    <span className="truncate text-gray-700">{r.user?.name ?? r.user?.email?.split("@")[0] ?? "—"}</span>
+                    <span className="truncate text-foreground">{r.user?.name ?? r.user?.email?.split("@")[0] ?? "—"}</span>
                     <span className="shrink-0 font-semibold text-brand">{r.total}</span>
                   </li>
                 ))}
               </ol>
           }
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <div className="rounded-xl border border-border bg-card p-4">
           <div className="flex items-start justify-between">
-            <p className="text-sm text-gray-500">Top senders</p>
-            <Users className="size-4 text-gray-300" aria-hidden />
+            <p className="text-sm text-muted-foreground">Top senders</p>
+            <Users className="size-4 text-muted-foreground" aria-hidden />
           </div>
           {stats.topSenders.length === 0
-            ? <p className="mt-2 text-xs text-gray-400">No data yet</p>
+            ? <p className="mt-2 text-xs text-muted-foreground">No data yet</p>
             : <ol className="mt-2 space-y-1.5">
                 {stats.topSenders.map((s, i) => (
                   <li key={s.user?.id ?? i} className="flex items-center justify-between gap-2 text-xs">
-                    <span className="truncate text-gray-700">{s.user?.name ?? s.user?.email?.split("@")[0] ?? "—"}</span>
+                    <span className="truncate text-foreground">{s.user?.name ?? s.user?.email?.split("@")[0] ?? "—"}</span>
                     <span className="shrink-0 font-semibold text-brand">{s.total}</span>
                   </li>
                 ))}

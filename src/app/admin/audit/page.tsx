@@ -88,7 +88,7 @@ const columns: AdminTableCol<AuditRow>[] = [
     type: "text",
     hideOnMobile: true,
     render: (entry) => (
-      <p className="truncate text-sm text-gray-700">
+      <p className="truncate text-sm text-foreground">
         {entry.user?.name ?? entry.user?.email ?? "Deleted user"}
       </p>
     ),
@@ -115,16 +115,16 @@ const columns: AdminTableCol<AuditRow>[] = [
         <p>
           <span
             className={`text-sm ${
-              SENSITIVE.has(entry.action) ? "font-medium text-gray-900" : "text-gray-600"
+              SENSITIVE.has(entry.action) ? "font-medium text-foreground" : "text-muted-foreground"
             }`}
           >
             {VERB[entry.action] ?? entry.action}
           </span>
           {subject && (
-            <span className="ml-1 text-sm text-gray-400">&ldquo;{subject}&rdquo;</span>
+            <span className="ml-1 text-sm text-muted-foreground">&ldquo;{subject}&rdquo;</span>
           )}
           {detail && (
-            <span className="ml-1.5 font-mono text-xs text-gray-400">{detail}</span>
+            <span className="ml-1.5 font-mono text-xs text-muted-foreground">{detail}</span>
           )}
         </p>
       )
@@ -137,7 +137,7 @@ const columns: AdminTableCol<AuditRow>[] = [
     type: "center",
     hideOnMobile: true,
     render: (entry) => (
-      <span className="font-mono text-xs text-gray-300">{entry.ip ?? "—"}</span>
+      <span className="font-mono text-xs text-muted-foreground">{entry.ip ?? "—"}</span>
     ),
   },
 ]
@@ -178,7 +178,7 @@ export default async function AuditPage({ searchParams }: Props) {
 
   const tab = (active: boolean) =>
     `rounded-md px-2.5 py-1 text-xs font-medium transition ${
-      active ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-900"
+      active ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
     }`
 
   return (
@@ -189,7 +189,7 @@ export default async function AuditPage({ searchParams }: Props) {
       />
 
       <div
-        className="mb-4 flex w-fit items-center gap-0.5 rounded-lg bg-gray-100 p-0.5"
+        className="mb-4 flex w-fit items-center gap-0.5 rounded-lg bg-muted p-0.5"
         role="group"
         aria-label="Filter activity"
       >

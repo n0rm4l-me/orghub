@@ -58,8 +58,8 @@ export function AnnouncementForm({ values, action, redirectAfterSave }: Props) {
       <div className="flex flex-col items-start gap-6 lg:flex-row lg:gap-8">
         {/* Main field */}
         <div className="min-w-0 w-full flex-1">
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white p-6">
-            <label htmlFor="message" className="mb-1.5 block text-sm font-semibold text-gray-900">
+          <div className="overflow-hidden rounded-xl border border-border bg-card p-6">
+            <label htmlFor="message" className="mb-1.5 block text-sm font-semibold text-foreground">
               Message <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -70,10 +70,10 @@ export function AnnouncementForm({ values, action, redirectAfterSave }: Props) {
               rows={3}
               defaultValue={values?.message ?? ""}
               placeholder="System maintenance on Saturday from 10:00 to 12:00."
-              className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900
-                outline-none placeholder:text-gray-300 focus:border-brand focus:ring-1 focus:ring-brand"
+              className="w-full resize-none rounded-lg border border-border px-3 py-2 text-sm text-foreground
+                outline-none placeholder:text-muted-foreground focus:border-brand focus:ring-1 focus:ring-brand"
             />
-            <p className="mt-1 text-xs text-gray-400">300 characters max.</p>
+            <p className="mt-1 text-xs text-muted-foreground">300 characters max.</p>
           </div>
         </div>
 
@@ -91,7 +91,7 @@ export function AnnouncementForm({ values, action, redirectAfterSave }: Props) {
               {pending ? "Saving…" : "Save"}
             </button>
             {savedAt && (
-              <p className="mt-2 flex items-center justify-center gap-1 text-[11px] text-gray-400">
+              <p className="mt-2 flex items-center justify-center gap-1 text-[11px] text-muted-foreground">
                 <Check className="size-3 text-emerald-500" aria-hidden />
                 Saved at {savedAt}
               </p>
@@ -99,8 +99,8 @@ export function AnnouncementForm({ values, action, redirectAfterSave }: Props) {
           </div>
 
           {/* Color */}
-          <section className="rounded-xl border border-gray-200 bg-white p-4">
-            <h2 className="mb-3 text-sm font-semibold text-gray-900">Color</h2>
+          <section className="rounded-xl border border-border bg-card p-4">
+            <h2 className="mb-3 text-sm font-semibold text-foreground">Color</h2>
             <div className="grid grid-cols-2 gap-2">
               {COLORS.map((c) => (
                 <button
@@ -108,7 +108,7 @@ export function AnnouncementForm({ values, action, redirectAfterSave }: Props) {
                   type="button"
                   onClick={() => setColor(c.id)}
                   className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium
-                    transition ${color === c.id ? "border-brand bg-brand/5 text-brand" : "border-gray-200 text-gray-600 hover:border-gray-300"}`}
+                    transition ${color === c.id ? "border-brand bg-brand/5 text-brand" : "border-border text-muted-foreground hover:border-muted-foreground/40"}`}
                 >
                   <span className={`size-2.5 shrink-0 rounded-full ${c.dot}`} aria-hidden />
                   {c.label}
@@ -118,31 +118,31 @@ export function AnnouncementForm({ values, action, redirectAfterSave }: Props) {
           </section>
 
           {/* Schedule */}
-          <section className="rounded-xl border border-gray-200 bg-white p-4">
-            <h2 className="mb-3 text-sm font-semibold text-gray-900">Schedule</h2>
-            <p className="mb-3 text-xs leading-relaxed text-gray-400">
+          <section className="rounded-xl border border-border bg-card p-4">
+            <h2 className="mb-3 text-sm font-semibold text-foreground">Schedule</h2>
+            <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
               Leave blank to show always while active.
             </p>
             <div className="space-y-3">
               <div>
-                <label htmlFor="showFrom" className="mb-1 block text-xs text-gray-600">Show from</label>
+                <label htmlFor="showFrom" className="mb-1 block text-xs text-muted-foreground">Show from</label>
                 <input
                   id="showFrom"
                   name="showFrom"
                   type="datetime-local"
                   defaultValue={toLocalDT(values?.showFrom)}
-                  className="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-700
+                  className="w-full rounded-lg border border-border px-2.5 py-1.5 text-xs text-foreground
                     outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                 />
               </div>
               <div>
-                <label htmlFor="showUntil" className="mb-1 block text-xs text-gray-600">Show until</label>
+                <label htmlFor="showUntil" className="mb-1 block text-xs text-muted-foreground">Show until</label>
                 <input
                   id="showUntil"
                   name="showUntil"
                   type="datetime-local"
                   defaultValue={toLocalDT(values?.showUntil)}
-                  className="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-700
+                  className="w-full rounded-lg border border-border px-2.5 py-1.5 text-xs text-foreground
                     outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                 />
               </div>
@@ -150,24 +150,24 @@ export function AnnouncementForm({ values, action, redirectAfterSave }: Props) {
           </section>
 
           {/* Link */}
-          <section className="rounded-xl border border-gray-200 bg-white p-4">
-            <h2 className="mb-2.5 text-sm font-semibold text-gray-900">Call-to-action link</h2>
+          <section className="rounded-xl border border-border bg-card p-4">
+            <h2 className="mb-2.5 text-sm font-semibold text-foreground">Call-to-action link</h2>
             <div className="space-y-2">
               <input
                 name="linkUrl"
                 type="url"
                 defaultValue={values?.linkUrl ?? ""}
                 placeholder="https://…"
-                className="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-700
-                  outline-none placeholder:text-gray-300 focus:border-brand focus:ring-1 focus:ring-brand"
+                className="w-full rounded-lg border border-border px-2.5 py-1.5 text-xs text-foreground
+                  outline-none placeholder:text-muted-foreground focus:border-brand focus:ring-1 focus:ring-brand"
               />
               <input
                 name="linkLabel"
                 type="text"
                 defaultValue={values?.linkLabel ?? ""}
                 placeholder='Label (default "Learn more")'
-                className="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-700
-                  outline-none placeholder:text-gray-300 focus:border-brand focus:ring-1 focus:ring-brand"
+                className="w-full rounded-lg border border-border px-2.5 py-1.5 text-xs text-foreground
+                  outline-none placeholder:text-muted-foreground focus:border-brand focus:ring-1 focus:ring-brand"
               />
             </div>
           </section>

@@ -17,7 +17,7 @@ const VENUE_TYPE_META: Record<string, { icon: React.ElementType; label: string; 
 }
 
 function venueTypeMeta(t?: string | null) {
-  return VENUE_TYPE_META[t ?? ""] ?? { icon: Utensils, label: "Venue", badgeCls: "bg-gray-100 text-gray-500", iconCls: "text-gray-300" }
+  return VENUE_TYPE_META[t ?? ""] ?? { icon: Utensils, label: "Venue", badgeCls: "bg-muted text-muted-foreground", iconCls: "text-muted-foreground" }
 }
 
 export default async function DiningPage() {
@@ -58,18 +58,18 @@ export default async function DiningPage() {
       ) : (
         <div className="space-y-6">
           {locations.map((loc) => (
-            <div key={loc.id} className="rounded-xl border border-gray-200 bg-white">
-              <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+            <div key={loc.id} className="rounded-xl border border-border bg-card">
+              <div className="flex items-center justify-between border-b border-border px-5 py-4">
                 <div>
-                  <p className="font-medium text-gray-900">{loc.name}</p>
-                  <p className="text-xs text-gray-400">{loc.timezone}</p>
+                  <p className="font-medium text-foreground">{loc.name}</p>
+                  <p className="text-xs text-muted-foreground">{loc.timezone}</p>
                 </div>
                 {user.role === "ADMIN" && (
                   <div className="flex items-center gap-2">
                     <LocationForm
                       location={loc}
                       trigger={
-                        <button className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50">
+                        <button className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted">
                           Edit
                         </button>
                       }
@@ -79,9 +79,9 @@ export default async function DiningPage() {
                 )}
               </div>
               {loc.venues.length === 0 ? (
-                <p className="px-5 py-4 text-sm text-gray-400">No venues yet.</p>
+                <p className="px-5 py-4 text-sm text-muted-foreground">No venues yet.</p>
               ) : (
-                <div className="divide-y divide-gray-50 overflow-hidden">
+                <div className="divide-y divide-border overflow-hidden">
                   {loc.venues.map((v) => {
                     const meta = venueTypeMeta(v.venueType)
                     const Icon = meta.icon
@@ -89,10 +89,10 @@ export default async function DiningPage() {
                       <Link
                         key={v.id}
                         href={`/admin/dining/venues/${v.id}`}
-                        className="flex items-center gap-3 px-5 py-3 transition hover:bg-gray-50 last:rounded-b-xl"
+                        className="flex items-center gap-3 px-5 py-3 transition hover:bg-muted last:rounded-b-xl"
                       >
                         <Icon className={`size-4 shrink-0 ${meta.iconCls}`} aria-hidden />
-                        <span className="flex-1 text-sm text-gray-800">{v.name}</span>
+                        <span className="flex-1 text-sm text-foreground">{v.name}</span>
                         <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${meta.badgeCls}`}>
                           {meta.label}
                         </span>

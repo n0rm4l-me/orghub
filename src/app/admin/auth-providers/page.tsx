@@ -46,12 +46,12 @@ export default async function AuthProvidersPage() {
         <Panel>
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-3">
-              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-gray-100">
-                <KeyRound className="size-4 text-gray-500" aria-hidden />
+              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted">
+                <KeyRound className="size-4 text-muted-foreground" aria-hidden />
               </span>
               <div>
-                <p className="text-sm font-semibold text-gray-900">Email and password</p>
-                <p className="mt-0.5 text-xs text-gray-500">
+                <p className="text-sm font-semibold text-foreground">Email and password</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
                   Passwords are stored as bcrypt hashes. Disable once all users are on SSO or AD.
                 </p>
               </div>
@@ -66,21 +66,21 @@ export default async function AuthProvidersPage() {
             </p>
           )}
 
-          <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-gray-100 pt-4">
+          <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-border pt-4">
             <div>
-              <dt className="text-xs text-gray-400">Accounts with a password</dt>
-              <dd className="text-sm font-medium tabular-nums text-gray-900">{withPassword}</dd>
+              <dt className="text-xs text-muted-foreground">Accounts with a password</dt>
+              <dd className="text-sm font-medium tabular-nums text-foreground">{withPassword}</dd>
             </div>
             <div>
-              <dt className="text-xs text-gray-400">Provider-only accounts</dt>
-              <dd className="text-sm font-medium tabular-nums text-gray-900">{ssoOnly}</dd>
+              <dt className="text-xs text-muted-foreground">Provider-only accounts</dt>
+              <dd className="text-sm font-medium tabular-nums text-foreground">{ssoOnly}</dd>
             </div>
           </dl>
 
-          <p className="mt-4 rounded-lg bg-gray-50 px-3 py-2 text-xs leading-relaxed text-gray-500">
+          <p className="mt-4 rounded-lg bg-muted px-3 py-2 text-xs leading-relaxed text-muted-foreground">
             Accounts without a password hash cannot use this form: they must sign in through an
             identity provider. Set an initial password by running the seed script with{" "}
-            <code className="rounded bg-white px-1 font-mono">SEED_ADMIN_PASSWORD</code>.
+            <code className="rounded bg-muted px-1 font-mono">SEED_ADMIN_PASSWORD</code>.
           </p>
         </Panel>
 
@@ -91,8 +91,8 @@ export default async function AuthProvidersPage() {
                 <ShieldCheck className="size-4 text-brand" aria-hidden />
               </span>
               <div>
-                <p className="text-sm font-semibold text-gray-900">Okta OIDC</p>
-                <p className="mt-0.5 text-xs text-gray-500">
+                <p className="text-sm font-semibold text-foreground">Okta OIDC</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
                   Enterprise single sign-on over OpenID Connect.
                 </p>
               </div>
@@ -102,7 +102,7 @@ export default async function AuthProvidersPage() {
             </Badge>
           </div>
 
-          <ul className="mt-4 space-y-2 border-t border-gray-100 pt-4">
+          <ul className="mt-4 space-y-2 border-t border-border pt-4">
             {OKTA_VARS.map((name) => {
               const raw = process.env[name]
               // Secrets are never echoed, and the client ID is truncated: this page
@@ -117,9 +117,9 @@ export default async function AuthProvidersPage() {
 
               return (
                 <li key={name} className="flex items-center gap-3 text-xs">
-                  <span className="w-40 shrink-0 font-mono text-gray-500">{name}</span>
+                  <span className="w-40 shrink-0 font-mono text-muted-foreground">{name}</span>
                   {shown ? (
-                    <span className="truncate rounded bg-gray-50 px-2 py-0.5 font-mono text-gray-800">
+                    <span className="truncate rounded bg-muted px-2 py-0.5 font-mono text-foreground">
                       {shown}
                     </span>
                   ) : (
@@ -131,7 +131,7 @@ export default async function AuthProvidersPage() {
           </ul>
 
           {!oktaConfigured && (
-            <p className="mt-4 rounded-lg bg-gray-50 px-3 py-2 text-xs leading-relaxed text-gray-500">
+            <p className="mt-4 rounded-lg bg-muted px-3 py-2 text-xs leading-relaxed text-muted-foreground">
               Set all three variables in your environment and restart the app. The Okta button then
               appears on the sign-in page automatically.
             </p>
@@ -145,8 +145,8 @@ export default async function AuthProvidersPage() {
                 <ShieldCheck className="size-4 text-brand" aria-hidden />
               </span>
               <div>
-                <p className="text-sm font-semibold text-gray-900">Active Directory / LDAP</p>
-                <p className="mt-0.5 text-xs text-gray-500">
+                <p className="text-sm font-semibold text-foreground">Active Directory / LDAP</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
                   Corporate directory authentication via service-account bind and user verify.
                 </p>
               </div>
@@ -156,7 +156,7 @@ export default async function AuthProvidersPage() {
             </Badge>
           </div>
 
-          <ul className="mt-4 space-y-2 border-t border-gray-100 pt-4">
+          <ul className="mt-4 space-y-2 border-t border-border pt-4">
             {LDAP_VARS.map((name) => {
               const raw = process.env[name]
               const shown = !raw
@@ -167,9 +167,9 @@ export default async function AuthProvidersPage() {
 
               return (
                 <li key={name} className="flex items-center gap-3 text-xs">
-                  <span className="w-52 shrink-0 font-mono text-gray-500">{name}</span>
+                  <span className="w-52 shrink-0 font-mono text-muted-foreground">{name}</span>
                   {shown ? (
-                    <span className="truncate rounded bg-gray-50 px-2 py-0.5 font-mono text-gray-800">
+                    <span className="truncate rounded bg-muted px-2 py-0.5 font-mono text-foreground">
                       {shown}
                     </span>
                   ) : (
@@ -181,18 +181,18 @@ export default async function AuthProvidersPage() {
           </ul>
 
           {!ldapConfigured && !ldapDevMode && (
-            <p className="mt-4 rounded-lg bg-gray-50 px-3 py-2 text-xs leading-relaxed text-gray-500">
-              Set <code className="rounded bg-white px-1 font-mono">LDAP_URL</code>,{" "}
-              <code className="rounded bg-white px-1 font-mono">LDAP_BIND_DN</code>, and{" "}
-              <code className="rounded bg-white px-1 font-mono">LDAP_BIND_PASSWORD</code> in your
+            <p className="mt-4 rounded-lg bg-muted px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+              Set <code className="rounded bg-muted px-1 font-mono">LDAP_URL</code>,{" "}
+              <code className="rounded bg-muted px-1 font-mono">LDAP_BIND_DN</code>, and{" "}
+              <code className="rounded bg-muted px-1 font-mono">LDAP_BIND_PASSWORD</code> in your
               environment. The AD login form appears on the sign-in page automatically.
             </p>
           )}
           {ldapDevMode && (
             <p className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-700">
               Dev mode is on — real LDAP is bypassed. Any username with password{" "}
-              <code className="rounded bg-white px-1 font-mono">devpass</code> will sign in.
-              Set <code className="rounded bg-white px-1 font-mono">LDAP_DEV_MODE=false</code> in
+              <code className="rounded bg-muted px-1 font-mono">devpass</code> will sign in.
+              Set <code className="rounded bg-muted px-1 font-mono">LDAP_DEV_MODE=false</code> in
               production.
             </p>
           )}
@@ -207,7 +207,7 @@ function Badge({ active, children }: { active: boolean; children: React.ReactNod
     <span
       className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs
         font-medium ${
-          active ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-500"
+          active ? "bg-emerald-50 text-emerald-700" : "bg-muted text-muted-foreground"
         }`}
     >
       {active ? (

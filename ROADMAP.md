@@ -144,18 +144,72 @@ on a device.
 
 ---
 
-## Design unification (not started)
+## Design unification (Phase 1 done, Phases 2-5 not started)
 
-A full 5-phase plan already exists at
-`/Users/petr.petrenko/.claude/plans/zesty-sprouting-frost.md` (written this
-session, approved in concept, zero phases executed). Summary: the app has
-three competing design languages (a dead shadcn/semantic-token layer with zero
-imports, ~1500 hand-written gray-scale utility classes, and two correctly-built
-but under-used primitives, `Panel` and `PageHeader`). The plan is to make the
-dead token layer live, migrate everything onto it in five shippable phases
-(foundation, admin, portal, dining editors, cleanup), and verify visually
-after each phase in both themes. Read that file in full before starting;
-it has the exact class-to-token mapping table and file lists per phase.
+Full plan at `/Users/petr.petrenko/.claude/plans/zesty-sprouting-frost.md`,
+written earlier this session assuming zero phases were done. **That
+assumption was wrong, re-checked 2026-09-24**: Phase 1 (Foundation) is
+already fully implemented, apparently by a session outside this
+conversation's visible history. Verified directly against current code, not
+against the plan's own description of what it expected to find:
+`globals.css` already has `--primary: var(--brand)` and the lightened
+`--background` in both `:root` and `.dark`, with comments explaining why;
+`layout.tsx` already uses `bg-background`/`text-foreground`, no
+`.dark body` override left to remove; `card.tsx` already uses
+`border border-border`, not a ring; `button.tsx` sizes are already `h-9
+px-4` / `h-8 px-3` with a comment matching the plan's own reasoning almost
+verbatim; `badge.tsx` is already `rounded-full`; `field.tsx`'s `inputClass`
+is already token-based and `Panel` is already a `Card` composition;
+`page-header.tsx` already uses `text-foreground`/`text-muted-foreground`.
+Every other primitive in `src/components/ui/` (`admin-table`, `stat-card`,
+`empty-state`, `toaster`, `confirm-dialog`, `table-pagination`, `skeleton`,
+`avatar`, `delete-button`, `status-toggle`, `reject-button`) has zero
+`gray-*`/`bg-white` classes. `submit-button.tsx` no longer exists as a
+separate file (folded into `button.tsx`).
+
+**What's actually still open**: the primitives are correct and ready, but
+the individual page and component files mostly don't use them yet. Re-ran
+the plan's own Phase-5 audit command against current code:
+
+```
+bg-white                   205
+text-gray-[0-9]            1231
+border-gray-[0-9]          509
+dark:bg-gray-[0-9]         165
+dark:text-gray-[0-9]       327
+dark:border-gray-[0-9]     166
+```
+
+Comparable to the plan's original count (slightly higher in places: this
+session's own earlier UX-audit fixes and new loading.tsx files added more
+hand-written gray classes before this roadmap item was reassessed). So the
+real remaining work is Phases 2 through 5 as originally scoped (admin, then
+portal, then dining editors, then cleanup) applying the already-correct
+primitives, not rebuilding them. Read the plan file for the exact
+class-to-token mapping table and per-phase file lists; treat its "Фаза 1"
+section as historical, already done, and skip straight to "Фаза 2".
+
+**FIXED (2026-09-24).** `src/components/ui/separator.tsx`: confirmed zero
+imports anywhere in `src/` (the plan's Phase 5 said to check this after all
+phases; already true now, no reason to wait). Deleted.
+
+**Phase 2 progress (2026-09-24).** Migrated to tokens, verified with
+`tsc`/`eslint` (visual check pending, see below): `admin/page.tsx`,
+`admin/modules/page.tsx`, `admin/modules/[id]/page.tsx` (also converted 5
+hand-rolled `rounded-xl border border-gray-200 bg-white px-5 py-4` blocks to
+`<Panel>`, per the plan's own note that this exact shape repeats ~20 times),
+`admin/kudos/page.tsx`, `admin/audit/page.tsx`, `admin/auth-providers/page.tsx`
+(already used `Panel`/a local `Badge`, just missed the `bg-white` on inline
+`<code>` tags), `admin/pages/page.tsx`, `admin/dining/page.tsx`,
+`admin/dining/venues/[id]/page.tsx`, `admin/announcements/_form.tsx`. That's
+the plan's full "priority" list for Phase 2 done. **Not yet visually
+verified**: `preview_start` got stuck launching from a stale cwd for this
+entire session (see `project_orghub_local_dev.md` memory), so this batch is
+verified by type-check/lint and by inspecting the diffs, not by looking at
+it. Confirm it in both themes before trusting it fully. Still open for
+Phase 2: the rest of the 38 admin pages and the admin components list in the
+plan (`nav-manager.tsx`, `layout-form.tsx`, `brand-form.tsx`, `media-grid.tsx`,
+etc., about 20 files).
 
 ---
 

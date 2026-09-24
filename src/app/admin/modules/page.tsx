@@ -34,8 +34,8 @@ export default async function ModulesPage() {
           <Link
             key={mod.id}
             href={`/admin/modules/${mod.id}`}
-            className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white px-5 py-4
-              transition hover:border-gray-300 hover:shadow-sm"
+            className="flex items-center gap-4 rounded-xl border border-border bg-card px-5 py-4
+              transition hover:border-muted-foreground/40 hover:shadow-sm"
           >
             {(() => { const Icon = MODULE_ICONS[mod.id]; return (
               <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand/10">
@@ -43,19 +43,19 @@ export default async function ModulesPage() {
               </span>
             )})()}
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-gray-900">{mod.label}</p>
-              <p className="mt-0.5 text-xs text-gray-500">{mod.description}</p>
+              <p className="text-sm font-medium text-foreground">{mod.label}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{mod.description}</p>
             </div>
             <span
               className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
                 enabled.has(mod.id)
                   ? "bg-emerald-50 text-emerald-700"
-                  : "bg-gray-100 text-gray-500"
+                  : "bg-muted text-muted-foreground"
               }`}
             >
               {enabled.has(mod.id) ? "Enabled" : "Disabled"}
             </span>
-            <ChevronRight className="size-4 shrink-0 text-gray-400" aria-hidden />
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
           </Link>
         ))}
 
