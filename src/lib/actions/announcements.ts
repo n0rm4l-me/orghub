@@ -8,6 +8,17 @@ import { type ActionResult, ok, okWith, fail } from "@/lib/actions/types"
 
 const MESSAGE_MAX = 300
 
+function validUrl(raw: string): boolean {
+  // Site-relative paths are allowed so links can point at internal routes.
+  if (raw.startsWith("/")) return true
+  try {
+    const url = new URL(raw)
+    return url.protocol === "https:" || url.protocol === "http:"
+  } catch {
+    return false
+  }
+}
+
 function revalidateAll() {
   revalidatePath("/", "layout")
   revalidatePath("/admin/announcements")
@@ -22,6 +33,7 @@ export async function createAnnouncement(formData: FormData): Promise<ActionResu
     return fail(`Message must be ${MESSAGE_MAX} characters or fewer.`, "message")
 
   const linkUrl = ((formData.get("linkUrl") as string) ?? "").trim() || null
+  if (linkUrl && !validUrl(linkUrl)) return fail("Link must be a full URL or a site-relative path.", "linkUrl")
   const linkLabel = ((formData.get("linkLabel") as string) ?? "").trim() || null
   const color = ((formData.get("color") as string) ?? "brand").trim()
   const showFromRaw = ((formData.get("showFrom") as string) ?? "").trim()
@@ -67,6 +79,7 @@ export async function updateAnnouncement(id: string, formData: FormData): Promis
     return fail(`Message must be ${MESSAGE_MAX} characters or fewer.`, "message")
 
   const linkUrl = ((formData.get("linkUrl") as string) ?? "").trim() || null
+  if (linkUrl && !validUrl(linkUrl)) return fail("Link must be a full URL or a site-relative path.", "linkUrl")
   const linkLabel = ((formData.get("linkLabel") as string) ?? "").trim() || null
   const color = ((formData.get("color") as string) ?? "brand").trim()
   const showFromRaw = ((formData.get("showFrom") as string) ?? "").trim()

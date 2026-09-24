@@ -199,6 +199,8 @@ export async function toggleVote(suggestionId: string): Promise<ActionResult<{ v
   if (existing) {
     await db.suggestionVote.delete({ where: { id: existing.id } })
   } else {
+    const suggestion = await db.suggestion.findUnique({ where: { id: suggestionId, hidden: false }, select: { id: true } })
+    if (!suggestion) return fail("Not found.")
     await db.suggestionVote.create({ data: { suggestionId, userId: user.id } })
   }
 

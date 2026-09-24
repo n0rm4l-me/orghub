@@ -133,7 +133,7 @@ export async function sendKudos(formData: FormData): Promise<ActionResult> {
   if (!parseModules(settings.enabledModules).has("kudos")) return fail("Kudos module is disabled.")
 
   const toId   = String(formData.get("toId") ?? "").trim()
-  const amount = Math.max(1, parseInt(String(formData.get("amount") ?? "1"), 10) || 1)
+  const amount = Math.min(10_000, Math.max(1, parseInt(String(formData.get("amount") ?? "1"), 10) || 1))
   const message = String(formData.get("message") ?? "").trim()
   const value   = String(formData.get("value") ?? "").trim() || null
 
@@ -141,6 +141,9 @@ export async function sendKudos(formData: FormData): Promise<ActionResult> {
   if (toId === user.id) return fail("You cannot send kudos to yourself.", "toId")
   if (!message)      return fail("Message is required.", "message")
   if (message.length > 300) return fail("Message is too long (max 300 characters).", "message")
+
+  const allowedValues = settings.kudosValues.split(",").map((v) => v.trim()).filter(Boolean)
+  if (value && !allowedValues.includes(value)) return fail("Invalid value tag.", "value")
 
   const recipient = await db.user.findUnique({ where: { id: toId }, select: { id: true } })
   if (!recipient) return fail("Recipient not found.", "toId")

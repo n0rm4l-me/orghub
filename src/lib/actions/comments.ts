@@ -22,15 +22,16 @@ export async function addComment(
   if (trimmed.length > BODY_MAX) return fail(`Comment must be ${BODY_MAX} characters or fewer.`)
 
   const article = await db.article.findUnique({
-    where: { id: articleId },
+    where: { id: articleId, published: true },
     select: { id: true, title: true, authorId: true },
   })
   if (!article) return fail("Article not found.")
 
   let parentAuthorId: string | null = null
   if (parentId) {
-    const parent = await db.comment.findUnique({ where: { id: parentId }, select: { parentId: true, authorId: true } })
+    const parent = await db.comment.findUnique({ where: { id: parentId }, select: { parentId: true, authorId: true, articleId: true } })
     if (!parent) return fail("Parent comment not found.")
+    if (parent.articleId !== articleId) return fail("Parent comment not found.")
     if (parent.parentId) return fail("Replies cannot be nested further.")
     parentAuthorId = parent.authorId
   }

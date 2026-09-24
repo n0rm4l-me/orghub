@@ -17,6 +17,8 @@ export async function toggleReaction(
   if (existing) {
     await db.articleReaction.delete({ where: { articleId_userId: key } })
   } else {
+    const article = await db.article.findUnique({ where: { id: articleId, published: true }, select: { id: true } })
+    if (!article) return fail("Article not found.")
     await db.articleReaction.create({ data: key })
   }
 

@@ -78,6 +78,8 @@ function parsePoll(formData: FormData): ParsedPoll | { error: string; field: str
   const options = optionsRaw.map((o) => o.trim()).filter(Boolean)
   if (options.length < 2) return { error: "At least 2 options are required.", field: "options" }
   if (options.length > 10) return { error: "Maximum 10 options allowed.", field: "options" }
+  if (options.some((o) => o.length > 200))
+    return { error: "Each option must be 200 characters or fewer.", field: "options" }
 
   const visibilityRaw = (formData.get("resultsVisibility") as string) || "AFTER_VOTE"
   if (!VALID_VISIBILITY.has(visibilityRaw as ResultsVisibility))

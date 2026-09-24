@@ -653,23 +653,34 @@ Smaller items, independent of the design-unification phases above:
     the storage key itself can't be influenced by a client-supplied filename
     (built from `randomUUID()`, not `file.name`), so no other change needed
     there.
-  - **Lower severity, not fixed, triage list for later:** `announcements.ts`
-    `linkUrl` has no scheme validation (an EDITOR could store a `javascript:`
-    URI; partially mitigated by `target="_blank"` on non-relative links, but
-    that's browser behavior, not a real guarantee). `nav.ts`'s
-    `validUrl()` already does this correctly for quick links, worth
-    reusing. `kudos.ts` `sendKudos`'s `value` field has no length bound;
-    `amount` has no ceiling independent of the monthly-budget check (not
-    exploitable with the default budget/redemption settings, becomes one if
-    an admin sets `kudosMonthlyBudget` to 0 while enabling redemption).
-    `polls.ts` `parsePoll` bounds option count but not each option's text
-    length. `comments.ts` `addComment` doesn't filter to published articles
-    before allowing a comment, and doesn't check a reply's `parentId`
-    belongs to the same article. `reactions.ts`/`suggestions.ts` `toggleVote`
-    don't check the target row exists/isn't hidden before creating a vote
-    (inconsistent with `addComment`'s own `hidden: false` check in the same
-    file). None of these are IDOR or let one user touch another's private
-    data; they're data-integrity/robustness gaps.
+  - **Lower-severity triage list: all FIXED 2026-09-25.** None of these are
+    IDOR or let one user touch another's private data, they were
+    data-integrity/robustness gaps.
+    [announcements.ts](src/lib/actions/announcements.ts) `createAnnouncement`/
+    `updateAnnouncement`: `linkUrl` had no scheme validation (an EDITOR could
+    store a `javascript:` URI). Added the same `validUrl()` check
+    [nav.ts](src/lib/actions/nav.ts) already uses for quick links (this
+    codebase's convention is a small local copy per file rather than a
+    shared export, matching `settings.ts`'s `validImageUrl`, so followed
+    that).
+    [kudos.ts](src/lib/actions/kudos.ts) `sendKudos`: `amount` now capped at
+    10,000 regardless of the monthly-budget setting; `value` is now checked
+    against `settings.kudosValues`' parsed set rather than accepted as any
+    string (matches the UI, which already only offers those as button
+    choices).
+    [polls.ts](src/lib/actions/polls.ts) `parsePoll`: each option's text is
+    now capped at 200 characters (count was already bounded, length wasn't).
+    [comments.ts](src/lib/actions/comments.ts) `addComment`: the article
+    lookup now requires `published: true`; a reply's `parentId` is now
+    checked against the same `articleId` rather than accepted from any
+    article.
+    [reactions.ts](src/lib/actions/reactions.ts) `toggleReaction` and
+    [suggestions.ts](src/lib/actions/suggestions.ts) `toggleVote`: both now
+    check the target row exists (and, for suggestions, isn't hidden) before
+    creating a vote/reaction, matching the pattern `addComment` already used
+    in the same file.
+    Verified with `tsc --noEmit`, `eslint`, the full `vitest` suite (35
+    tests, unchanged), and a real `npx next build`.
 
 ---
 
