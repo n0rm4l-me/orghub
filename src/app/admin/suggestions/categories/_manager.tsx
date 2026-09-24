@@ -29,21 +29,21 @@ export function SuggestionCategoryManager({ categories }: { categories: Category
           description="Add topics like Product, Process, Culture. Employees can then tag their ideas."
         />
       ) : (
-        <ul className="mt-4 divide-y divide-gray-100 border-t border-gray-100 dark:divide-gray-800 dark:border-gray-800">
+        <ul className="mt-4 divide-y divide-border border-t border-border">
           {categories.map((c) => (
             <li key={c.id} className="flex items-center gap-3 py-2.5">
-              <Tag className="size-4 shrink-0 text-gray-300 dark:text-gray-600" aria-hidden />
+              <Tag className="size-4 shrink-0 text-muted-foreground" aria-hidden />
 
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{c.name}</p>
+                <p className="truncate text-sm font-medium text-foreground">{c.name}</p>
               </div>
 
               {c.count > 0 ? (
-                <span className="shrink-0 text-xs text-gray-400">
+                <span className="shrink-0 text-xs text-muted-foreground">
                   {c.count} idea{c.count === 1 ? "" : "s"}
                 </span>
               ) : (
-                <span className="shrink-0 text-xs text-gray-300 dark:text-gray-600">unused</span>
+                <span className="shrink-0 text-xs text-muted-foreground">unused</span>
               )}
 
               <DeleteButton

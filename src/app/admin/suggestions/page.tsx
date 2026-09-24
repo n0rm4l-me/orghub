@@ -64,14 +64,14 @@ export default async function AdminSuggestionsPage({ searchParams }: Props) {
           <Link
             href={`/admin/suggestions/${r.id}`}
             className={`block truncate text-sm font-medium transition-colors hover:text-brand ${
-              r.hidden ? "text-gray-400 dark:text-gray-500" : "text-gray-900 dark:text-gray-100"
+              r.hidden ? "text-muted-foreground" : "text-foreground"
             }`}
             title={r.title}
           >
             {r.title}
           </Link>
           {(r.category || r.hidden) && (
-            <p className="mt-0.5 truncate text-xs text-gray-400">
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">
               {r.hidden && (
                 <span
                   className="mr-1.5 inline-flex items-center gap-1 rounded-full bg-amber-50 px-1.5
@@ -95,7 +95,7 @@ export default async function AdminSuggestionsPage({ searchParams }: Props) {
       type: "center",
       hideOnMobile: true,
       render: (r) => (
-        <span className="block truncate text-sm text-gray-500">
+        <span className="block truncate text-sm text-muted-foreground">
           {r.anonymous ? "Anonymous" : (r.author?.name ?? r.author?.email?.split("@")[0] ?? "—")}
         </span>
       ),
@@ -150,8 +150,8 @@ export default async function AdminSuggestionsPage({ searchParams }: Props) {
           <Link
             href={`/admin/suggestions/${r.id}`}
             aria-label="Edit suggestion"
-            className="grid size-7 place-items-center rounded-md text-gray-400 transition
-              hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+            className="grid size-7 place-items-center rounded-md text-muted-foreground transition
+              hover:bg-muted hover:text-foreground"
           >
             <Pencil className="size-3.5" aria-hidden />
           </Link>
@@ -159,8 +159,8 @@ export default async function AdminSuggestionsPage({ searchParams }: Props) {
             <button
               type="submit"
               aria-label={r.hidden ? "Show suggestion" : "Hide suggestion"}
-              className="grid size-7 place-items-center rounded-md text-gray-400 transition
-                hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+              className="grid size-7 place-items-center rounded-md text-muted-foreground transition
+                hover:bg-muted hover:text-foreground"
             >
               {r.hidden
                 ? <Eye className="size-3.5" aria-hidden />
@@ -191,11 +191,11 @@ export default async function AdminSuggestionsPage({ searchParams }: Props) {
           <a
             key={s}
             href={`/admin/suggestions?status=${s}`}
-            className={`rounded-xl border border-gray-200 bg-white p-4 transition hover:border-gray-300 hover:shadow-sm dark:border-gray-800 dark:bg-gray-900 ${
+            className={`rounded-xl border border-border bg-card p-4 transition hover:border-muted-foreground/40 hover:shadow-sm ${
               status === s ? "ring-2 ring-brand/30" : ""
             }`}
           >
-            <p className="text-sm text-gray-500 dark:text-gray-400">{STATUS_LABEL[s]}</p>
+            <p className="text-sm text-muted-foreground">{STATUS_LABEL[s]}</p>
             <p className={`mt-1 text-3xl font-semibold tabular-nums ${STATUS_COLOR[s].split(" ")[1]}`}>
               {byStatus[s] ?? 0}
             </p>

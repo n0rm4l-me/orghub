@@ -27,7 +27,7 @@ export default async function AppearancePage() {
       />
 
       <section>
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-400">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Brand identity
         </h2>
         <BrandForm
@@ -39,7 +39,7 @@ export default async function AppearancePage() {
       </section>
 
       <section>
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-400">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Layout
         </h2>
         <LayoutForm
@@ -57,7 +57,7 @@ export default async function AppearancePage() {
       </section>
 
       <section>
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-400">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Sidebar widgets
         </h2>
         <SidebarWidgetsForm
@@ -68,14 +68,14 @@ export default async function AppearancePage() {
       </section>
 
       <section>
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-400">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Avatars
         </h2>
         <Panel>
           <div className="flex items-center justify-between gap-6">
             <div>
-              <p className="text-sm font-medium text-gray-900">Gravatar avatars</p>
-              <p className="mt-0.5 text-xs text-gray-500">
+              <p className="text-sm font-medium text-foreground">Gravatar avatars</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 When enabled, user photo is loaded from gravatar.com using an MD5 hash of their
                 email. Disable to keep email hashes off external servers and show initials only.
               </p>

@@ -193,23 +193,47 @@ section as historical, already done, and skip straight to "Фаза 2".
 imports anywhere in `src/` (the plan's Phase 5 said to check this after all
 phases; already true now, no reason to wait). Deleted.
 
-**Phase 2 progress (2026-09-24).** Migrated to tokens, verified with
-`tsc`/`eslint` (visual check pending, see below): `admin/page.tsx`,
-`admin/modules/page.tsx`, `admin/modules/[id]/page.tsx` (also converted 5
-hand-rolled `rounded-xl border border-gray-200 bg-white px-5 py-4` blocks to
-`<Panel>`, per the plan's own note that this exact shape repeats ~20 times),
-`admin/kudos/page.tsx`, `admin/audit/page.tsx`, `admin/auth-providers/page.tsx`
-(already used `Panel`/a local `Badge`, just missed the `bg-white` on inline
-`<code>` tags), `admin/pages/page.tsx`, `admin/dining/page.tsx`,
-`admin/dining/venues/[id]/page.tsx`, `admin/announcements/_form.tsx`. That's
-the plan's full "priority" list for Phase 2 done. **Not yet visually
-verified**: `preview_start` got stuck launching from a stale cwd for this
-entire session (see `project_orghub_local_dev.md` memory), so this batch is
-verified by type-check/lint and by inspecting the diffs, not by looking at
-it. Confirm it in both themes before trusting it fully. Still open for
-Phase 2: the rest of the 38 admin pages and the admin components list in the
-plan (`nav-manager.tsx`, `layout-form.tsx`, `brand-form.tsx`, `media-grid.tsx`,
-etc., about 20 files).
+**Phase 2 progress (2026-09-24).** Every page under `src/app/admin/` is now
+migrated to tokens and verified with `tsc`/`eslint` (visual check still
+pending, see below) — confirmed with
+`grep -rlE 'text-gray-[0-9]|border-gray-[0-9]|bg-gray-[0-9]|bg-white' src/app/admin`
+returning nothing except `admin/layout.tsx`, which is the sidebar and is
+supposed to stay hardcoded dark (see the plan's own note on this). Along the
+way, also found and removed a separate, smaller problem specific to the
+Suggestions admin pages (`suggestions/page.tsx`, `suggestions/[id]/page.tsx`,
+`suggestions/[id]/_admin-form.tsx`, `suggestions/categories/_manager.tsx`,
+`suggestions/loading.tsx`): live, correctly-token-based classes sitting next
+to a *dead* `dark:` variant of the exact same or a conflicting gray class
+(e.g. `text-foreground dark:text-muted-foreground`, `bg-card p-4
+dark:border-gray-800 dark:bg-gray-900`). Since admin is forced light-mode,
+those `dark:` classes never activate; they're pure clutter and were deleted
+rather than resolved. Updated audit counts against the whole `src/app` +
+`src/components` tree:
+
+```
+bg-white                   169  (was 205)
+text-gray-[0-9]           1030  (was 1231)
+border-gray-[0-9]          448  (was 509)
+dark:bg-gray-[0-9]         159  (was 165)
+dark:text-gray-[0-9]       314  (was 327)
+dark:border-gray-[0-9]     160  (was 166)
+```
+
+**Not yet visually verified**: `preview_start` is still stuck this entire
+session (see `project_orghub_local_dev.md` memory) — verified by type-check/
+lint and diff review only. Confirm in both themes before trusting it fully,
+especially the `<Panel>` conversions and the Suggestions dark: cleanup.
+
+Still open for Phase 2: the ~20 admin components list from the plan
+(`nav-manager.tsx`, `layout-form.tsx`, `brand-form.tsx`, `media-grid.tsx`,
+`media-picker.tsx`, `media-page-client.tsx`, `poll-form.tsx`,
+`poll-results.tsx`, `content-form.tsx`, `editor.tsx`,
+`kudos-settings-form.tsx`, `kudos-redeem-types-panel.tsx`,
+`sidebar-widgets-form.tsx`, `translation-settings-form.tsx`,
+`module-toggle.tsx`, `gravatar-toggle.tsx`, `local-auth-toggle.tsx`,
+`user-row-actions.tsx`, `category-manager.tsx`; `boolean-toggle.tsx` and
+`sidebar-order-manager.tsx` from the original list no longer exist, deleted
+as dead code earlier this session).
 
 ---
 

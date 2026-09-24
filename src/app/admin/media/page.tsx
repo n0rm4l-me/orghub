@@ -62,7 +62,7 @@ export default async function MediaPage({ searchParams }: Props) {
         }
       />
 
-      <div className="mb-4 flex gap-1 overflow-x-auto border-b border-gray-200">
+      <div className="mb-4 flex gap-1 overflow-x-auto border-b border-border">
         {FOLDERS.map((f) => {
           if (f.id === "orphaned" && user.role !== "ADMIN") return null
           const active = folder === f.id
@@ -74,7 +74,7 @@ export default async function MediaPage({ searchParams }: Props) {
               key={f.id}
               href={tabHref(f.id)}
               className={`flex shrink-0 items-center px-3 py-2 text-sm font-medium transition ${
-                active ? "border-b-2 border-brand text-brand" : "text-gray-500 hover:text-gray-700"
+                active ? "border-b-2 border-brand text-brand" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {f.label}{badge}

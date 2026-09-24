@@ -43,12 +43,12 @@ const columns: AdminTableCol<EventRow>[] = [
         <>
           <Link
             href={`/admin/events/${ev.id}/edit`}
-            className="block truncate text-sm font-medium text-gray-900 transition-colors hover:text-brand"
+            className="block truncate text-sm font-medium text-foreground transition-colors hover:text-brand"
             title={ev.title}
           >
             {ev.title}
           </Link>
-          <p className="mt-0.5 truncate text-xs text-gray-400">
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">
             {dateShort} · {ev.author.name ?? ev.author.email}
           </p>
         </>
@@ -79,8 +79,8 @@ const columns: AdminTableCol<EventRow>[] = [
         : null
       return (
         <>
-          <p className="text-xs font-medium text-gray-900">{dateLabel}</p>
-          <p className="mt-0.5 text-xs text-gray-400 whitespace-nowrap">
+          <p className="text-xs font-medium text-foreground">{dateLabel}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground whitespace-nowrap">
             {timeLabel}
             {endTime && sameDay && ` – ${endTime}`}
             {end && !sameDay && (
@@ -99,14 +99,14 @@ const columns: AdminTableCol<EventRow>[] = [
     hideOnMobile: true,
     render: (ev) =>
       ev.eventLocation ? (
-        <span className="flex min-w-0 items-center gap-1 text-xs text-gray-500">
-          <MapPin className="size-3 shrink-0 text-gray-400" aria-hidden />
+        <span className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
+          <MapPin className="size-3 shrink-0 text-muted-foreground" aria-hidden />
           <span className="truncate" title={ev.eventLocation}>
             {ev.eventLocation}
           </span>
         </span>
       ) : (
-        <span className="text-xs text-gray-300">—</span>
+        <span className="text-xs text-muted-foreground">—</span>
       ),
   },
   {
@@ -128,8 +128,8 @@ const columns: AdminTableCol<EventRow>[] = [
         <Link
           href={`/admin/events/${ev.id}/edit`}
           aria-label="Edit event"
-          className="grid size-7 place-items-center rounded-md text-gray-400 transition
-            hover:bg-gray-100 hover:text-gray-700"
+          className="grid size-7 place-items-center rounded-md text-muted-foreground transition
+            hover:bg-muted hover:text-foreground"
         >
           <Pencil className="size-3.5" aria-hidden />
         </Link>

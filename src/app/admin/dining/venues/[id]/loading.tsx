@@ -9,7 +9,7 @@ export default function Loading() {
       <PageHeaderSkeleton />
 
       {/* Tabs: Settings / Dishes / Menus / Announcements */}
-      <div className="mb-6 flex gap-6 border-b border-gray-200 pb-3">
+      <div className="mb-6 flex gap-6 border-b border-border pb-3">
         {[68, 60, 60, 96].map((w, i) => (
           <Skeleton key={i} className="h-4" style={{ width: w }} />
         ))}

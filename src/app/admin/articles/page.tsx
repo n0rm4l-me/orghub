@@ -45,13 +45,13 @@ const columns: AdminTableCol<ArticleRow>[] = [
       <>
         <Link
           href={`/admin/articles/${a.id}/edit`}
-          className="block truncate text-sm font-medium text-gray-900 transition-colors hover:text-brand"
+          className="block truncate text-sm font-medium text-foreground transition-colors hover:text-brand"
           title={a.title}
         >
           {a.title}
         </Link>
         {a.excerpt && (
-          <p className="mt-0.5 truncate text-xs text-gray-400">{a.excerpt}</p>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">{a.excerpt}</p>
         )}
       </>
     ),
@@ -65,11 +65,11 @@ const columns: AdminTableCol<ArticleRow>[] = [
     render: (a) =>
       a.categories[0] ? (
         <div className="flex flex-wrap items-center justify-center gap-1">
-          <span className="inline-block max-w-full truncate rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+          <span className="inline-block max-w-full truncate rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
             {a.categories[0].category.name}
           </span>
           {a.categories.length > 1 && (
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-400">
+            <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
               +{a.categories.length - 1}
             </span>
           )}
@@ -83,7 +83,7 @@ const columns: AdminTableCol<ArticleRow>[] = [
     type: "center",
     hideOnMobile: true,
     render: (a) => (
-      <span className="truncate text-sm text-gray-500">
+      <span className="truncate text-sm text-muted-foreground">
         {a.author.name ?? a.author.email}
       </span>
     ),
@@ -126,21 +126,21 @@ const columns: AdminTableCol<ArticleRow>[] = [
           <PinButton
             initialPinned={a.pinned}
             onPin={pinArticle.bind(null, a.id)}
-            className="grid size-7 place-items-center rounded-md hover:bg-gray-100"
+            className="grid size-7 place-items-center rounded-md hover:bg-muted"
           />
         )}
         {a.published && (
           <ImportantButton
             initialImportant={a.important}
             onMark={markImportant.bind(null, a.id)}
-            className="grid size-7 place-items-center rounded-md hover:bg-gray-100"
+            className="grid size-7 place-items-center rounded-md hover:bg-muted"
           />
         )}
         <Link
           href={`/admin/articles/${a.id}/edit`}
           aria-label="Edit article"
-          className="grid size-7 place-items-center rounded-md text-gray-400 transition
-            hover:bg-gray-100 hover:text-gray-700"
+          className="grid size-7 place-items-center rounded-md text-muted-foreground transition
+            hover:bg-muted hover:text-foreground"
         >
           <Pencil className="size-3.5" aria-hidden />
         </Link>

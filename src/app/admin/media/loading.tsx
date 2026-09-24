@@ -7,7 +7,7 @@ export default function Loading() {
       <PageHeaderSkeleton />
 
       {/* Folder tabs */}
-      <div className="mb-4 flex gap-4 border-b border-gray-200 pb-2">
+      <div className="mb-4 flex gap-4 border-b border-border pb-2">
         {[36, 44, 52, 40, 48, 44, 60].map((w, i) => (
           <Skeleton key={i} className="h-4" style={{ width: w }} />
         ))}
@@ -20,7 +20,7 @@ export default function Loading() {
       {/* Grid */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {Array.from({ length: 10 }).map((_, i) => (
-          <div key={i} className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+          <div key={i} className="overflow-hidden rounded-xl border border-border bg-card">
             <Skeleton className="h-40 w-full rounded-none" />
             <div className="space-y-1.5 p-2.5">
               <Skeleton className="h-3 w-4/5" />

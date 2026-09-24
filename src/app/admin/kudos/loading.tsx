@@ -9,7 +9,7 @@ export default function Loading() {
       {/* Stats: two StatCard-shaped tiles, two ranked-list tiles */}
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[0, 1].map((i) => (
-          <div key={i} className="rounded-xl border border-gray-200 bg-white p-4">
+          <div key={i} className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-start justify-between">
               <Skeleton className="h-3.5 w-24" />
               <Skeleton className="size-4" />
@@ -19,7 +19,7 @@ export default function Loading() {
           </div>
         ))}
         {[0, 1].map((i) => (
-          <div key={i} className="rounded-xl border border-gray-200 bg-white p-4">
+          <div key={i} className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-start justify-between">
               <Skeleton className="h-3.5 w-24" />
               <Skeleton className="size-4" />

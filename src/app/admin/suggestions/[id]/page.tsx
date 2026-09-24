@@ -60,16 +60,16 @@ export default async function AdminSuggestionEditPage({ params }: Props) {
           {STATUS_LABEL[s.status]}
         </span>
         {s.category && (
-          <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-500 dark:bg-gray-800">
+          <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">
             {s.category.name}
           </span>
         )}
-        <span className="text-xs text-gray-400">{s._count.votes} votes · {s._count.comments} comments</span>
+        <span className="text-xs text-muted-foreground">{s._count.votes} votes · {s._count.comments} comments</span>
       </div>
 
       {/* Body */}
       <Panel title="Suggestion">
-        <p className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">{s.body}</p>
+        <p className="whitespace-pre-wrap text-sm text-foreground">{s.body}</p>
       </Panel>
 
       {/* Edit form with toast */}
@@ -84,7 +84,7 @@ export default async function AdminSuggestionEditPage({ params }: Props) {
       {/* Comments */}
       {s.comments.length > 0 && (
         <div className="mt-6">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-400">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
             Comments ({s.comments.length})
           </h2>
           <div className="space-y-2">
@@ -94,11 +94,11 @@ export default async function AdminSuggestionEditPage({ params }: Props) {
                 className={`rounded-xl border p-3 text-sm ${
                   c.isAdminReply
                     ? "border-brand/20 bg-brand/5 dark:bg-brand/10"
-                    : "border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900"
+                    : "border-border bg-card"
                 }`}
               >
-                <div className="mb-1 flex items-center gap-2 text-xs text-gray-400">
-                  <span className="font-medium text-gray-600 dark:text-gray-300">
+                <div className="mb-1 flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="font-medium text-muted-foreground">
                     {c.author?.name ?? c.author?.email?.split("@")[0] ?? "Deleted user"}
                   </span>
                   {c.isAdminReply && (
@@ -106,7 +106,7 @@ export default async function AdminSuggestionEditPage({ params }: Props) {
                   )}
                   <span>{new Date(c.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
                 </div>
-                <p className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">{c.body}</p>
+                <p className="whitespace-pre-wrap text-foreground">{c.body}</p>
               </div>
             ))}
           </div>

@@ -42,15 +42,14 @@ export function AdminSuggestionForm({ id, initialStatus, initialNote }: Props) {
       >
         <div className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-1.5 block text-sm font-medium text-foreground">
               Status
             </label>
             <select
               name="status"
               defaultValue={initialStatus}
-              className="h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm
-                focus:outline-none focus:ring-2 focus:ring-brand/40
-                dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+              className="h-9 w-full rounded-lg border border-border bg-card px-3 text-sm
+                focus:outline-none focus:ring-2 focus:ring-brand/40"
             >
               {(Object.keys(STATUS_LABEL) as SuggestionStatus[]).map((st) => (
                 <option key={st} value={st}>{STATUS_LABEL[st]}</option>
@@ -59,9 +58,9 @@ export function AdminSuggestionForm({ id, initialStatus, initialNote }: Props) {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-1.5 block text-sm font-medium text-foreground">
               Admin note
-              <span className="ml-1 font-normal text-gray-400">(shown to employees)</span>
+              <span className="ml-1 font-normal text-muted-foreground">(shown to employees)</span>
             </label>
             <textarea
               name="adminNote"
@@ -69,9 +68,9 @@ export function AdminSuggestionForm({ id, initialStatus, initialNote }: Props) {
               rows={4}
               maxLength={500}
               placeholder="Optional message shown alongside the suggestion…"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900
-                placeholder:text-gray-400 focus:border-brand focus:outline-none focus:ring-2
-                focus:ring-brand/20 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+              className="w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-foreground
+                placeholder:text-muted-foreground focus:border-brand focus:outline-none focus:ring-2
+                focus:ring-brand/20"
             />
           </div>
         </div>

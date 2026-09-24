@@ -38,7 +38,7 @@ const STATUS_BADGE: Record<Row["status"], string> = {
   PENDING:  "bg-amber-50 text-amber-600",
   DONE:     "bg-emerald-50 text-emerald-600",
   FAILED:   "bg-red-50 text-red-600",
-  REJECTED: "bg-gray-100 text-gray-500",
+  REJECTED: "bg-muted text-muted-foreground",
 }
 
 const columns: AdminTableCol<Row>[] = [
@@ -48,7 +48,7 @@ const columns: AdminTableCol<Row>[] = [
     width: "w-36",
     type: "text",
     render: (r) => (
-      <div className="truncate text-sm text-gray-700" title={r.user.name ?? r.user.email}>
+      <div className="truncate text-sm text-foreground" title={r.user.name ?? r.user.email}>
         {r.user.name ?? r.user.email.split("@")[0]}
       </div>
     ),
@@ -60,8 +60,8 @@ const columns: AdminTableCol<Row>[] = [
     type: "text",
     hideOnMobile: true,
     render: (r) => r.redeemType
-      ? <span className="block truncate text-xs text-gray-600" title={r.redeemType.label}>{r.redeemType.label}</span>
-      : <span className="text-xs text-gray-300">—</span>,
+      ? <span className="block truncate text-xs text-muted-foreground" title={r.redeemType.label}>{r.redeemType.label}</span>
+      : <span className="text-xs text-muted-foreground">—</span>,
   },
   {
     id: "amount",
@@ -77,7 +77,7 @@ const columns: AdminTableCol<Row>[] = [
     type: "text",
     hideOnMobile: true,
     render: (r) => (
-      <span className="text-xs text-gray-400">
+      <span className="text-xs text-muted-foreground">
         {new Date(r.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
       </span>
     ),

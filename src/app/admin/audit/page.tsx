@@ -178,7 +178,7 @@ export default async function AuditPage({ searchParams }: Props) {
 
   const tab = (active: boolean) =>
     `rounded-md px-2.5 py-1 text-xs font-medium transition ${
-      active ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+      active ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
     }`
 
   return (

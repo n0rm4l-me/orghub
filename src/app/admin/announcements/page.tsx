@@ -49,13 +49,13 @@ const columns: AdminTableCol<AnnouncementRow>[] = [
       <>
         <Link
           href={`/admin/announcements/${a.id}/edit`}
-          className="block truncate text-sm font-medium text-gray-900 transition-colors hover:text-brand"
+          className="block truncate text-sm font-medium text-foreground transition-colors hover:text-brand"
           title={a.message}
         >
           {a.message}
         </Link>
         {a.linkUrl && (
-          <p className="mt-0.5 truncate text-xs text-gray-400">{a.linkUrl}</p>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">{a.linkUrl}</p>
         )}
       </>
     ),
@@ -67,9 +67,9 @@ const columns: AdminTableCol<AnnouncementRow>[] = [
     type: "center",
     hideOnMobile: true,
     render: (a) => (
-      <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 capitalize">
+      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground capitalize">
         <span
-          className={`size-2.5 rounded-full ${COLOR_DOT[a.color] ?? "bg-gray-400"}`}
+          className={`size-2.5 rounded-full ${COLOR_DOT[a.color] ?? "bg-muted-foreground"}`}
           aria-hidden
         />
         {a.color}
@@ -84,12 +84,12 @@ const columns: AdminTableCol<AnnouncementRow>[] = [
     hideOnMobile: true,
     render: (a) =>
       a.showFrom || a.showUntil ? (
-        <div className="space-y-0.5 text-xs text-gray-500">
+        <div className="space-y-0.5 text-xs text-muted-foreground">
           {a.showFrom && <p className="whitespace-nowrap">From: {fmtDate(a.showFrom)}</p>}
           {a.showUntil && <p className="whitespace-nowrap">Until: {fmtDate(a.showUntil)}</p>}
         </div>
       ) : (
-        <span className="text-xs text-gray-300">Always</span>
+        <span className="text-xs text-muted-foreground">Always</span>
       ),
   },
   {
@@ -116,8 +116,8 @@ const columns: AdminTableCol<AnnouncementRow>[] = [
         <Link
           href={`/admin/announcements/${a.id}/edit`}
           aria-label="Edit announcement"
-          className="grid size-7 place-items-center rounded-md text-gray-400 transition
-            hover:bg-gray-100 hover:text-gray-700"
+          className="grid size-7 place-items-center rounded-md text-muted-foreground transition
+            hover:bg-muted hover:text-foreground"
         >
           <Pencil className="size-3.5" aria-hidden />
         </Link>

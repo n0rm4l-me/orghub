@@ -61,7 +61,7 @@ export default async function WeekMenuEditorPage({ params }: Props) {
   return (
     <div className="max-w-5xl">
       <div className="mb-6">
-        <Link href={`/admin/dining/venues/${id}?tab=menus`} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800">
+        <Link href={`/admin/dining/venues/${id}?tab=menus`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="size-4" aria-hidden />
           Menus
         </Link>

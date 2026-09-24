@@ -97,13 +97,13 @@ export default async function UsersPage({ searchParams }: Props) {
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-gray-900">
+              <p className="truncate text-sm font-medium text-foreground">
                 {user.name ?? user.email}
                 {isSelf && (
-                  <span className="ml-1.5 text-xs font-normal text-gray-400">you</span>
+                  <span className="ml-1.5 text-xs font-normal text-muted-foreground">you</span>
                 )}
               </p>
-              <p className="truncate text-xs text-gray-400">{user.email}</p>
+              <p className="truncate text-xs text-muted-foreground">{user.email}</p>
             </div>
           </div>
         )
@@ -129,7 +129,7 @@ export default async function UsersPage({ searchParams }: Props) {
       type: "center",
       hideOnMobile: true,
       render: (user) => (
-        <span className="text-sm text-gray-500 capitalize">
+        <span className="text-sm text-muted-foreground capitalize">
           {user.provider ?? "password"}
         </span>
       ),
@@ -143,7 +143,7 @@ export default async function UsersPage({ searchParams }: Props) {
       render: (user) => (
         <span
           className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-            user.active ? "text-gray-600" : "text-red-600"
+            user.active ? "text-muted-foreground" : "text-red-600"
           }`}
         >
           <span
@@ -233,7 +233,7 @@ export default async function UsersPage({ searchParams }: Props) {
         />
       )}
 
-      <p className="mt-3 text-xs leading-relaxed text-gray-400">
+      <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
         Viewers read the portal. Editors also write articles and pages. Admins additionally manage
         users, branding, and authentication. The last active admin cannot be demoted or deactivated.
       </p>
