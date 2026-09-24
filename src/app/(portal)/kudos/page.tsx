@@ -76,14 +76,6 @@ export default async function KudosPage({ searchParams }: Props) {
 
   const kudosValues = settings.kudosValues.split(",").map((v) => v.trim()).filter(Boolean)
 
-  const allUsers = user
-    ? await db.user.findMany({
-        where: { active: true, NOT: { id: user.id } },
-        select: { id: true, name: true, email: true },
-        orderBy: { name: "asc" },
-      })
-    : []
-
   let activePollData: ActivePollData | null = null
   if (pollsEnabled && allBlocks.includes("activePolls")) {
     const activePollRaw = await db.poll.findFirst({
@@ -119,7 +111,6 @@ export default async function KudosPage({ searchParams }: Props) {
         {user && balance && (
           <div className="flex flex-col items-end gap-2">
             <SendKudosButton
-              users={allUsers}
               values={kudosValues}
               monthlyBudget={balance.budget}
               remaining={balance.remaining}

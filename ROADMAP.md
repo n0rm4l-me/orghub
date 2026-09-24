@@ -270,21 +270,50 @@ starting either.
 
 Root-cause item first, the rest multiply in impact once it's fixed:
 
-- **OPEN. Root layout blocks all route caching.**
-  [src/app/layout.tsx:1](src/app/layout.tsx#L1) still sets
-  `export const dynamic = "force-dynamic"` because it reads settings from the
-  DB on every request. Move `getSettings()` into an `unstable_cache` with a
-  `"settings"` tag, or push it down into individual pages, so the rest of the
-  app can actually be cached.
+- **OPEN, harder than it looks — do not just delete the line.**
+  [src/app/layout.tsx:1](src/app/layout.tsx#L1) sets
+  `export const dynamic = "force-dynamic"`. `getSettings()`
+  ([src/lib/settings.ts:17](src/lib/settings.ts#L17)) is already wrapped in
+  `unstable_cache` with a `"settings"` tag and a comment saying this was done
+  specifically "so the root layout no longer forces the entire app to be
+  dynamic" — but nobody removed the export after adding the cache. **Tried
+  removing it 2026-09-25: it breaks the production build itself, not just a
+  runtime cache-hit-rate concern.** Without `force-dynamic`, Next.js attempts
+  to statically prerender pages (starting with `/_not-found`) at build time,
+  which executes the root layout's `await getSettings()`, which needs a live
+  DB connection — one that doesn't exist in the Cloud Build/Docker build
+  environment (only the deployed pod can reach `orghub-postgres`). Confirmed
+  with a real `npx next build`: `PrismaClientKnownRequestError: Can't reach
+  database server at orghub-postgres`, build exits 1. This would have broken
+  every future deploy if pushed. Reverted; diff came back to exactly the
+  original file. A real fix needs to address the build-time DB dependency
+  itself (give Cloud Build network access to a throwaway/read replica DB, or
+  restructure so the root layout doesn't need a DB read to render, e.g. move
+  the brand-color `<style>` injection to a client component that fetches it,
+  or accept a build-time fallback color when the DB is unreachable) before
+  touching the `force-dynamic` export again. Verify any future attempt with
+  `npx next build` locally, not just `tsc`, before pushing.
 
 Everything else, roughly ordered by blast radius:
 
-- **OPEN** [src/app/(portal)/page.tsx:216-219,243](src/app/(portal)/page.tsx#L216):
-  feed still runs a full `articleReaction.findMany` to populate `liked`, which
-  no rendered component reads on the feed. Delete the query and the field.
-- **OPEN** [src/app/(portal)/kudos/page.tsx:80-84](src/app/(portal)/kudos/page.tsx#L80):
-  the kudos recipient picker still does an unbounded `user.findMany`. Replace
-  with a typeahead server action, `take: 20`.
+- **FIXED 2026-09-25**
+  [src/app/(portal)/page.tsx](src/app/(portal)/page.tsx): the feed's
+  `articleReaction.findMany` → `likedIds` → `liked` field chain was dead (no
+  rendered component read it). Removed the query and the field. Verified with
+  `tsc --noEmit`, `eslint`, and a full `npx next build`.
+- **FIXED 2026-09-25**
+  [src/app/(portal)/kudos/page.tsx](src/app/(portal)/kudos/page.tsx): the
+  kudos recipient picker's unbounded `user.findMany` is gone. Added
+  `searchKudosRecipients` in
+  [src/lib/actions/kudos.ts](src/lib/actions/kudos.ts) (`take: 20`,
+  name/email `contains`, active-only, excludes self);
+  [src/components/send-kudos-button.tsx](src/components/send-kudos-button.tsx)
+  now debounces (200ms) and calls it instead of filtering a full user list
+  client-side, tracking the selected recipient as its own object instead of
+  looking it up by id from that list. Only data-fetching/state logic changed;
+  the file's portal-facing `dark:`/`gray-*` styling was deliberately left
+  untouched (Phase 3 of the design-unification plan is still deferred).
+  Verified with `tsc --noEmit`, `eslint`, and a full `npx next build`.
 - **OPEN** [src/components/article-body.tsx:4](src/components/article-body.tsx#L4):
   every public article/page render still imports the full Tiptap editor
   (toolbar + all extensions) just to get `EDITOR_EXTENSIONS`. Zero

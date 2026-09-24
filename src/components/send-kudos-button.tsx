@@ -1,8 +1,8 @@
 "use client"
 
-import { useRef, useState, useTransition } from "react"
+import { useEffect, useRef, useState, useTransition } from "react"
 import { Award, X, Loader2, Search } from "lucide-react"
-import { sendKudos } from "@/lib/actions/kudos"
+import { sendKudos, searchKudosRecipients } from "@/lib/actions/kudos"
 import { toast } from "@/components/ui/toaster"
 import { createPortal } from "react-dom"
 
@@ -13,35 +13,39 @@ interface UserOption {
 }
 
 interface Props {
-  users: UserOption[]
   values: string[]
   monthlyBudget: number
   remaining: number | null
 }
 
-export function SendKudosButton({ users, values, monthlyBudget, remaining }: Props) {
+export function SendKudosButton({ values, monthlyBudget, remaining }: Props) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
-  const [toId, setToId] = useState("")
+  const [results, setResults] = useState<UserOption[]>([])
+  const [selectedUser, setSelectedUser] = useState<UserOption | null>(null)
   const [amount, setAmount] = useState(1)
   const [value, setValue] = useState("")
   const [message, setMessage] = useState("")
   const [pending, startTransition] = useTransition()
   const formRef = useRef<HTMLFormElement>(null)
 
-  const filtered = query.trim()
-    ? users.filter((u) =>
-        (u.name ?? u.email).toLowerCase().includes(query.toLowerCase()) ||
-        u.email.toLowerCase().includes(query.toLowerCase())
-      )
-    : users
+  const toId = selectedUser?.id ?? ""
 
-  const selectedUser = users.find((u) => u.id === toId)
+  useEffect(() => {
+    const trimmed = query.trim()
+    if (!trimmed) return
+    let cancelled = false
+    const id = setTimeout(() => {
+      searchKudosRecipients(trimmed).then((rows) => { if (!cancelled) setResults(rows) })
+    }, 200)
+    return () => { cancelled = true; clearTimeout(id) }
+  }, [query])
 
   function close() {
     setOpen(false)
     setQuery("")
-    setToId("")
+    setResults([])
+    setSelectedUser(null)
     setAmount(1)
     setValue("")
     setMessage("")
@@ -109,7 +113,7 @@ export function SendKudosButton({ users, values, monthlyBudget, remaining }: Pro
                     </span>
                     <button
                       type="button"
-                      onClick={() => { setToId(""); setQuery("") }}
+                      onClick={() => { setSelectedUser(null); setQuery("") }}
                       className="text-xs text-brand hover:underline"
                     >
                       Change
@@ -130,13 +134,13 @@ export function SendKudosButton({ users, values, monthlyBudget, remaining }: Pro
                     {query && (
                       <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-lg border
                         border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md">
-                        {filtered.length === 0 ? (
+                        {results.length === 0 ? (
                           <li className="px-3 py-2 text-sm text-gray-400 dark:text-gray-500">No results</li>
-                        ) : filtered.map((u) => (
+                        ) : results.map((u) => (
                           <li key={u.id}>
                             <button
                               type="button"
-                              onClick={() => { setToId(u.id); setQuery("") }}
+                              onClick={() => { setSelectedUser(u); setQuery("") }}
                               className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                             >
                               {u.name && <span className="font-medium">{u.name}</span>}

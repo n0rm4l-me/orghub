@@ -69,6 +69,30 @@ export async function getMyKudosBalance() {
   }
 }
 
+const RECIPIENT_SEARCH_LIMIT = 20
+
+export async function searchKudosRecipients(query: string) {
+  const user = await getCurrentUser()
+  if (!user) return []
+
+  const trimmed = query.trim()
+  if (!trimmed) return []
+
+  return db.user.findMany({
+    where: {
+      active: true,
+      NOT: { id: user.id },
+      OR: [
+        { name: { contains: trimmed, mode: "insensitive" } },
+        { email: { contains: trimmed, mode: "insensitive" } },
+      ],
+    },
+    select: { id: true, name: true, email: true },
+    orderBy: { name: "asc" },
+    take: RECIPIENT_SEARCH_LIMIT,
+  })
+}
+
 export async function getTopKudosRecipients(limit = 5) {
   const now = new Date()
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
