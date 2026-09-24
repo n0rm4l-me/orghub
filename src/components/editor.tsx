@@ -48,7 +48,7 @@ export function Editor({ initialContent, onChange, folder }: Props) {
     editorProps: {
       attributes: {
         class:
-          "prose prose-gray max-w-none min-h-[400px] focus:outline-none px-0 py-4 text-gray-800 prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-relaxed",
+          "prose prose-gray max-w-none min-h-[400px] rounded-lg px-0 py-4 text-gray-800 prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-relaxed focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand/40",
       },
     },
   })
@@ -200,7 +200,7 @@ function InsertImageButton({ editor, folder }: { editor: ReturnType<typeof useEd
         <ImageIcon className="w-4 h-4" />
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-20 mt-1 w-80 rounded-lg border border-gray-200 bg-white shadow-lg">
+        <div className="absolute left-0 top-full z-20 mt-1 w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-gray-200 bg-white shadow-lg">
           <div className="flex items-center gap-2 border-b border-gray-100 px-2 py-1.5">
             <input
               autoFocus
@@ -295,7 +295,7 @@ function InsertPollButton({ editor }: { editor: ReturnType<typeof useEditor> }) 
         Poll
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-20 mt-1 w-72 rounded-lg border border-gray-200 bg-white shadow-lg">
+        <div className="absolute left-0 top-full z-20 mt-1 w-72 max-w-[calc(100vw-2rem)] rounded-lg border border-gray-200 bg-white shadow-lg">
           {loading ? (
             <p className="px-3 py-2 text-xs text-gray-400">Loading polls...</p>
           ) : !polls?.length ? (

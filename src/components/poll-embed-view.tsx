@@ -15,15 +15,30 @@ type EmbedData =
 export function PollEmbedView({ node, deleteNode, editor }: NodeViewProps) {
   const pollId = node.attrs.pollId as string
   const [data, setData] = useState<EmbedData | null>(null)
-  const [loading, setLoading] = useState(!!pollId)
+  // Tracked by id, not a plain boolean, so switching pollId (undo/redo can remap
+  // this NodeView to a different poll in place) is immediately reflected as
+  // "loading" without an effect needing to set it — and a stale fetch for a
+  // now-abandoned id can't clobber the current one, since it can only ever
+  // resolve to its own id.
+  const [resolvedId, setResolvedId] = useState<string | null>(null)
+  const loading = !!pollId && pollId !== resolvedId
   const editable = editor.isEditable
 
   useEffect(() => {
     if (!pollId) return
-    getPollForEmbed(pollId).then((d) => {
-      setData(d)
-      setLoading(false)
-    })
+    let cancelled = false
+    getPollForEmbed(pollId)
+      .then((d) => {
+        if (cancelled) return
+        setData(d)
+        setResolvedId(pollId)
+      })
+      .catch(() => {
+        if (cancelled) return
+        setData(null)
+        setResolvedId(pollId)
+      })
+    return () => { cancelled = true }
   }, [pollId])
 
   if (!pollId) {

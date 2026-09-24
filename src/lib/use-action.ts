@@ -6,6 +6,8 @@ import type { ActionResult } from "@/lib/actions/types"
 
 interface Options<T> {
   onSuccess?: (data: T | undefined) => void
+  /** Called in addition to the error toast, e.g. to roll back optimistic state. */
+  onError?: (error: string) => void
   /** Suppresses the success toast when the caller shows its own feedback. */
   silent?: boolean
 }
@@ -22,7 +24,7 @@ export function useAction<A extends unknown[], T = undefined>(
   options: Options<T> = {}
 ) {
   const [pending, startTransition] = useTransition()
-  const { onSuccess, silent } = options
+  const { onSuccess, onError, silent } = options
 
   const run = useCallback(
     (...args: A) => {
@@ -37,16 +39,18 @@ export function useAction<A extends unknown[], T = undefined>(
             onSuccess?.("data" in result ? (result.data as T) : undefined)
           } else {
             toast.error(result.error)
+            onError?.(result.error)
           }
         } catch {
           toast.error(
             "Could not reach the server",
             "Your change was not saved. Check your connection and try again."
           )
+          onError?.("Could not reach the server")
         }
       })
     },
-    [action, onSuccess, silent]
+    [action, onSuccess, onError, silent]
   )
 
   return { run, pending }

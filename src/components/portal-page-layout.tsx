@@ -1,7 +1,8 @@
 import { Suspense } from "react"
 import { PortalSidebarPanel } from "@/components/portal-sidebar-panel"
+import { Skeleton } from "@/components/ui/skeleton"
 
-const FALLBACK = <div className="h-64 animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800" />
+const FALLBACK = <Skeleton className="h-64 rounded-xl" />
 const DEFAULT_RIGHT = ["quickLinks", "browseByTopic", "upcomingEvents"]
 
 interface Props {

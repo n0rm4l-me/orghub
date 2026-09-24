@@ -23,6 +23,10 @@ export function LikeButton({ articleId, initialCount, initialLiked, isLoggedIn }
     onSuccess: (data) => {
       if (data) { setLiked(data.liked); setCount(data.count) }
     },
+    onError: () => {
+      setLiked(prevRef.current.liked)
+      setCount(prevRef.current.count)
+    },
   })
 
   function handle(e: React.MouseEvent) {

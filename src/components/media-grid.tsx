@@ -34,8 +34,10 @@ function CopyIconButton({ url }: { url: string }) {
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
       }}
-      className="rounded p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+      className="rounded p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700
+        dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
       title="Copy URL"
+      aria-label="Copy URL"
     >
       {copied ? <Check className="size-3.5 text-green-600" /> : <Copy className="size-3.5" />}
     </button>
@@ -57,34 +59,47 @@ function MediaCard({
 
   return (
     <div
+      role="checkbox"
+      aria-checked={selected}
+      aria-label={item.filename}
+      tabIndex={0}
       onClick={onToggle}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault()
+          onToggle()
+        }
+      }}
       className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border transition
-        ${selected ? "border-brand ring-2 ring-brand/20" : "border-gray-200 hover:border-gray-300"} bg-white`}
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40
+        ${selected ? "border-brand ring-2 ring-brand/20" : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"}
+        bg-white dark:bg-gray-900`}
     >
       {/* checkbox */}
       <div
+        aria-hidden
         className={`absolute left-2 top-2 z-10 grid size-5 place-items-center rounded-md border-2 bg-white
-          transition-opacity
-          ${selected ? "border-brand opacity-100" : `border-gray-300 ${anySelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}`}
+          transition-opacity dark:bg-gray-900
+          ${selected ? "border-brand opacity-100" : `border-gray-300 dark:border-gray-600 ${anySelected ? "opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"}`}`}
       >
         {selected && <Check className="size-3 text-brand" strokeWidth={3} />}
       </div>
 
       {/* thumbnail */}
-      <div className="flex h-40 items-center justify-center bg-gray-50">
+      <div className="flex h-40 items-center justify-center bg-gray-50 dark:bg-gray-800">
         {isImage ? (
           <img src={`${item.url}?w=320`} alt={item.filename} className="h-full w-full object-cover" width={160} height={160} loading="lazy" />
         ) : (
-          <FileText className="size-10 text-gray-300" />
+          <FileText className="size-10 text-gray-300 dark:text-gray-600" />
         )}
       </div>
 
       {/* meta */}
       <div className="flex items-center justify-between gap-1 px-2.5 py-2">
         <div className="min-w-0">
-          <p className="truncate text-xs font-medium text-gray-800">{item.filename}</p>
+          <p className="truncate text-xs font-medium text-gray-800 dark:text-gray-200">{item.filename}</p>
           <div className="flex items-center gap-1.5">
-            <p className="text-[11px] text-gray-400">{formatBytes(item.size)}</p>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500">{formatBytes(item.size)}</p>
             {item.context && (
               <span className="rounded-full bg-brand/10 px-1.5 py-px text-[10px] font-medium text-brand">{item.context}</span>
             )}
@@ -98,8 +113,13 @@ function MediaCard({
 
 export function MediaGrid({ items }: { items: MediaItem[] }) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
-  const { run, pending } = useAction(deleteMediaBulk)
   const router = useRouter()
+  const { run, pending } = useAction(deleteMediaBulk, {
+    onSuccess: () => {
+      setSelected(new Set())
+      router.refresh()
+    },
+  })
 
   function toggle(id: string) {
     setSelected((prev) => {
@@ -109,12 +129,10 @@ export function MediaGrid({ items }: { items: MediaItem[] }) {
     })
   }
 
-  async function handleBulkDelete() {
+  function handleBulkDelete() {
     const ids = [...selected]
     if (!confirm(`Delete ${ids.length} file${ids.length === 1 ? "" : "s"}?`)) return
     run(ids)
-    setSelected(new Set())
-    router.refresh()
   }
 
   const count = selected.size
@@ -122,13 +140,14 @@ export function MediaGrid({ items }: { items: MediaItem[] }) {
   return (
     <div>
       <div className="mb-3 flex items-center gap-3">
-        <span className="text-sm text-gray-500">{count} selected</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400">{count} selected</span>
         <button
           type="button"
           disabled={count === 0 || pending}
           onClick={handleBulkDelete}
           className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-sm
-            font-medium text-red-600 transition hover:bg-red-100 active:bg-red-200 disabled:opacity-30 disabled:cursor-default"
+            font-medium text-red-600 transition hover:bg-red-100 active:bg-red-200 disabled:opacity-30 disabled:cursor-default
+            dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-400 dark:hover:bg-red-950/60"
         >
           <Trash2 className="size-3.5" />
           Delete
@@ -139,7 +158,8 @@ export function MediaGrid({ items }: { items: MediaItem[] }) {
           onClick={() => setSelected(new Set())}
           className="inline-flex items-center rounded-lg border border-gray-200 px-3 py-1.5 text-sm
             font-medium text-gray-600 transition hover:bg-gray-50 hover:border-gray-300
-            disabled:opacity-30 disabled:cursor-default"
+            disabled:opacity-30 disabled:cursor-default
+            dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:border-gray-600"
         >
           Clear
         </button>

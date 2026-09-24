@@ -32,15 +32,20 @@ export function SubmitSuggestionButton({ categories }: Props) {
     if (!title) { setError("Title is required."); return }
     if (!body)  { setError("Description is required."); return }
     setLoading(true)
-    const res = await submitSuggestion({ title, body, categoryId: categoryId || undefined, anonymous })
-    setLoading(false)
-    if (!res.ok) { setError(res.error); return }
-    setOpen(false)
-    setCategoryId("")
-    setAnonymous(false)
-    if (titleRef.current) titleRef.current.value = ""
-    if (bodyRef.current)  bodyRef.current.value  = ""
-    router.refresh()
+    try {
+      const res = await submitSuggestion({ title, body, categoryId: categoryId || undefined, anonymous })
+      if (!res.ok) { setError(res.error); return }
+      setOpen(false)
+      setCategoryId("")
+      setAnonymous(false)
+      if (titleRef.current) titleRef.current.value = ""
+      if (bodyRef.current)  bodyRef.current.value  = ""
+      router.refresh()
+    } catch {
+      setError("Could not reach the server. Check your connection and try again.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -61,6 +66,7 @@ export function SubmitSuggestionButton({ categories }: Props) {
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">New suggestion</h2>
               <button
                 onClick={() => setOpen(false)}
+                aria-label="Close"
                 className="grid size-8 place-items-center rounded-lg text-gray-400 hover:bg-gray-100
                   dark:hover:bg-gray-800"
               >
@@ -70,10 +76,11 @@ export function SubmitSuggestionButton({ categories }: Props) {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="suggestion-title" className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Title
                 </label>
                 <input
+                  id="suggestion-title"
                   ref={titleRef}
                   type="text"
                   maxLength={200}
@@ -86,10 +93,11 @@ export function SubmitSuggestionButton({ categories }: Props) {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="suggestion-body" className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Description
                 </label>
                 <textarea
+                  id="suggestion-body"
                   ref={bodyRef}
                   rows={4}
                   maxLength={5000}

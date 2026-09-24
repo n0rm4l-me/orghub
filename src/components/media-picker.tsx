@@ -14,9 +14,9 @@ function MediaBrowsePanel({ onPick, onClose }: { onPick: (url: string) => void; 
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    getMediaList(1, "").then((r) =>
-      setItems(r.rows.filter((m) => m.mimeType.startsWith("image/")))
-    )
+    getMediaList(1, "")
+      .then((r) => setItems(r.rows.filter((m) => m.mimeType.startsWith("image/"))))
+      .catch(() => setItems([]))
   }, [])
 
   useEffect(() => {
@@ -32,7 +32,7 @@ function MediaBrowsePanel({ onPick, onClose }: { onPick: (url: string) => void; 
   )
 
   return (
-    <div ref={ref} className="absolute right-0 top-full z-30 mt-1 w-72 rounded-xl border border-gray-200
+    <div ref={ref} className="absolute right-0 top-full z-30 mt-1 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-gray-200
       bg-white shadow-xl">
       <div className="border-b border-gray-100 px-2 py-1.5">
         <input
@@ -112,7 +112,7 @@ export function MediaPicker({ value, onChange, name = "photo", label = "Image", 
         <div className="relative w-full overflow-hidden rounded-lg border border-gray-200"
           style={{ aspectRatio: "16/9" }}>
           <img src={value} alt="" className="h-full w-full object-cover" />
-          <button type="button" onClick={() => onChange("")}
+          <button type="button" onClick={() => onChange("")} aria-label="Remove image"
             className="absolute right-2 top-2 grid size-6 place-items-center rounded-full
               bg-black/60 text-white hover:bg-red-600 transition">
             <X className="size-3.5" />
@@ -126,7 +126,15 @@ export function MediaPicker({ value, onChange, name = "photo", label = "Image", 
       ) : (
         <div className="relative">
           <div
+            role="button"
+            tabIndex={0}
             onClick={() => inputRef.current?.click()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault()
+                inputRef.current?.click()
+              }
+            }}
             onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
             onDragLeave={() => setDragging(false)}
             onDrop={(e) => {
@@ -135,6 +143,7 @@ export function MediaPicker({ value, onChange, name = "photo", label = "Image", 
             }}
             className={`flex w-full cursor-pointer flex-col items-center justify-center gap-2
               rounded-lg border-2 border-dashed transition
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40
               ${dragging ? "border-brand bg-brand/5" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"}`}
             style={{ aspectRatio: "16/9" }}
           >

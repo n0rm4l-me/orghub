@@ -67,6 +67,7 @@ export function NotificationBell() {
   const [open, setOpen]           = useState(false)
   const [items, setItems]         = useState<NotificationItem[]>([])
   const [loading, setLoading]     = useState(false)
+  const [error, setError]         = useState(false)
   const panelRef                  = useRef<HTMLDivElement>(null)
 
   const fetchCount = useCallback(async () => {
@@ -110,12 +111,17 @@ export function NotificationBell() {
     if (open) { setOpen(false); return }
     setOpen(true)
     setLoading(true)
+    setError(false)
     try {
       const res = await fetch("/api/notifications")
-      if (res.ok) setItems((await res.json()).items ?? [])
-    } finally {
+      if (!res.ok) throw new Error(String(res.status))
+      setItems((await res.json()).items ?? [])
+    } catch {
+      setError(true)
       setLoading(false)
+      return
     }
+    setLoading(false)
     if (count > 0) {
       setCount(0)
       fetch("/api/notifications/mark-read", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })
@@ -140,8 +146,9 @@ export function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-11 z-50 w-80 rounded-xl border border-gray-200
-          bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900">
+        <div className="fixed left-1/2 top-16 z-50 w-[calc(100vw-2rem)] max-w-80 -translate-x-1/2
+          rounded-xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900
+          sm:absolute sm:left-auto sm:right-0 sm:top-11 sm:w-80 sm:max-w-none sm:translate-x-0">
           <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3
             dark:border-gray-800">
             <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -153,6 +160,8 @@ export function NotificationBell() {
           <div className="scrollbar-thin max-h-96 overflow-y-auto">
             {loading ? (
               <div className="py-8 text-center text-xs text-gray-400">Loading…</div>
+            ) : error ? (
+              <div className="py-8 text-center text-xs text-gray-400">Could not load notifications</div>
             ) : items.length === 0 ? (
               <div className="py-8 text-center text-xs text-gray-400">No notifications yet</div>
             ) : (

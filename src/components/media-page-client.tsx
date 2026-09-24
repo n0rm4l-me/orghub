@@ -111,6 +111,7 @@ export function OrphanedList({ orphans }: { orphans: OrphanedObject[] }) {
   }
 
   function handleDeleteOne(key: string) {
+    if (!confirm("Delete this orphaned object?")) return
     startTransition(async () => {
       const res = await deleteOrphanedObjects([key])
       if (!res.ok) { toast.error(res.error ?? "Failed"); return }

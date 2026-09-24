@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react"
 import { createRedeemType, updateRedeemType, deleteRedeemType } from "@/lib/actions/kudos"
 import { toast } from "@/components/ui/toaster"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 
 type RedeemType = {
   id: string
@@ -78,6 +79,7 @@ export function KudosRedeemTypesPanel({ initialTypes }: Props) {
   const [types, setTypes] = useState(initialTypes)
   const [addOpen, setAddOpen] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
   if (prevInitialTypes !== initialTypes) {
@@ -131,6 +133,7 @@ export function KudosRedeemTypesPanel({ initialTypes }: Props) {
   function handleDelete(id: string) {
     startTransition(async () => {
       const res = await deleteRedeemType(id)
+      setDeleteId(null)
       if (!res.ok) { toast.error(res.error); return }
       setTypes((ts) => ts.filter((t) => t.id !== id))
       router.refresh()
@@ -197,7 +200,7 @@ export function KudosRedeemTypesPanel({ initialTypes }: Props) {
               </button>
               <button
                 type="button"
-                onClick={() => handleDelete(t.id)}
+                onClick={() => setDeleteId(t.id)}
                 className="grid size-6 place-items-center rounded-md text-gray-400 transition hover:bg-red-50 hover:text-red-500"
                 aria-label="Delete"
               >
@@ -216,6 +219,17 @@ export function KudosRedeemTypesPanel({ initialTypes }: Props) {
           />
         )}
       </div>
+
+      <ConfirmDialog
+        open={deleteId !== null}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        title="Delete this redemption type?"
+        description={`"${types.find((t) => t.id === deleteId)?.label ?? ""}" will be permanently removed. Past redemptions of this type keep their record but lose the type label. This cannot be undone.`}
+        confirmLabel="Delete"
+        destructive
+        pending={pending}
+        onConfirm={() => deleteId && handleDelete(deleteId)}
+      />
     </div>
   )
 }

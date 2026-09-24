@@ -39,17 +39,23 @@ export function BrandLogo({
   className,
 }: Props) {
   const src = tone === "light" ? logoUrl : (logoOnLightUrl ?? null)
-  const [state, setState] = useState<"loading" | "loaded" | "failed">(
-    src ? "loading" : "failed"
-  )
+  // Tracked per-src (not a single "did it fail" flag) so that when src changes
+  // to a URL that hasn't been tried yet, state naturally falls through to
+  // "loading" instead of carrying over a previous src's outcome.
+  const [loadedSrc, setLoadedSrc] = useState<string | null>(null)
+  const [failedSrc, setFailedSrc] = useState<string | null>(null)
+  const state: "loading" | "loaded" | "failed" =
+    !src ? "failed" : loadedSrc === src ? "loaded" : failedSrc === src ? "failed" : "loading"
   const imgRef = useRef<HTMLImageElement>(null)
 
+  // Catches a logo the browser already had cached, whose onLoad may not fire.
   useEffect(() => {
+    if (state !== "loading") return
     const img = imgRef.current
     if (!img) return
-    if (img.complete && img.naturalWidth > 0) setState("loaded")
-    else if (img.complete) setState("failed")
-  }, [])
+    if (img.complete && img.naturalWidth > 0) setLoadedSrc(src)
+    else if (img.complete) setFailedSrc(src)
+  }, [state, src])
 
   const initials = siteName.slice(0, 2).toUpperCase()
 
@@ -106,8 +112,8 @@ export function BrandLogo({
           state === "loaded" ? "opacity-100" : "opacity-0"
         )}
         style={{ height }}
-        onLoad={() => setState("loaded")}
-        onError={() => setState("failed")}
+        onLoad={() => setLoadedSrc(src)}
+        onError={() => setFailedSrc(src)}
       />
     </span>
   )

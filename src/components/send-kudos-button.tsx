@@ -89,6 +89,7 @@ export function SendKudosButton({ users, values, monthlyBudget, remaining }: Pro
               <button
                 type="button"
                 onClick={close}
+                aria-label="Close"
                 className="grid size-7 place-items-center rounded-md text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300"
               >
                 <X className="size-4" />
@@ -98,7 +99,7 @@ export function SendKudosButton({ users, values, monthlyBudget, remaining }: Pro
             <form ref={formRef} onSubmit={submit} className="space-y-4 p-6">
               {/* Recipient */}
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label id="kudos-to-label" className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   To <span className="text-red-500">*</span>
                 </label>
                 {selectedUser ? (
@@ -122,6 +123,7 @@ export function SendKudosButton({ users, values, monthlyBudget, remaining }: Pro
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
                       placeholder="Search colleagues…"
+                      aria-labelledby="kudos-to-label"
                       className="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 py-2 pl-9 pr-3 text-base sm:text-sm
                         text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                     />

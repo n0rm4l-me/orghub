@@ -42,7 +42,7 @@ export function PollResults({ options, totalVotes, anonymous, voters = [] }: Pro
               <div className="mb-1 flex items-center justify-between gap-2">
                 <span className="text-sm text-gray-700">{opt.text}</span>
                 <span className="shrink-0 text-xs font-semibold text-gray-900">
-                  {pct}% <span className="font-normal text-gray-400">({opt.voteCount})</span>
+                  {pct}% <span className="font-normal text-gray-600">({opt.voteCount})</span>
                 </span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-gray-100">
@@ -52,7 +52,7 @@ export function PollResults({ options, totalVotes, anonymous, voters = [] }: Pro
                 />
               </div>
               {!anonymous && names.length > 0 && (
-                <p className="mt-1.5 text-[11px] text-gray-400 leading-relaxed">
+                <p className="mt-1.5 text-[11px] text-gray-600 leading-relaxed">
                   {names.join(", ")}
                 </p>
               )}
@@ -61,7 +61,7 @@ export function PollResults({ options, totalVotes, anonymous, voters = [] }: Pro
         })}
       </div>
       {totalVotes === 0 && (
-        <p className="mt-4 text-sm text-gray-400">No votes yet.</p>
+        <p className="mt-4 text-sm text-gray-600">No votes yet.</p>
       )}
     </div>
   )
