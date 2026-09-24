@@ -870,5 +870,3 @@ ALTER TABLE ONLY public."WeekMenuEntry"
 
 ALTER TABLE ONLY public."WeekMenu"
     ADD CONSTRAINT "WeekMenu_venueId_fkey" FOREIGN KEY ("venueId") REFERENCES public."Venue"(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-\unrestrict WgJ8HQXTZjZynDdjefg2TqzuHsA0L0GQHl2RBMiEcvSMti5fk3HhH3FGRXSeJ5H
