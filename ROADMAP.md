@@ -195,7 +195,7 @@ phases; already true now, no reason to wait). Deleted.
 
 **Phase 2 progress (2026-09-24).** Every page under `src/app/admin/` is now
 migrated to tokens and verified with `tsc`/`eslint` (visual check still
-pending, see below) — confirmed with
+pending, see below), confirmed with
 `grep -rlE 'text-gray-[0-9]|border-gray-[0-9]|bg-gray-[0-9]|bg-white' src/app/admin`
 returning nothing except `admin/layout.tsx`, which is the sidebar and is
 supposed to stay hardcoded dark (see the plan's own note on this). Along the
@@ -220,7 +220,7 @@ dark:border-gray-[0-9]     160  (was 166)
 ```
 
 **Not yet visually verified**: `preview_start` is still stuck this entire
-session (see `project_orghub_local_dev.md` memory) — verified by type-check/
+session (see `project_orghub_local_dev.md` memory), verified by type-check/
 lint and diff review only. Confirm in both themes before trusting it fully,
 especially the `<Panel>` conversions and the Suggestions dark: cleanup.
 
@@ -270,18 +270,18 @@ starting either.
 
 Root-cause item first, the rest multiply in impact once it's fixed:
 
-- **OPEN, harder than it looks — do not just delete the line.**
+- **OPEN, harder than it looks: do not just delete the line.**
   [src/app/layout.tsx:1](src/app/layout.tsx#L1) sets
   `export const dynamic = "force-dynamic"`. `getSettings()`
   ([src/lib/settings.ts:17](src/lib/settings.ts#L17)) is already wrapped in
   `unstable_cache` with a `"settings"` tag and a comment saying this was done
   specifically "so the root layout no longer forces the entire app to be
-  dynamic" — but nobody removed the export after adding the cache. **Tried
+  dynamic", but nobody removed the export after adding the cache. **Tried
   removing it 2026-09-25: it breaks the production build itself, not just a
   runtime cache-hit-rate concern.** Without `force-dynamic`, Next.js attempts
   to statically prerender pages (starting with `/_not-found`) at build time,
   which executes the root layout's `await getSettings()`, which needs a live
-  DB connection — one that doesn't exist in the Cloud Build/Docker build
+  DB connection, one that doesn't exist in the Cloud Build/Docker build
   environment (only the deployed pod can reach `orghub-postgres`). Confirmed
   with a real `npx next build`: `PrismaClientKnownRequestError: Can't reach
   database server at orghub-postgres`, build exits 1. This would have broken
@@ -329,7 +329,7 @@ Everything else, roughly ordered by blast radius:
   [articles/[id]/page.tsx:74](<src/app/(portal)/articles/[id]/page.tsx#L74>))
   and the kudos page's monthly-reset `createNotification` → web push
   ([kudos/page.tsx:60](<src/app/(portal)/kudos/page.tsx#L60>)) no longer block
-  the response. Both moved into `after()` (`next/server`) — nothing rendered
+  the response. Both moved into `after()` (`next/server`): nothing rendered
   on either page depended on their result (the view *count* shown is read
   from an earlier query, before this visit's view is recorded). Verified with
   `tsc --noEmit`, `eslint`, and a full `npx next build`.
@@ -347,28 +347,28 @@ Everything else, roughly ordered by blast radius:
   ([settings.ts:227-230](src/lib/actions/settings.ts#L227)).
 - **PARTIAL, judgment call 2026-09-25** [src/lib/actions/dining.ts](src/lib/actions/dining.ts):
   narrowed the 3 mutations whose broad `revalidatePath("/dining", "layout")`
-  was clearly wrong for their blast radius — `createVenue`, `updateVenue`,
+  was clearly wrong for their blast radius: `createVenue`, `updateVenue`,
   `deleteVenue` only ever affect the `/dining` listing and their own
   `/dining/${id}`, never *other* venues, so the layout-wide call was purely
   wasted invalidation. Left `updateLocation` and `deleteLocation` on the broad
   call: a location's timezone genuinely affects the "today" highlight and
   slot status on every venue underneath it (documented in the existing
-  comment), and deleting a location is a structural cascade — narrowing those
+  comment), and deleting a location is a structural cascade. Narrowing those
   correctly would need a query to enumerate affected venues, which trades a
   real (if small) staleness-risk for a gain that's already mostly moot: the
   root layout is `force-dynamic`, so there's no server-side full-route cache
-  for any of this to protect in the first place — the only thing any of these
+  for any of this to protect in the first place. The only thing any of these
   `revalidatePath` calls actually invalidates today is the *editing admin's
   own* client-side Router Cache. Given that, don't spend more effort chasing
   the remaining two; the risk/reward doesn't clear the bar.
 - **WON'T FIX, judgment call 2026-09-25** [src/lib/actions/dining.ts](src/lib/actions/dining.ts)
   reorder helpers (sections, sort orders, fixed-menu entries) issue N
-  `updateMany` calls per reorder inside a `$transaction([...])` array — one
+  `updateMany` calls per reorder inside a `$transaction([...])` array, one
   round-trip-per-row, but already one atomic transaction. Collapsing that
   further into a single raw-SQL statement (`UPDATE ... FROM (VALUES ...)`)
   would need hand-written SQL per call site for a genuine gain that's tiny at
   this data's actual scale (admin-curated lists of tens of rows, not
-  thousands) — worse trade than the revalidation item above: correctness risk
+  thousands): worse trade than the revalidation item above, correctness risk
   in hand-rolled SQL against a real gain of a few extra round-trips on a rare
   admin action. Not worth it unless a specific venue is shown to have hundreds
   of entries.
@@ -441,7 +441,7 @@ Smaller items, independent of the design-unification phases above:
   extension-optionally and never hits this. Fix: added `test.server.deps.inline:
   ["next-auth"]` to [vitest.config.ts](vitest.config.ts), forcing `next-auth`
   through Vite's resolver instead. (Tried a `resolve.alias` for `next/server`
-  first — didn't help on its own, because externalized deps skip
+  first: didn't help on its own, because externalized deps skip
   `resolve.alias` entirely; removed it once `deps.inline` alone proved
   sufficient.) All 3 suites (19 tests) now pass, verified once locally and
   once with a fully stripped environment (`env -i`, no `DATABASE_URL` or
@@ -450,9 +450,9 @@ Smaller items, independent of the design-unification phases above:
 - **PARTIAL 2026-09-25.** Added
   [src/__tests__/actions.roles.test.ts](src/__tests__/actions.roles.test.ts):
   a VIEWER rejected from an ADMIN-only action (`createLocation`,
-  `deleteKudos`), an ADMIN allowed (`deleteKudos`), and — the case that
+  `deleteKudos`), an ADMIN allowed (`deleteKudos`), and the case that
   actually matters, since it's the one bug pattern that silently over- or
-  under-scopes instead of just failing — an EDITOR rejected from a venue
+  under-scopes instead of just failing: an EDITOR rejected from a venue
   under a *different* location (`upsertMealSlots`) alongside an EDITOR
   allowed on their *own* location's venue, so the scoping filter is proven
   to reject correctly without also locking out legitimate access. Followed

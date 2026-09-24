@@ -73,7 +73,16 @@ myModule: {
 
 ## 9. Audit log
 
-`src/lib/audit.ts`: add action strings (e.g. `"myModule.create"`, `"settings.myModule"`)
+Two steps, both required. Adding the action strings without calling `logAudit`
+compiles fine and silently produces an empty audit trail for the whole module:
+
+1. `src/lib/audit.ts`: add action strings to the `AuditAction` union (e.g.
+   `"myModule.create"`, `"settings.myModule"`).
+2. In every server action that creates, updates, or deletes something, call
+   `await logAudit({ userId: user.id, action: "myModule.create", resourceType: "MyModule", resourceId: created.id })`
+   right after the mutation succeeds. Settings-only changes (no specific
+   resource) can omit `resourceId`. See `src/lib/actions/kudos.ts` or
+   `src/lib/actions/dining.ts` for examples already following this.
 
 ---
 

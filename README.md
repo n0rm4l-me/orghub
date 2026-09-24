@@ -11,6 +11,7 @@ Self-hosted employee portal for teams that want to own their intranet. News, eve
 - [What's included](#whats-included)
 - [Quick start](#quick-start)
 - [Development](#development)
+- [Deployment](#deployment)
 - [Stack](#stack)
 - [Roadmap](#roadmap)
 - [License](#license)
@@ -73,6 +74,44 @@ npx prisma migrate dev
 npx prisma db seed
 npm run dev
 ```
+
+## Deployment
+
+The Helm chart under [deploy/helm/orghub](deploy/helm/orghub) is self-contained: it
+deploys the app, a Postgres `StatefulSet` (there's no option to point it at an
+external database yet), and an optional PgBouncer in front of Postgres for
+connection pooling under autoscaling. See the comments in
+[values.yaml](deploy/helm/orghub/values.yaml) for what each setting does.
+
+**Install:**
+
+```bash
+helm install orghub deploy/helm/orghub \
+  --set image.repository=YOUR_REGISTRY/orghub \
+  --set image.tag=<git-sha> \
+  --set app.authSecret=<random-secret> \
+  --set postgres.password=<random-password> \
+  -n orghub --create-namespace
+```
+
+**Upgrade to a new image** (the common case): build and push an image tagged with
+the new commit's SHA (see [cloudbuild.yaml](cloudbuild.yaml) for the two-stage
+`migrator`/`runner` build this expects), then:
+
+```bash
+helm upgrade orghub deploy/helm/orghub --reuse-values --set image.tag=<git-sha> -n orghub
+```
+
+Schema migrations run automatically: the pod's `initContainer` runs
+`prisma migrate deploy` against the direct (non-pooled) connection before the
+app container starts, so a deploy that includes a new migration doesn't need a
+separate manual step.
+
+**Backup and restore:** not implemented. The chart has no snapshot, dump, or
+point-in-time-recovery mechanism for the bundled Postgres `StatefulSet`: its
+`PersistentVolumeClaim` is the only copy of the data. Until this exists, treat
+the underlying disk's own snapshot capability (if your cluster's storage class
+supports it) as the only safety net.
 
 ## Stack
 
