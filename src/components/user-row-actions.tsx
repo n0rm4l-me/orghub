@@ -34,10 +34,10 @@ export function UserRoleSelect({ userId, role, isSelf }: Omit<Props, "active" | 
         onChange={(e) => run(userId, e.target.value)}
         aria-label="Role"
         title={isSelf ? "You cannot change your own role" : "Change role"}
-        className="w-full appearance-none rounded-lg border border-gray-200 bg-white py-1.5 pr-7 pl-2.5
-          text-xs font-medium text-gray-700 transition hover:border-gray-300 focus:border-brand
-          focus:ring-2 focus:ring-brand/20 focus:outline-none disabled:bg-gray-50
-          disabled:text-gray-400"
+        className="w-full appearance-none rounded-lg border border-border bg-card py-1.5 pr-7 pl-2.5
+          text-xs font-medium text-foreground transition hover:border-muted-foreground/40 focus:border-brand
+          focus:ring-2 focus:ring-brand/20 focus:outline-none disabled:bg-muted
+          disabled:text-muted-foreground"
       >
         {ROLES.map((r) => (
           <option key={r} value={r}>
@@ -45,7 +45,7 @@ export function UserRoleSelect({ userId, role, isSelf }: Omit<Props, "active" | 
           </option>
         ))}
       </select>
-      <span className="pointer-events-none absolute right-2 text-gray-400" aria-hidden>
+      <span className="pointer-events-none absolute right-2 text-muted-foreground" aria-hidden>
         {pending ? <Loader2 className="size-3 animate-spin" /> : "▾"}
       </span>
     </span>
@@ -62,7 +62,7 @@ export function UserActiveToggle({ userId, active, name, isSelf }: Omit<Props, "
         type="button"
         onClick={() => run(userId, true)}
         disabled={pending}
-        className="text-xs font-medium text-gray-500 transition hover:text-brand disabled:opacity-50"
+        className="text-xs font-medium text-muted-foreground transition hover:text-brand disabled:opacity-50"
       >
         {pending ? "Working…" : "Reactivate"}
       </button>
@@ -76,8 +76,8 @@ export function UserActiveToggle({ userId, active, name, isSelf }: Omit<Props, "
         onClick={() => setOpen(true)}
         disabled={isSelf}
         title={isSelf ? "You cannot deactivate your own account" : "Deactivate this user"}
-        className="text-xs font-medium text-gray-500 transition hover:text-red-600
-          disabled:cursor-not-allowed disabled:text-gray-300 disabled:hover:text-gray-300"
+        className="text-xs font-medium text-muted-foreground transition hover:text-red-600
+          disabled:cursor-not-allowed disabled:text-muted-foreground disabled:hover:text-muted-foreground"
       >
         Deactivate
       </button>

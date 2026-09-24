@@ -224,16 +224,24 @@ session (see `project_orghub_local_dev.md` memory) — verified by type-check/
 lint and diff review only. Confirm in both themes before trusting it fully,
 especially the `<Panel>` conversions and the Suggestions dark: cleanup.
 
-Still open for Phase 2: the ~20 admin components list from the plan
-(`nav-manager.tsx`, `layout-form.tsx`, `brand-form.tsx`, `media-grid.tsx`,
-`media-picker.tsx`, `media-page-client.tsx`, `poll-form.tsx`,
-`poll-results.tsx`, `content-form.tsx`, `editor.tsx`,
-`kudos-settings-form.tsx`, `kudos-redeem-types-panel.tsx`,
-`sidebar-widgets-form.tsx`, `translation-settings-form.tsx`,
-`module-toggle.tsx`, `gravatar-toggle.tsx`, `local-auth-toggle.tsx`,
-`user-row-actions.tsx`, `category-manager.tsx`; `boolean-toggle.tsx` and
-`sidebar-order-manager.tsx` from the original list no longer exist, deleted
-as dead code earlier this session).
+Admin components, smaller ones done (2026-09-24): `module-toggle.tsx`,
+`gravatar-toggle.tsx`, `local-auth-toggle.tsx` (the shared toggle-switch
+shape: track `bg-gray-200` → `bg-border`, knob `bg-white` → `bg-card`),
+`category-manager.tsx`, `layout-form.tsx`, `sidebar-widgets-form.tsx`,
+`user-row-actions.tsx`.
+
+Still open, the larger admin components (checked 2026-09-24, instance counts
+of `text-gray-[0-9]|border-gray-[0-9]|bg-gray-[0-9]|bg-white` per file):
+`content-form.tsx` (31), `editor.tsx` (21), `brand-form.tsx` (20),
+`media-picker.tsx` (19), `kudos-redeem-types-panel.tsx` (16),
+`media-grid.tsx` (15), `poll-form.tsx` (15), `kudos-settings-form.tsx` (14),
+`nav-manager.tsx` (13), `translation-settings-form.tsx` (12),
+`poll-results.tsx` (9), `media-page-client.tsx` (9). These are bigger and
+higher-traffic (the rich-text editor and its popovers, the media library,
+the brand/logo settings form) so budget more care per file than the
+mechanical page migrations above. `boolean-toggle.tsx` and
+`sidebar-order-manager.tsx` from the plan's original list no longer exist,
+deleted as dead code earlier this session.
 
 ---
 

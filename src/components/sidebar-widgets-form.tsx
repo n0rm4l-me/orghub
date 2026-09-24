@@ -89,7 +89,7 @@ export function SidebarWidgetsForm({ rightOrder, leftOrder, enabledModules }: Pr
         </button>
       }
     >
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-border">
         {rows.map((row, i) => {
           const widget = ALL_WIDGETS.find((w) => w.id === row.id)!
           if (widget.requiresModule && !enabledModules.has(widget.requiresModule)) return null
@@ -101,8 +101,8 @@ export function SidebarWidgetsForm({ rightOrder, leftOrder, enabledModules }: Pr
                   onClick={() => move(i, -1)}
                   disabled={i === 0}
                   aria-label="Move up"
-                  className="grid size-5 place-items-center rounded text-gray-300 transition
-                    hover:bg-gray-100 hover:text-gray-600 disabled:pointer-events-none disabled:opacity-0"
+                  className="grid size-5 place-items-center rounded text-muted-foreground transition
+                    hover:bg-muted hover:text-muted-foreground disabled:pointer-events-none disabled:opacity-0"
                 >
                   <ArrowUp className="size-3" />
                 </button>
@@ -111,16 +111,16 @@ export function SidebarWidgetsForm({ rightOrder, leftOrder, enabledModules }: Pr
                   onClick={() => move(i, 1)}
                   disabled={i === rows.length - 1}
                   aria-label="Move down"
-                  className="grid size-5 place-items-center rounded text-gray-300 transition
-                    hover:bg-gray-100 hover:text-gray-600 disabled:pointer-events-none disabled:opacity-0"
+                  className="grid size-5 place-items-center rounded text-muted-foreground transition
+                    hover:bg-muted hover:text-muted-foreground disabled:pointer-events-none disabled:opacity-0"
                 >
                   <ArrowDown className="size-3" />
                 </button>
               </div>
 
-              <span className="flex-1 text-sm font-medium text-gray-800">{widget.label}</span>
+              <span className="flex-1 text-sm font-medium text-foreground">{widget.label}</span>
 
-              <div className="flex rounded-lg border border-gray-200 text-xs font-medium overflow-hidden">
+              <div className="flex rounded-lg border border-border text-xs font-medium overflow-hidden">
                 {(["off", "left", "right"] as Placement[]).map((p) => (
                   <button
                     key={p}
@@ -129,7 +129,7 @@ export function SidebarWidgetsForm({ rightOrder, leftOrder, enabledModules }: Pr
                     className={`px-3 py-1.5 capitalize transition ${
                       row.placement === p
                         ? "bg-brand text-white"
-                        : "bg-white text-gray-500 hover:bg-gray-50"
+                        : "bg-card text-muted-foreground hover:bg-muted"
                     }`}
                   >
                     {p}

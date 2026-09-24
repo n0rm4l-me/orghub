@@ -62,7 +62,7 @@ function LayoutPicker({
 }) {
   return (
     <div className="py-3">
-      <p className="mb-2 text-sm font-medium text-gray-800">{label}</p>
+      <p className="mb-2 text-sm font-medium text-foreground">{label}</p>
       <div className="grid grid-cols-4 gap-2">
         {PRESETS.map((preset) => (
           <label key={preset.value} className="cursor-pointer">
@@ -74,7 +74,7 @@ function LayoutPicker({
               className="peer sr-only"
             />
             <div
-              className="flex flex-col gap-1.5 rounded-lg border-2 border-gray-200 p-2 text-gray-400
+              className="flex flex-col gap-1.5 rounded-lg border-2 border-border p-2 text-muted-foreground
                 transition peer-checked:border-brand peer-checked:text-brand"
             >
               {preset.preview}
@@ -129,7 +129,7 @@ const CARD_STYLE_PRESETS = [
 function CardStylePicker({ name, value }: { name: string; value: string }) {
   return (
     <div className="py-3">
-      <p className="mb-2 text-sm font-medium text-gray-800">Feed card style</p>
+      <p className="mb-2 text-sm font-medium text-foreground">Feed card style</p>
       <div className="grid grid-cols-3 gap-2">
         {CARD_STYLE_PRESETS.map((preset) => (
           <label key={preset.value} className="cursor-pointer">
@@ -141,7 +141,7 @@ function CardStylePicker({ name, value }: { name: string; value: string }) {
               className="peer sr-only"
             />
             <div
-              className="flex flex-col gap-2 rounded-lg border-2 border-gray-200 p-2 text-gray-400
+              className="flex flex-col gap-2 rounded-lg border-2 border-border p-2 text-muted-foreground
                 transition peer-checked:border-brand peer-checked:text-brand"
             >
               {preset.preview}
@@ -196,17 +196,17 @@ export function LayoutForm({ feedLayout, articleLayout, pagesLayout, kudosLayout
           </button>
         }
       >
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-border">
           <CardStylePicker name="feedCardStyle" value={feedCardStyle} />
           <div className="py-3">
-            <label htmlFor="feedPageSize" className="mb-2 block text-sm font-medium text-gray-800">
+            <label htmlFor="feedPageSize" className="mb-2 block text-sm font-medium text-foreground">
               Articles per page
             </label>
             <select
               id="feedPageSize"
               name="feedPageSize"
               defaultValue={feedPageSize}
-              className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-800
+              className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground
                 focus:outline-none focus:ring-2 focus:ring-brand/40"
             >
               {[5, 10, 15, 20, 25, 30].map((n) => (

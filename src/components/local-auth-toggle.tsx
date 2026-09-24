@@ -29,14 +29,14 @@ export function LocalAuthToggle({ initialEnabled }: Props) {
         border-2 border-transparent transition-colors focus-visible:outline-none
         focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2
         disabled:cursor-not-allowed disabled:opacity-60
-        ${enabled ? "bg-brand" : "bg-gray-200"}`}
+        ${enabled ? "bg-brand" : "bg-border"}`}
     >
       {pending ? (
         <Loader2 className="absolute left-1/2 size-3.5 -translate-x-1/2 animate-spin text-white" aria-hidden />
       ) : (
         <span
           aria-hidden
-          className={`inline-block size-5 rounded-full bg-white shadow-sm ring-0 transition-transform
+          className={`inline-block size-5 rounded-full bg-card shadow-sm ring-0 transition-transform
             ${enabled ? "translate-x-5" : "translate-x-0"}`}
         />
       )}

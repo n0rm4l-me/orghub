@@ -31,25 +31,25 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
           description="Add a few topics: Announcements, Engineering, People. Articles can then be filed under them."
         />
       ) : (
-        <ul className="mt-4 divide-y divide-gray-100 border-t border-gray-100">
+        <ul className="mt-4 divide-y divide-border border-t border-border">
           {categories.map((category) => (
             <li key={category.id} className="flex items-center gap-3 py-2.5">
-              <Tag className="size-4 shrink-0 text-gray-300" aria-hidden />
+              <Tag className="size-4 shrink-0 text-muted-foreground" aria-hidden />
 
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-gray-900">{category.name}</p>
-                <p className="truncate font-mono text-xs text-gray-400">?category={category.slug}</p>
+                <p className="truncate text-sm font-medium text-foreground">{category.name}</p>
+                <p className="truncate font-mono text-xs text-muted-foreground">?category={category.slug}</p>
               </div>
 
               {category.articleCount > 0 ? (
                 <Link
                   href={`/?category=${category.slug}`}
-                  className="shrink-0 text-xs text-gray-400 transition hover:text-brand"
+                  className="shrink-0 text-xs text-muted-foreground transition hover:text-brand"
                 >
                   {category.articleCount} article{category.articleCount === 1 ? "" : "s"}
                 </Link>
               ) : (
-                <span className="shrink-0 text-xs text-gray-300">unused</span>
+                <span className="shrink-0 text-xs text-muted-foreground">unused</span>
               )}
 
               <DeleteButton
