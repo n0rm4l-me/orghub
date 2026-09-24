@@ -413,14 +413,29 @@ Smaller items, independent of the design-unification phases above:
   `tsc`, `eslint`, the test suite, and `npx next build`. `Field`
   (field.tsx:29) still does this correctly for anything that routes through
   it, which remains just the one file noted below.
-- **PARTIAL.** [src/components/dining/location-form.tsx:83](src/components/dining/location-form.tsx#L83):
-  the delete trigger is still a `<span onClick>`, not keyboard-focusable, and
-  its delete flow still hand-rolls confirm buttons instead of `ConfirmDialog`.
-  Same for `venue-settings-form.tsx`'s delete flow (~line 124-145). (Modal
-  backdrop color/blur was inconsistent across 9 files, dimmed with no blur in
-  some, two different blurred grays in others; normalized to
-  `bg-black/25 backdrop-blur-[2px]` everywhere, matching `ConfirmDialog`, on
-  2026-09-24.)
+- **CORRECTED, smaller than described 2026-09-25.**
+  [src/components/dining/location-form.tsx:83](src/components/dining/location-form.tsx#L83)
+  does wrap its `trigger` prop in `<span onClick={handleOpen}>`, but checked
+  both real call sites (`admin/dining/page.tsx:46,69`): `trigger` is always a
+  real `<button>` there, so keyboard activation already works today (Enter/
+  Space on the focused button fires a native click that bubbles up to the
+  span's handler). The latent risk is real but hasn't manifested: a future
+  caller passing a non-interactive `trigger` (an icon, a styled `div`) would
+  get an unfocusable one. Didn't fix it: the honest fix is
+  `cloneElement(trigger, { onClick: handleOpen })` instead of wrapping, which
+  changes the prop's effective type and has its own edge cases (multiple
+  children, an already-set `onClick`), not a risk-free change for a bug that
+  doesn't exist yet. Separately, its delete flow's "hand-rolled instead of
+  `ConfirmDialog`" is also true but not a bug: it's an inline arm/confirm
+  button swap (click once to arm, again to confirm), a genuinely different
+  interaction from `ConfirmDialog`'s modal, not a broken or inaccessible copy
+  of it. `venue-settings-form.tsx`'s delete flow, by contrast, already *is* a
+  full modal with the same backdrop treatment `ConfirmDialog` uses
+  (`bg-black/25 backdrop-blur-[2px]`), just not literally routed through the
+  shared component. Consolidating either onto `ConfirmDialog` is a real UX
+  change (replacing an inline pattern with a modal, or a hand-rolled modal
+  with the shared one) that should be visually checked before shipping, not
+  assumed safe from a code diff.
 - **OPEN.** `submit-button.tsx` uses `px-4` / `disabled:opacity-70`; the
   canonical shape documented in `STYLE_GUIDE.md:211` is `px-3.5` /
   `disabled:opacity-60`. Several dining buttons still hand-roll their own
