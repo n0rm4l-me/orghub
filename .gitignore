@@ -53,7 +53,6 @@ CLAUDE.md
 AGENTS.md
 .claude/
 STYLE_GUIDE.md
-REFACTOR_PLAN.md
 deploy/values-override.yaml
 
 # Local deployment scripts
