@@ -333,24 +333,47 @@ Everything else, roughly ordered by blast radius:
   top-articles query still does `orderBy: { views: { _count: "desc" } }` over
   the entire `ArticleView` relation to take 5. Add a denormalized `viewCount`
   incremented in `recordView`.
-- **PARTIAL** revalidation gaps: `deleteRedeemType` still doesn't revalidate
-  `/kudos` ([kudos.ts:404-408](src/lib/actions/kudos.ts#L404)); `castVote`
-  still only revalidates `/polls` + the admin page, missing the 4 portal
-  sidebar render sites; `saveDiningSettings` still calls the broad
-  `revalidateSettings()` on every currency change
-  ([settings.ts:227](src/lib/actions/settings.ts#L227)). (Upload, sold-out
-  toggle, redeemKudos, and sendKudos revalidation were already fixed.)
-- **OPEN** [src/lib/actions/dining.ts:52,61,78,91,101](src/lib/actions/dining.ts#L52):
-  still calls the over-broad `revalidatePath("/dining", "layout")` on five
-  different mutations, invalidating far more than changed.
-- **PARTIAL** [src/lib/actions/dining.ts](src/lib/actions/dining.ts) reorder
-  helpers (sections, sort orders) still issue N sequential `UPDATE` statements
-  per reorder instead of one batched query. (`nav.ts`'s equivalents are now at
-  least wrapped in `$transaction`, just not batched into one statement yet.)
-- **PARTIAL** [src/lib/actions/media-migrate.ts](src/lib/actions/media-migrate.ts):
-  the per-file reference-fixup loop is now parallelized with `Promise.all`;
-  the per-user Gravatar-fetch-and-upload loop is still a fully sequential
-  `for`, will time out at scale (5000 users x ~300ms = 25+ min).
+- **FIXED 2026-09-25** revalidation gaps: `deleteRedeemType` now revalidates
+  `/kudos` too ([kudos.ts:429-435](src/lib/actions/kudos.ts#L429)); `castVote`
+  now also revalidates the 4 portal sidebar render sites (`/`, `/events`,
+  `/kudos`, `/articles/[id]`) alongside `/polls` + the admin page
+  ([polls.ts:223-228](src/lib/actions/polls.ts#L223)); `saveDiningSettings`
+  now revalidates `/dining` + `/admin/dining` (`"layout"`) plus the settings
+  cache tag instead of the site-wide `revalidateSettings()`
+  ([settings.ts:227-230](src/lib/actions/settings.ts#L227)).
+- **PARTIAL, judgment call 2026-09-25** [src/lib/actions/dining.ts](src/lib/actions/dining.ts):
+  narrowed the 3 mutations whose broad `revalidatePath("/dining", "layout")`
+  was clearly wrong for their blast radius — `createVenue`, `updateVenue`,
+  `deleteVenue` only ever affect the `/dining` listing and their own
+  `/dining/${id}`, never *other* venues, so the layout-wide call was purely
+  wasted invalidation. Left `updateLocation` and `deleteLocation` on the broad
+  call: a location's timezone genuinely affects the "today" highlight and
+  slot status on every venue underneath it (documented in the existing
+  comment), and deleting a location is a structural cascade — narrowing those
+  correctly would need a query to enumerate affected venues, which trades a
+  real (if small) staleness-risk for a gain that's already mostly moot: the
+  root layout is `force-dynamic`, so there's no server-side full-route cache
+  for any of this to protect in the first place — the only thing any of these
+  `revalidatePath` calls actually invalidates today is the *editing admin's
+  own* client-side Router Cache. Given that, don't spend more effort chasing
+  the remaining two; the risk/reward doesn't clear the bar.
+- **WON'T FIX, judgment call 2026-09-25** [src/lib/actions/dining.ts](src/lib/actions/dining.ts)
+  reorder helpers (sections, sort orders, fixed-menu entries) issue N
+  `updateMany` calls per reorder inside a `$transaction([...])` array — one
+  round-trip-per-row, but already one atomic transaction. Collapsing that
+  further into a single raw-SQL statement (`UPDATE ... FROM (VALUES ...)`)
+  would need hand-written SQL per call site for a genuine gain that's tiny at
+  this data's actual scale (admin-curated lists of tens of rows, not
+  thousands) — worse trade than the revalidation item above: correctness risk
+  in hand-rolled SQL against a real gain of a few extra round-trips on a rare
+  admin action. Not worth it unless a specific venue is shown to have hundreds
+  of entries.
+- **FIXED 2026-09-25** [src/lib/actions/media-migrate.ts](src/lib/actions/media-migrate.ts):
+  the per-user Gravatar-fetch-and-upload loop was fully sequential (5000 users
+  x ~300ms = 25+ min). Now processes in batches of 10 concurrent requests
+  instead of one `Promise.all` over every user (which would just get
+  rate-limited by Gravatar) or one-at-a-time. Verified with `tsc --noEmit`,
+  `eslint`, and a full `npx next build`.
 - **PARTIAL** image sizing: `week-menu-cell`, the feed thumbnail, and the
   media grid now all pass a `?w=` width param. The dining announcements page's
   banner image still doesn't

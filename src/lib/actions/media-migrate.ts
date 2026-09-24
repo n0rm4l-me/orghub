@@ -137,12 +137,14 @@ export async function cacheAllGravatars(): Promise<ActionResult & { cached?: num
   let cached = 0
   let skipped = 0
 
-  for (const user of users) {
-    if (!user.email) { skipped++; continue }
+  const GRAVATAR_BATCH_SIZE = 10
+
+  async function cacheOne(user: { id: string; email: string | null }): Promise<boolean> {
+    if (!user.email) return false
     const url = gravatarUrl(user.email, 200)
     try {
       const res = await fetch(url)
-      if (!res.ok) { skipped++; continue }
+      if (!res.ok) return false
       const buffer = Buffer.from(await res.arrayBuffer())
       const key = `avatars/${user.id}.jpg`
       const uploadedUrl = await uploadToStorage(key, buffer, "image/jpeg")
@@ -163,10 +165,18 @@ export async function cacheAllGravatars(): Promise<ActionResult & { cached?: num
         },
         update: { url: uploadedUrl, size: buffer.length },
       })
-      cached++
+      return true
     } catch {
-      skipped++
+      return false
     }
+  }
+
+  // Batched rather than one Promise.all over every user: thousands of
+  // concurrent Gravatar requests would just get rate-limited.
+  for (let i = 0; i < users.length; i += GRAVATAR_BATCH_SIZE) {
+    const batch = users.slice(i, i + GRAVATAR_BATCH_SIZE)
+    const results = await Promise.all(batch.map(cacheOne))
+    for (const ok of results) { if (ok) cached++; else skipped++ }
   }
 
   revalidatePath("/admin/media")
