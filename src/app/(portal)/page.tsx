@@ -59,7 +59,6 @@ type MappedArticle = {
   eventDate: Date | null
   coverImage: string | null
   reactionCount: number
-  liked: boolean
   important: boolean
   isNew: boolean
 }
@@ -208,22 +207,13 @@ export default async function FeedPage({ searchParams }: Props) {
         : Promise.resolve([]),
     ])
 
-  const allArticleIds = [...articles.map((a) => a.id), ...pinnedRaw.map((a) => a.id)]
-  let likedIds: Set<string> = new Set()
   let lastFeedVisitAt: Date | null = null
 
   if (user) {
-    const [reactions, feedUser] = await Promise.all([
-      db.articleReaction.findMany({
-        where: { userId: user.id, articleId: { in: allArticleIds } },
-        select: { articleId: true },
-      }),
-      db.user.findUnique({
-        where: { id: user.id },
-        select: { lastFeedVisitAt: true },
-      }),
-    ])
-    likedIds = new Set(reactions.map((r) => r.articleId))
+    const feedUser = await db.user.findUnique({
+      where: { id: user.id },
+      select: { lastFeedVisitAt: true },
+    })
     lastFeedVisitAt = feedUser?.lastFeedVisitAt ?? null
   }
 
@@ -240,7 +230,6 @@ export default async function FeedPage({ searchParams }: Props) {
       eventDate: a.eventDate ?? null,
       coverImage: a.coverImage ?? null,
       reactionCount: a._count.reactions,
-      liked: likedIds.has(a.id),
       important: a.important,
       isNew: lastFeedVisitAt !== null && a.publishedAt !== null && a.publishedAt > lastFeedVisitAt,
     }
