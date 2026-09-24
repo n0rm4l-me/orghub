@@ -46,6 +46,7 @@ const mockDb = {
     }),
   },
   location: { create: vi.fn().mockResolvedValue({ id: "loc-new" }) },
+  mealSlot: { findMany: vi.fn().mockResolvedValue([]) },
   kudos: { delete: vi.fn().mockResolvedValue({ id: "kudos-1" }) },
   auditLog: { create: vi.fn().mockResolvedValue({}) },
   $transaction: vi.fn((cb: (tx: unknown) => unknown) => cb(mockTx)),
@@ -93,16 +94,16 @@ describe("authorization matrix", () => {
 
   it("EDITOR out of scope is rejected from a venue under a different location", async () => {
     signInAs(USERS.editorA) // scoped to loc-A
-    const { upsertMealSlots } = await import("@/lib/actions/dining")
-    const result = await upsertMealSlots(VENUE.id, []) // VENUE is under loc-B
+    const { upsertSlotsAndCategories } = await import("@/lib/actions/dining")
+    const result = await upsertSlotsAndCategories(VENUE.id, []) // VENUE is under loc-B
     expect(result).toMatchObject({ ok: false })
     expect(mockDb.$transaction).not.toHaveBeenCalled()
   })
 
   it("EDITOR in scope can act on their own location's venue", async () => {
     signInAs(USERS.editorB) // scoped to loc-B, same as VENUE
-    const { upsertMealSlots } = await import("@/lib/actions/dining")
-    const result = await upsertMealSlots(VENUE.id, [])
+    const { upsertSlotsAndCategories } = await import("@/lib/actions/dining")
+    const result = await upsertSlotsAndCategories(VENUE.id, [])
     expect(result).toMatchObject({ ok: true })
     expect(mockDb.$transaction).toHaveBeenCalledTimes(1)
   })

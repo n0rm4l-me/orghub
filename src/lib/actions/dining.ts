@@ -102,40 +102,6 @@ export async function deleteVenue(id: string): Promise<ActionResult> {
   return ok("Venue deleted.")
 }
 
-// ── Meal Slots ─────────────────────────────────────────────────────────────────
-
-type MealSlotInput = { id?: string; name: string; timeStart?: string | null; timeEnd?: string | null; order: number }
-
-export async function upsertMealSlots(venueId: string, slots: MealSlotInput[]): Promise<ActionResult> {
-  const user = await requireRole("EDITOR")
-  const venue = await findEditableVenue(user.id, user.role, venueId)
-  if (!venue) return fail("Venue not found.")
-
-  await db.$transaction(async (tx) => {
-    const incomingIds = slots.filter((s) => s.id).map((s) => s.id as string)
-    await tx.mealSlot.deleteMany({ where: { venueId, id: { notIn: incomingIds } } })
-    for (const s of slots) {
-      const data = {
-        name: s.name,
-        timeStart: s.timeStart?.trim() || null,
-        timeEnd: s.timeEnd?.trim() || null,
-        order: s.order,
-      }
-      if (s.id) {
-        // updateMany, not update: scoping by venueId stops a client-supplied
-        // id from reaching another venue's row.
-        await tx.mealSlot.updateMany({ where: { id: s.id, venueId }, data })
-      } else {
-        await tx.mealSlot.create({ data: { venueId, ...data } })
-      }
-    }
-  })
-
-  revalidatePath(`/admin/dining/venues/${venueId}`)
-  revalidatePath(`/dining/${venueId}`)
-  return ok("Meal slots saved.")
-}
-
 // ── Venue Tags ─────────────────────────────────────────────────────────────────
 
 type VenueTagInput = { id?: string; name: string; color: string; bgColor: string; order: number }
@@ -190,50 +156,7 @@ export async function upsertNutritionParams(venueId: string, params: NutritionPa
   return ok("Nutrition params saved.")
 }
 
-// ── Categories ─────────────────────────────────────────────────────────────────
-
-type CategoryInput = { id?: string; name: string; mealSlotId: string; order: number }
-
-export async function upsertCategories(
-  venueId: string,
-  categories: CategoryInput[],
-): Promise<ActionResult> {
-  const user = await requireRole("EDITOR")
-  const venue = await findEditableVenue(user.id, user.role, venueId)
-  if (!venue) return fail("Venue not found.")
-
-  // A category pointed at another venue's slot would render nowhere while its
-  // entries stayed behind, so reject unknown slot ids outright.
-  const ownSlotIds = new Set(
-    (await db.mealSlot.findMany({ where: { venueId }, select: { id: true } })).map((s) => s.id),
-  )
-  if (categories.some((c) => !ownSlotIds.has(c.mealSlotId))) {
-    return fail("Unknown meal slot.")
-  }
-
-  await db.$transaction(async (tx) => {
-    const incomingIds = categories.filter((c) => c.id).map((c) => c.id as string)
-    await tx.mealCategory.deleteMany({
-      where: { venueId, id: { notIn: incomingIds } },
-    })
-    for (const cat of categories) {
-      if (cat.id) {
-        await tx.mealCategory.updateMany({
-          where: { id: cat.id, venueId },
-          data: { name: cat.name, mealSlotId: cat.mealSlotId, order: cat.order },
-        })
-      } else {
-        await tx.mealCategory.create({
-          data: { venueId, name: cat.name, mealSlotId: cat.mealSlotId, order: cat.order },
-        })
-      }
-    }
-  })
-
-  revalidatePath(`/admin/dining/venues/${venueId}`)
-  revalidatePath(`/dining/${venueId}`)
-  return ok("Categories saved.")
-}
+// ── Meal Slots + Categories ────────────────────────────────────────────────────
 
 type SlotWithCats = {
   id?: string

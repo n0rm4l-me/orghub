@@ -263,14 +263,6 @@ export async function deleteSuggestion(id: string): Promise<ActionResult> {
   return ok("Saved.")
 }
 
-export async function updateAdminNote(id: string, note: string): Promise<ActionResult> {
-  await requireRole("EDITOR")
-  await db.suggestion.update({ where: { id }, data: { adminNote: note.trim() || null } })
-  REVALIDATE()
-  REVALIDATE_ADMIN()
-  return ok()
-}
-
 export async function addComment(suggestionId: string, body: string): Promise<ActionResult> {
   const user = await requireRole("VIEWER")
 

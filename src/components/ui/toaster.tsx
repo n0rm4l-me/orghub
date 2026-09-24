@@ -7,7 +7,7 @@ import { CheckCircle2, AlertCircle, Info, X } from "lucide-react"
  * Module-scoped manager so server-action callers can fire toasts without
  * threading context through every component.
  */
-export const toastManager = Toast.createToastManager()
+const toastManager = Toast.createToastManager()
 
 export const toast = {
   success: (title: string, description?: string) =>
