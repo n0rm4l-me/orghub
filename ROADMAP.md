@@ -494,28 +494,117 @@ Smaller items, independent of the design-unification phases above:
 
 ---
 
-## Dead-code and duplication audits (never completed)
+## Dead-code and duplication audits
 
-Two audits from the original 2026-09-01 pass died before finishing. Steps to
-reproduce are given so a future pass doesn't have to redesign the
-investigation; nothing here is a confirmed finding.
+Both pending audits from the original 2026-09-01 pass were completed
+2026-09-25. Findings and what was actually done follow; anything not marked
+FIXED is a documented decision, not an oversight.
 
-- **PENDING AUDIT: unused exports and duplicated logic.** The
-  ordered-CRUD-list pattern (named rows, up/down reorder, inline add, delete)
-  visibly repeats across `venue-tags-editor.tsx`, `nutrition-params-editor.tsx`,
-  and the section-handling inside `fixed-menu-editor.tsx` (categories-editor.tsx
-  and meal-slots-editor.tsx, the other two originally cited, were deleted this
-  session when their functionality was folded into `dish-list.tsx` and
-  `meal-structure-editor.tsx`). Quantify the remaining overlap; a shared
-  `OrderedListEditor` may or may not still be worth extracting for what's left.
-  Also check for duplicated type declarations (`Entry`, `ModifierGroup`, `Tag`,
-  `NutritionParam` shapes are redeclared inline in at least `entry-card.tsx`
-  and `fixed-menu-editor.tsx`) and unused exports across `src/lib/` and
-  `src/components/` (grep each exported symbol for import sites, excluding
-  Next.js framework exports like `default`/`GET`/`POST`/`middleware`).
-- **PENDING AUDIT: unused Prisma schema fields.** Never checked. Method: list
-  every field in `prisma/schema.prisma`, grep each name under `src/`, flag any
-  with zero reads or writes.
+### Unused exports and duplicated logic
+
+- **FIXED.** Deleted 2 whole dead files
+  ([src/components/ui/button.tsx](src/components/ui/button.tsx),
+  [src/components/ui/badge.tsx](src/components/ui/badge.tsx): zero imports of
+  either anywhere), 3 unused variants in otherwise-live files
+  (`AvatarBadge`/`AvatarGroup`/`AvatarGroupCount` from
+  [avatar.tsx](src/components/ui/avatar.tsx), `CardAction` from
+  [card.tsx](src/components/ui/card.tsx)), un-exported
+  [toaster.tsx](src/components/ui/toaster.tsx)'s `toastManager` (only used
+  inside its own file), and 2 dead server actions superseded by newer ones
+  that do the same job: `upsertCategories`
+  ([dining.ts](src/lib/actions/dining.ts), superseded by
+  `upsertSlotsAndCategories`) and `updateAdminNote`
+  ([suggestions.ts](src/lib/actions/suggestions.ts), superseded by
+  `updateSuggestionStatus`'s optional `adminNote` param). `upsertMealSlots`
+  (dining.ts) was *also* dead in production, but was the one still kept alive
+  by this same day's own new `actions.roles.test.ts`, added before this audit
+  ran; repointed that test at `upsertSlotsAndCategories` (which needs the
+  exact same auth + location-scoping) and deleted `upsertMealSlots` too.
+- **FIXED.** Consolidated 4 display-only shapes that were byte-for-byte
+  identical across 6+ files into
+  [src/lib/dining-types.ts](src/lib/dining-types.ts): `NutritionParam`,
+  `VenueTag` (was also spelled `Tag` in 2 files, same fields, picked one
+  name), and the `entry-card.tsx`/`fixed-menu-view.tsx` pair's `Entry`
+  (renamed `MenuEntry` to avoid a generic name)/`ModifierOption`/
+  `ModifierGroup`. Pure type change, verified by `tsc --noEmit` alone being a
+  complete correctness proof here (types are erased at runtime, so "compiles"
+  and "correct" are the same claim for this specific kind of edit, unlike
+  almost everything else in this file). Also ran `eslint`, the full test
+  suite, and `npx next build`.
+  **Deliberately left un-consolidated** (real, schema-backed drift, not
+  sloppiness): `dish-list.tsx`'s `ModifierOption`/`ModifierGroup` has no
+  `color` field, matching Prisma's `DishModifierOption` (no color column);
+  `fixed-menu-editor.tsx`'s adds `dishId`+`order` on top of the display
+  `Entry` because editors need to persist those. Merging either into the
+  shared type would mean adding a dead field to one side or stripping a real
+  one from the other. `week-menu-cell.tsx`'s own `EntryData` (no `id?`) vs.
+  `week-menu-grid.tsx`'s `EntryData` (has `id?`) despite the grid passing its
+  own `EntryData` into `WeekMenuCell` as that exact prop: compiles today only
+  because TS doesn't flag excess properties on a variable, only on a literal,
+  so `WeekMenuCell` has no type-safe way to read `entry.id` even though it's
+  present at runtime. Nothing currently needs it inside `WeekMenuCell`, so
+  left alone, but worth a look if that ever changes.
+- **NOT DONE, judgment call.** The ordered-CRUD-list pattern (named rows,
+  up/down reorder, inline add, delete) in `venue-tags-editor.tsx` and
+  `nutrition-params-editor.tsx` really does share ~40 near-identical lines
+  each (~28-31% of both files: `update`/`removeRow`/`moveRow`/the up-down
+  button JSX/the Add-Save footer, all rename-only diffs) out of ~130-145
+  total. A `useOrderedRows<T>` hook is a defensible extraction for just these
+  two. Didn't do it this pass: unlike the type consolidation above, a hook
+  extraction changes runtime control flow in live interactive admin editors,
+  and `preview_start` has been broken all session, so there'd be no way to
+  visually confirm reorder/add/delete still work afterward beyond code
+  review. Do this once visual verification is available again.
+  `fixed-menu-editor.tsx`'s section/entry handling looks similar at a glance
+  but isn't the same duplication: it reorders via drag-and-drop (not
+  up/down buttons), persists each mutation immediately through its own
+  dedicated action (not one batched "save all"), and nests two levels
+  (sections containing entries) instead of one flat list. Unifying it with
+  the other two would need an abstraction with escape hatches for all three
+  differences, a worse trade than the current duplication. If anything gets
+  extracted from this file, the better-scoped target is a `useDragReorder`
+  hook shared between its own section-drag and entry-drag blocks (currently
+  near-byte-identical to *each other*, not to the other two editors).
+
+### Unused Prisma schema fields
+
+- **OPEN, needs a product decision, not a refactor.** 6 fields have zero
+  reads or writes anywhere in `src/` (verified against `prisma/seed.ts` and
+  migrations too; there's no raw SQL in this codebase to hide a usage from
+  grep): `User.externalId`, `User.organizationId`, `Article.organizationId`
+  (+ its own index), `Page.organizationId`, `Venue.workingDays` (superseded
+  by the fully-wired `WeekMenu.closedDays`), and `SiteSettings.portalWidth`
+  (has a 3-preset doc comment and every sibling layout setting is wired
+  through `layout-form.tsx` → `saveLayout`; this one alone was never added to
+  that form). All five trace only to the `0000_baseline` migration, so
+  they've been dormant since the 2026-09-01 squash, not a recent regression.
+  Whoever stubbed in `organizationId` on 3 models was clearly heading toward
+  multi-tenancy and never got further: no mention of it anywhere in this
+  file, the README, or docs/. Deleting these is a schema migration on a live
+  database; decide intent first (is multi-tenancy still wanted? is
+  `portalWidth` a real feature to finish or a leftover?) rather than dropping
+  columns to tidy up.
+- **`MonthlyTopicHighlight`** (whole model: `weekLabel`, `image`, `name`,
+  `description`, `order`) is reachable dead code, not just an unused field:
+  the backend fully supports it (`upsertTopic()` in dining.ts creates/
+  updates/deletes highlight rows) but its only caller,
+  `topics-list.tsx`'s `TopicForm`, hardcodes `highlights: []` on every save,
+  and no portal page renders `topic.highlights` (the actual "Announcements"
+  UI doesn't reference highlights at all; `/topics` routes now just redirect
+  there). No row can ever be created through the live UI. Same "decide
+  intent, then migrate" caveat as above applies before dropping the model.
+- **Needs a look, lower confidence:** `Venue.orderingEnabled` is unused but
+  is almost certainly reserved for the dining-cart checkout feature this
+  file's Feature Gaps section already documents as *decided-to-defer*, not
+  an unrelated dead flag: treat as reserved, not a deletion candidate, unless
+  the cart's fate is being decided too. `AuditLog.userAgent` is written on
+  every audit entry but never displayed (its sibling `ip` *is* shown in the
+  admin audit page); could be an oversight (add a UI column) or intentional
+  "log more than we show" hygiene. `Session`/`VerificationToken` (NextAuth's
+  own models) look structurally unreachable given this app uses JWT sessions
+  and only Credentials/Okta providers, but `@auth/prisma-adapter` may still
+  need the delegate to exist for its TS contract even if unused at runtime;
+  don't remove either without checking the adapter still compiles.
 
 ---
 
