@@ -478,11 +478,11 @@ Everything else, roughly ordered by blast radius:
   instead of one `Promise.all` over every user (which would just get
   rate-limited by Gravatar) or one-at-a-time. Verified with `tsc --noEmit`,
   `eslint`, and a full `npx next build`.
-- **PARTIAL** image sizing: `week-menu-cell`, the feed thumbnail, and the
-  media grid now all pass a `?w=` width param. The dining announcements page's
-  banner image still doesn't
-  ([src/app/(portal)/dining/[id]/announcements/page.tsx](<src/app/(portal)/dining/[id]/announcements/page.tsx>),
-  around line 57).
+- **FIXED 2026-09-25.** Image sizing: `week-menu-cell`, the feed thumbnail,
+  the media grid, and now the dining announcements page's banner image
+  (`?w=800`, matching the feed's featured-card image, both are `w-full`
+  hero images of a similar scale inside a comparable max-width container)
+  all pass a `?w=` width param.
 - **PARTIAL** [src/app/(portal)/articles/[id]/page.tsx:288-301](<src/app/(portal)/articles/[id]/page.tsx#L288>)
   still duplicates `PortalPageLayout`'s sidebar branching by hand instead of
   using the component, which now has 3 other consumers and wraps sidebars in

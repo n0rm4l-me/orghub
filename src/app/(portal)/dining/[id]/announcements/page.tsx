@@ -55,7 +55,7 @@ export default async function DiningAnnouncementsPage({ params }: Props) {
               <div className={`relative mb-5 w-full overflow-hidden rounded-2xl bg-gradient-to-br from-brand/20 to-brand/5 ${index === 0 ? "aspect-video" : "aspect-[21/9]"}`}>
                 {topic.bannerImage ? (
                   <img
-                    src={topic.bannerImage}
+                    src={`${topic.bannerImage}?w=800`}
                     alt={topic.title}
                     className="h-full w-full object-cover"
                   />
