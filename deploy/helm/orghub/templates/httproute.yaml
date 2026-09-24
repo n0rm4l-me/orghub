@@ -1,4 +1,5 @@
-{{- if .Values.gateway.enabled }}
+{{- $useShared := and (not .Values.gateway.enabled) .Values.gateway.parentName }}
+{{- if or .Values.gateway.enabled $useShared }}
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -8,8 +9,16 @@ metadata:
     {{- include "orghub.labels" . | nindent 4 }}
 spec:
   parentRefs:
+    {{- if $useShared }}
+    - name: {{ .Values.gateway.parentName }}
+      namespace: {{ .Values.gateway.parentNamespace }}
+      {{- if .Values.gateway.parentSectionName }}
+      sectionName: {{ .Values.gateway.parentSectionName }}
+      {{- end }}
+    {{- else }}
     - name: {{ include "orghub.name" . }}
       namespace: {{ .Release.Namespace }}
+    {{- end }}
   {{- if .Values.gateway.hostname }}
   hostnames:
     - {{ .Values.gateway.hostname | quote }}

@@ -1,0 +1,25 @@
+steps:
+  # Build migrator stage
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --target=migrator
+      - -t
+      - $_IMAGE:$_TAG-migrator
+      - .
+
+  # Build runner stage (reuses layers cached from migrator build above)
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - $_IMAGE:$_TAG
+      - .
+
+images:
+  - $_IMAGE:$_TAG-migrator
+  - $_IMAGE:$_TAG
+
+substitutions:
+  _IMAGE: asia-docker.pkg.dev/onepoint-paas-tardis-4492/docker-paas-tardis-asia-1/orghub
+  _TAG: dev

@@ -3,6 +3,9 @@ image:
   # Required: an immutable tag, e.g. the git SHA. Intentionally empty so a deploy that
   # forgets it fails at template time instead of quietly pulling a moving `latest`.
   tag: ""
+  # Optional: tag for the migrator (prisma migrate) image built from the `migrator`
+  # Dockerfile stage. Defaults to "<tag>-migrator" when not set.
+  migratorTag: ""
   # Safe with immutable tags, and avoids a re-pull on every pod restart.
   pullPolicy: IfNotPresent
 
@@ -68,10 +71,26 @@ gateway:
   gatewayClass: gke-l7-regional-external-managed
   # Optional: set a hostname for the HTTPRoute match. Leave empty to match all traffic.
   hostname: ""
+  # To attach the HTTPRoute to an existing shared Gateway instead of creating a new one:
+  # set enabled: false and fill parentName + parentNamespace + parentSectionName.
+  parentName: ""
+  parentNamespace: ""
+  parentSectionName: ""
+
+s3:
+  # Set bucket to enable media uploads (S3-compatible: GCS, MinIO, R2, AWS)
+  bucket: ""
+  endpoint: "https://storage.googleapis.com"
+  region: "auto"
+  publicUrl: ""
+  # Access key and secret are passed via --set s3.accessKey / s3.secretKey and stored in the secret.
+  accessKey: ""
+  secretKey: ""
 
 resources:
   requests:
     cpu: 250m
     memory: 512Mi
   limits:
+    cpu: "1"
     memory: 1Gi

@@ -20,11 +20,18 @@ spec:
         {{- include "orghub.labels" . | nindent 8 }}
         app.kubernetes.io/component: app
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       initContainers:
         - name: migrate
-          image: {{ include "orghub.image" . }}
+          image: {{ include "orghub.migratorImage" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["node_modules/.bin/prisma", "migrate", "deploy"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           env:
             # Direct, not pooled: `migrate deploy` takes a session-level advisory lock and
             # needs the same backend for the whole run, which transaction pooling cannot
@@ -34,10 +41,20 @@ spec:
                 secretKeyRef:
                   name: {{ include "orghub.name" . }}
                   key: database-url
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
       containers:
         - name: orghub
           image: {{ include "orghub.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1001
+            capabilities:
+              drop: ["ALL"]
           ports:
             - name: http
               containerPort: 3000
@@ -61,6 +78,26 @@ spec:
             - name: AUTH_URL
               value: {{ .Values.app.baseUrl | quote }}
             {{- end }}
+            {{- if .Values.s3.bucket }}
+            - name: S3_ENDPOINT
+              value: {{ .Values.s3.endpoint | quote }}
+            - name: S3_REGION
+              value: {{ .Values.s3.region | quote }}
+            - name: S3_BUCKET
+              value: {{ .Values.s3.bucket | quote }}
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "orghub.name" . }}
+                  key: s3-access-key
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "orghub.name" . }}
+                  key: s3-secret-key
+            - name: NEXT_PUBLIC_S3_PUBLIC_URL
+              value: {{ .Values.s3.publicUrl | quote }}
+            {{- end }}
           readinessProbe:
             httpGet:
               path: /api/health
@@ -75,5 +112,15 @@ spec:
             initialDelaySeconds: 30
             periodSeconds: 30
             failureThreshold: 3
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: next-cache
+              mountPath: /app/.next/cache
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: next-cache
+          emptyDir: {}
