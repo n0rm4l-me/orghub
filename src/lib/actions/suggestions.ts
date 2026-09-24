@@ -2,6 +2,8 @@
 
 import { db } from "@/lib/db"
 import { requireRole, getCurrentUser } from "@/lib/rbac"
+import { getSettings } from "@/lib/settings"
+import { parseModules } from "@/lib/modules"
 import { createNotification } from "@/lib/notifications"
 import { revalidatePath } from "next/cache"
 import { type ActionResult, ok, okWith, fail } from "@/lib/actions/types"
@@ -154,6 +156,9 @@ export async function submitSuggestion(data: {
 }): Promise<ActionResult<{ id: string }>> {
   const user = await requireRole("VIEWER")
 
+  const settings = await getSettings()
+  if (!parseModules(settings.enabledModules).has("suggestions")) return fail("Suggestions module is disabled.")
+
   const title = data.title.trim()
   const body  = data.body.trim()
 
@@ -183,6 +188,9 @@ export async function submitSuggestion(data: {
 
 export async function toggleVote(suggestionId: string): Promise<ActionResult<{ voted: boolean; count: number }>> {
   const user = await requireRole("VIEWER")
+
+  const settings = await getSettings()
+  if (!parseModules(settings.enabledModules).has("suggestions")) return fail("Suggestions module is disabled.")
 
   const existing = await db.suggestionVote.findUnique({
     where: { suggestionId_userId: { suggestionId, userId: user.id } },
@@ -265,6 +273,9 @@ export async function updateAdminNote(id: string, note: string): Promise<ActionR
 
 export async function addComment(suggestionId: string, body: string): Promise<ActionResult> {
   const user = await requireRole("VIEWER")
+
+  const settings = await getSettings()
+  if (!parseModules(settings.enabledModules).has("suggestions")) return fail("Suggestions module is disabled.")
 
   const trimmed = body.trim()
   if (!trimmed || trimmed.length > 2000) return fail("Comment must be 1–2000 characters.")

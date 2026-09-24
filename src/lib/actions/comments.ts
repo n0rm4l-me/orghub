@@ -47,7 +47,7 @@ export async function addComment(
       `${user.name ?? "Someone"} replied to your comment`,
       snippet,
       href,
-    )
+    ).catch(() => {})
   } else if (!parentId && article.authorId !== user.id) {
     await createNotification(
       article.authorId,
@@ -55,7 +55,7 @@ export async function addComment(
       `${user.name ?? "Someone"} commented on "${article.title}"`,
       snippet,
       href,
-    )
+    ).catch(() => {})
   }
 
   revalidatePath(href)

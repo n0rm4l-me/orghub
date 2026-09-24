@@ -1,6 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
+import { Prisma } from "@prisma/client"
 import { requireRole, getCurrentUser } from "@/lib/rbac"
 import { getSettings } from "@/lib/settings"
 import { parseModules } from "@/lib/modules"
@@ -137,7 +138,7 @@ export async function sendKudos(formData: FormData): Promise<ActionResult> {
       select: { from: { select: { name: true, email: true } } },
     })
     return { kudos }
-  })
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable })
   if ("error" in txResult) return fail(txResult.error as string)
   const kudos = txResult.kudos
 
@@ -195,7 +196,7 @@ export async function redeemKudos(amount: number, typeId?: string): Promise<Acti
       data: { userId: user.id, amount, status: "PENDING", typeId: resolvedTypeId },
     })
     return { redemption }
-  })
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable })
   if ("error" in txResult) return fail(txResult.error as string)
   const redemption = txResult.redemption
 

@@ -24,59 +24,15 @@ listed in "Recently fixed" instead of repeated here as open work.
 
 ## Critical: security and correctness
 
-- **OPEN. Mobile API JWTs are signed with a hardcoded fallback secret.**
-  [src/lib/mobile-auth.ts:5](src/lib/mobile-auth.ts#L5) reads
-  `process.env.NEXTAUTH_SECRET ?? "dev-secret"`. Nothing in this repo sets
-  `NEXTAUTH_SECRET`, anywhere: not `.env.example`, not `docker-compose.yml`, not
-  the Helm chart. The app-wide secret is `AUTH_SECRET` (Auth.js v5), a
-  different variable. So in every real deployment, mobile tokens are signed
-  and verified with the literal string `"dev-secret"`, a value visible to
-  anyone reading this public AGPL repo. Anyone can forge a valid 30-day JWT for
-  any `userId` (including an admin) with `jose`'s `SignJWT` and hit any
-  `getMobileUser`-gated route. Fix: read `AUTH_SECRET` instead (matches the
-  rest of the app), or explicitly require a separate `MOBILE_JWT_SECRET` and
-  fail startup if it's unset. Do not ship a silent fallback for an auth secret.
-  Verify with: sign a token using `"dev-secret"` and `jose`, confirm
-  `getMobileUser` accepts it against a live deployment.
-
-- **OPEN. Kudos send/redeem has a budget-overspend race.**
-  [src/lib/actions/kudos.ts:130-135](src/lib/actions/kudos.ts#L130) reads
-  `spentSoFar` then creates the record in two separate statements, same
-  pattern in `redeemKudos`. Two concurrent requests both read the pre-spend
-  balance and both pass the check. Fix: wrap the read+write in
-  `db.$transaction` with a row lock, or enforce the budget as a DB constraint.
-  Verify with: fire two concurrent `sendKudos` calls near the budget ceiling,
-  confirm the sum can't exceed it.
-
-- **OPEN. Kubernetes liveness probe is not decoupled from the DB.**
-  [deploy/helm/orghub/templates/deployment.yaml:101-115](deploy/helm/orghub/templates/deployment.yaml#L101)
-  points both `readinessProbe` and `livenessProbe` at `/api/health`, which
-  returns 503 when Postgres is unreachable. A transient DB outage kills every
-  replica at once instead of just failing readiness.
-  [src/app/api/health/live/route.ts](src/app/api/health/live/route.ts) already
-  exists and is unconditional, it's just never wired into the chart. Fix:
-  point `livenessProbe` at `/api/health/live`, keep `readinessProbe` on
-  `/api/health`, add a `startupProbe`.
-
-- **OPEN. Module-enabled check is inconsistent across server actions.**
-  Kudos actions check `parseModules(settings.enabledModules).has("kudos")`
-  before mutating. Polls and Suggestions don't:
-  [src/lib/actions/polls.ts:191](src/lib/actions/polls.ts#L191) (`castVote`)
-  and [src/lib/actions/suggestions.ts:149,184,266](src/lib/actions/suggestions.ts#L149)
-  (`submitSuggestion`, `toggleVote`, `addComment`) rely solely on the portal
-  page's `notFound()` gate, which a direct server-action call bypasses. Fix:
-  add the same check the read paths already use (see
-  `getPollForEmbed`, polls.ts:15) to all four write actions.
-
-- **OPEN. A failed notification write can abort a comment submission.**
-  [src/lib/actions/comments.ts:44](src/lib/actions/comments.ts#L44) calls
-  `createNotification(...)` unwrapped, unlike the equivalent calls in
-  `kudos.ts:145` and `suggestions.ts:225,286` which are `.catch(() => {})`.
-  `createNotification` itself
-  ([src/lib/notifications.ts:11](src/lib/notifications.ts#L11)) has no
-  internal try/catch either. A DB hiccup on the notification insert currently
-  rolls back a comment that already saved. Fix: wrap the call the same way
-  the other two action files do.
+All five items originally here were fixed and verified on 2026-09-24 (real
+JWT forgery attempt tested and rejected; kudos send re-tested end to end with
+a second demo user; polls/suggestions actions re-tested end to end): mobile
+JWTs now sign with `AUTH_SECRET` instead of a hardcoded fallback; kudos
+send/redeem now run at Serializable isolation; the Helm liveness probe now
+points at `/api/health/live` with a `startupProbe` added; `castVote`,
+`submitSuggestion`, `toggleVote`, and `addComment` all now check the
+module-enabled flag; the comment-reply notification call is now
+`.catch()`-wrapped. See commit history for specifics.
 
 ---
 

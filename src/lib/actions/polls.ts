@@ -192,6 +192,9 @@ export async function castVote(pollId: string, optionIds: string[]): Promise<Act
   const user = await getCurrentUser()
   if (!user) return fail("You must be signed in to vote.")
 
+  const settings = await getSettings()
+  if (!parseModules(settings.enabledModules).has("polls")) return fail("Polls module is disabled.")
+
   if (!optionIds.length) return fail("Select at least one option.")
 
   const poll = await db.poll.findUnique({

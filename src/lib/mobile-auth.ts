@@ -2,7 +2,7 @@ import { SignJWT, jwtVerify } from "jose"
 import { db } from "@/lib/db"
 import type { NextRequest } from "next/server"
 
-const secret = () => new TextEncoder().encode(process.env.NEXTAUTH_SECRET ?? "dev-secret")
+const secret = () => new TextEncoder().encode(process.env.AUTH_SECRET)
 
 export async function signMobileToken(userId: string): Promise<string> {
   return new SignJWT({ sub: userId })
