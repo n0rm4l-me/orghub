@@ -49,7 +49,7 @@ export function RedeemableBalance({ available, types }: Props) {
 
       <Dialog.Portal>
         <Dialog.Backdrop
-          className="fixed inset-0 z-[90] bg-gray-900/25 backdrop-blur-[2px] transition-opacity duration-150
+          className="fixed inset-0 z-[90] bg-black/25 backdrop-blur-[2px] transition-opacity duration-150
             data-[ending-style]:opacity-0 data-[starting-style]:opacity-0"
         />
         <Dialog.Popup

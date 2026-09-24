@@ -31,7 +31,7 @@ export function CartWidget({ currency }: { currency: string }) {
 
       {open && (
         <div
-          className="fixed inset-0 z-[49] bg-black/40"
+          className="fixed inset-0 z-[49] bg-black/25 backdrop-blur-[2px]"
           onClick={() => setOpen(false)}
         />
       )}

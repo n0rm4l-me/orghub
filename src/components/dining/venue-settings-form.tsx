@@ -122,7 +122,7 @@ export function VenueSettingsForm({ venue }: { venue: Venue }) {
         </div>
 
         {deleteOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setDeleteOpen(false)}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 backdrop-blur-[2px]" onClick={() => setDeleteOpen(false)}>
             <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
               <h2 className="mb-2 text-sm font-semibold text-gray-900">Delete venue?</h2>
               <p className="mb-5 text-sm text-gray-500">

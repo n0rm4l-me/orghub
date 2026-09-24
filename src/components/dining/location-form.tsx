@@ -83,7 +83,7 @@ export function LocationForm({ location, trigger }: Props) {
       <span onClick={handleOpen}>{trigger}</span>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={handleClose}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 backdrop-blur-[2px]" onClick={handleClose}>
           <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <h2 className="mb-4 text-sm font-semibold text-gray-900">
               {location ? "Edit location" : "New location"}

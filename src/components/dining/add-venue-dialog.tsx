@@ -47,7 +47,7 @@ export function AddVenueDialog({ locationId }: { locationId: string }) {
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={handleClose}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 backdrop-blur-[2px] p-4" onClick={handleClose}>
           <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl dark:bg-gray-900" onClick={(e) => e.stopPropagation()}>
             <h2 className="mb-4 text-sm font-semibold text-gray-900 dark:text-gray-100">New venue</h2>
 
