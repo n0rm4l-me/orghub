@@ -14,6 +14,7 @@ Self-hosted employee portal for teams that want to own their intranet. News, eve
 - [Deployment](#deployment)
 - [Stack](#stack)
 - [Roadmap](#roadmap)
+- [Contributing](#contributing)
 - [License](#license)
 
 ## What's included
@@ -120,6 +121,10 @@ Next.js 16, Prisma 7, PostgreSQL, Auth.js v5, Tiptap v3, Tailwind CSS v4.
 ## Roadmap
 
 Known gaps, in-progress work, and planned improvements are tracked in [ROADMAP.md](ROADMAP.md).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local conventions and what to run before opening a PR.
 
 ## License
 

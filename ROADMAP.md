@@ -517,18 +517,20 @@ Smaller items, independent of the design-unification phases above:
 
 ## Documentation
 
-- **OPEN.** No `CONTRIBUTING.md` or `CHANGELOG.md`. For an AGPL project
-  accepting outside deployments, a documented upgrade path (how to run
-  `prisma migrate deploy` against a live instance, given history was squashed
-  to `0000_baseline` on 2026-09-01) matters more than either.
-- **OPEN.** README doesn't mention the 13-file Helm chart under `deploy/`,
-  pgbouncer, backup/restore, or how to upgrade an existing deployment.
-- **OPEN.** [docs/adding-a-module.md:76](docs/adding-a-module.md#L76) tells a
-  contributor to "add action strings to audit.ts" but doesn't say to actually
-  call `logAudit` at each mutation. Kudos and dining now call it in several
-  places (see "Recently fixed") but not comprehensively, likely for exactly
-  this reason: the doc never states it as a required step. Rewrite it to
-  require both.
+- **FIXED 2026-09-25.** Added [CONTRIBUTING.md](CONTRIBUTING.md) (setup
+  pointer, the 3 checks to run before a PR, module-adding pointer,
+  conventions), linked from README. Still no `CHANGELOG.md`; lower priority,
+  no tagged releases exist yet for one to track against.
+- **FIXED 2026-09-25.** README now has a
+  [Deployment section](README.md#deployment) covering the Helm chart, how to
+  install/upgrade, that migrations run automatically, and an honest note that
+  backup/restore isn't implemented (no snapshot mechanism exists for the
+  bundled Postgres `StatefulSet`).
+- **FIXED 2026-09-25.** [docs/adding-a-module.md](docs/adding-a-module.md)'s
+  audit-log section now explicitly requires both steps: add the action
+  string, *and* actually call `logAudit` at the mutation site (with an
+  example). It previously only said the first, which is likely why kudos and
+  dining's own audit coverage is inconsistent (see "Recently fixed").
 
 ---
 
