@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Loader2, Building2, Coffee, ChefHat } from "lucide-react"
 import { createVenue } from "@/lib/actions/dining"
-import { toast } from "@/components/ui/toaster"
+import { useAction } from "@/lib/use-action"
 import { inputClass } from "@/components/ui/field"
 
 type VenueType = "CAFETERIA" | "CAFE" | "RESTAURANT"
@@ -19,24 +19,21 @@ export function AddVenueDialog({ locationId }: { locationId: string }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [venueType, setVenueType] = useState<VenueType>("CAFETERIA")
-  const [pending, start] = useTransition()
 
   function handleClose() { setOpen(false); setVenueType("CAFETERIA") }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const { run, pending } = useAction(createVenue, {
+    onSuccess: () => { handleClose(); router.refresh() },
+  })
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
     fd.set("locationId", locationId)
     fd.set("venueType", venueType)
     fd.set("weeklyMenuEnabled", "true")
     fd.set("topicsEnabled", "true")
-    start(async () => {
-      const res = await createVenue(fd)
-      if (!res.ok) { toast.error(res.error); return }
-      toast.success(res.message ?? "Venue created.")
-      handleClose()
-      router.refresh()
-    })
+    run(fd)
   }
 
   return (

@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Trash2, ChevronUp, ChevronDown, Loader2 } from "lucide-react"
 import { upsertVenueTags } from "@/lib/actions/dining"
+import { useAction } from "@/lib/use-action"
 import { toast } from "@/components/ui/toaster"
 
 type Tag = { id?: string; name: string; color: string; bgColor: string; order: number }
@@ -32,7 +33,10 @@ export function VenueTagsEditor({
 }) {
   const router = useRouter()
   const [tags, setTags] = useState<Tag[]>(initialTags)
-  const [pending, start] = useTransition()
+  const { run, pending } = useAction(
+    (t: Tag[]) => upsertVenueTags(venueId, t),
+    { onSuccess: () => router.refresh() }
+  )
 
   function update(i: number, patch: Partial<Tag>) {
     setTags((ts) => ts.map((t, j) => (j === i ? { ...t, ...patch } : t)))
@@ -60,33 +64,28 @@ export function VenueTagsEditor({
     for (const t of tags) {
       if (!t.name.trim()) { toast.error("All tags need a name."); return }
     }
-    start(async () => {
-      const res = await upsertVenueTags(venueId, tags)
-      if (!res.ok) { toast.error(res.error); return }
-      toast.success(res.message ?? "Saved.")
-      router.refresh()
-    })
+    run(tags)
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white px-5 py-5">
+    <div className="rounded-xl border border-gray-200 bg-white px-5 py-5 dark:border-gray-700 dark:bg-gray-900">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-900">Tags</h2>
-        <p className="text-xs text-gray-400">Custom dish tags (Halal, Vegan, etc.)</p>
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Tags</h2>
+        <p className="text-xs text-gray-400 dark:text-gray-500">Custom dish tags (Halal, Vegan, etc.)</p>
       </div>
 
-      {tags.length === 0 && <p className="mb-4 text-sm text-gray-400">No tags yet.</p>}
+      {tags.length === 0 && <p className="mb-4 text-sm text-gray-400 dark:text-gray-500">No tags yet.</p>}
 
       <div className="space-y-2">
         {tags.map((tag, i) => (
-          <div key={i} className="flex items-center gap-2.5 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2.5">
+          <div key={i} className="flex items-center gap-2.5 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2.5 dark:border-gray-700 dark:bg-gray-800/60">
             <div className="flex flex-col gap-0.5">
-              <button type="button" onClick={() => moveRow(i, "up")} disabled={i === 0}
-                className="rounded p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-20">
+              <button type="button" onClick={() => moveRow(i, "up")} disabled={i === 0} aria-label="Move up"
+                className="rounded p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-20 dark:text-gray-500">
                 <ChevronUp className="size-3" />
               </button>
-              <button type="button" onClick={() => moveRow(i, "down")} disabled={i === tags.length - 1}
-                className="rounded p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-20">
+              <button type="button" onClick={() => moveRow(i, "down")} disabled={i === tags.length - 1} aria-label="Move down"
+                className="rounded p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-20 dark:text-gray-500">
                 <ChevronDown className="size-3" />
               </button>
             </div>
@@ -95,7 +94,7 @@ export function VenueTagsEditor({
               value={tag.name}
               onChange={(e) => update(i, { name: e.target.value })}
               placeholder="Tag name"
-              className="w-36 rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm text-gray-900 outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+              className="w-36 rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm text-gray-900 outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
             />
 
             <div className="flex gap-1.5">
@@ -121,8 +120,8 @@ export function VenueTagsEditor({
               {tag.name || "Preview"}
             </span>
 
-            <button type="button" onClick={() => removeRow(i)}
-              className="ml-auto shrink-0 rounded p-1 text-gray-300 hover:text-red-500">
+            <button type="button" onClick={() => removeRow(i)} aria-label="Remove tag"
+              className="ml-auto shrink-0 rounded p-1 text-gray-300 hover:text-red-500 dark:text-gray-600">
               <Trash2 className="size-3.5" />
             </button>
           </div>

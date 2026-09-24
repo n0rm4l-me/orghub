@@ -1,15 +1,16 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Trash2, ChevronUp, ChevronDown, Loader2 } from "lucide-react"
 import { upsertSlotsAndCategories } from "@/lib/actions/dining"
+import { useAction } from "@/lib/use-action"
 import { toast } from "@/components/ui/toaster"
 
 type CatRow = { id?: string; name: string }
 type SlotRow = { id?: string; name: string; timeStart: string; timeEnd: string; cats: CatRow[] }
 
-const inputCls = "rounded-lg border border-gray-200 px-3 py-2 text-base sm:text-sm text-gray-900 outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+const inputCls = "rounded-lg border border-gray-200 px-3 py-2 text-base sm:text-sm text-gray-900 outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
 
 export function MealStructureEditor({
   venueId,
@@ -21,7 +22,6 @@ export function MealStructureEditor({
   initialCategories: { id: string; name: string; mealSlotId: string; order: number }[]
 }) {
   const router = useRouter()
-  const [pending, start] = useTransition()
 
   const [slots, setSlots] = useState<SlotRow[]>(() =>
     [...initialSlots].sort((a, b) => a.order - b.order).map((s) => ({
@@ -85,17 +85,11 @@ export function MealStructureEditor({
     }))
   }
 
-  function handleSave() {
-    for (const s of slots) {
-      if (!s.name.trim()) { toast.error("All slots need a name."); return }
-      for (const c of s.cats) {
-        if (!c.name.trim()) { toast.error("All categories need a name."); return }
-      }
-    }
-    start(async () => {
-      const res = await upsertSlotsAndCategories(
+  const { run, pending } = useAction(
+    (rows: SlotRow[]) =>
+      upsertSlotsAndCategories(
         venueId,
-        slots.map((s, i) => ({
+        rows.map((s, i) => ({
           id: s.id,
           name: s.name.trim(),
           timeStart: s.timeStart || null,
@@ -103,36 +97,43 @@ export function MealStructureEditor({
           order: i,
           categories: s.cats.map((c) => ({ id: c.id, name: c.name.trim() })),
         }))
-      )
-      if (!res.ok) { toast.error(res.error); return }
-      toast.success(res.message ?? "Saved.")
-      router.refresh()
-    })
+      ),
+    { onSuccess: () => router.refresh() }
+  )
+
+  function handleSave() {
+    for (const s of slots) {
+      if (!s.name.trim()) { toast.error("All slots need a name."); return }
+      for (const c of s.cats) {
+        if (!c.name.trim()) { toast.error("All categories need a name."); return }
+      }
+    }
+    run(slots)
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white px-5 py-5">
+    <div className="rounded-xl border border-gray-200 bg-white px-5 py-5 dark:border-gray-700 dark:bg-gray-900">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-900">Meal slots &amp; categories</h2>
-        <p className="text-xs text-gray-400">Slots define time periods; categories are rows in the menu grid</p>
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Meal slots &amp; categories</h2>
+        <p className="text-xs text-gray-400 dark:text-gray-500">Slots define time periods; categories are rows in the menu grid</p>
       </div>
 
       {slots.length === 0 && (
-        <p className="mb-4 text-sm text-gray-400">No slots yet.</p>
+        <p className="mb-4 text-sm text-gray-400 dark:text-gray-500">No slots yet.</p>
       )}
 
       <div className="space-y-3">
         {slots.map((slot, si) => (
-          <div key={si} className="rounded-lg border border-gray-100 bg-gray-50">
+          <div key={si} className="rounded-lg border border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/60">
             {/* Slot header row */}
-            <div className="flex items-center gap-2 px-3 py-2.5">
+            <div className="flex flex-wrap items-center gap-2 px-3 py-2.5">
               <div className="flex flex-col gap-0.5">
-                <button type="button" onClick={() => moveSlot(si, "up")} disabled={si === 0}
-                  className="rounded p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-20">
+                <button type="button" onClick={() => moveSlot(si, "up")} disabled={si === 0} aria-label="Move up"
+                  className="rounded p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-20 dark:text-gray-500">
                   <ChevronUp className="size-3.5" />
                 </button>
-                <button type="button" onClick={() => moveSlot(si, "down")} disabled={si === slots.length - 1}
-                  className="rounded p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-20">
+                <button type="button" onClick={() => moveSlot(si, "down")} disabled={si === slots.length - 1} aria-label="Move down"
+                  className="rounded p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-20 dark:text-gray-500">
                   <ChevronDown className="size-3.5" />
                 </button>
               </div>
@@ -140,40 +141,42 @@ export function MealStructureEditor({
                 value={slot.name}
                 onChange={(e) => updateSlot(si, { name: e.target.value })}
                 placeholder="Slot name"
-                className={inputCls + " flex-1 font-medium"}
+                className={inputCls + " min-w-[140px] flex-1 font-medium"}
               />
-              <input
-                value={slot.timeStart}
-                onChange={(e) => updateSlot(si, { timeStart: e.target.value })}
-                placeholder="07:30"
-                className={inputCls + " w-20"}
-              />
-              <span className="text-xs text-gray-400">–</span>
-              <input
-                value={slot.timeEnd}
-                onChange={(e) => updateSlot(si, { timeEnd: e.target.value })}
-                placeholder="08:30"
-                className={inputCls + " w-20"}
-              />
-              <button type="button" onClick={() => removeSlot(si)}
-                className="shrink-0 rounded p-1 text-gray-300 hover:text-red-500">
-                <Trash2 className="size-3.5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <input
+                  value={slot.timeStart}
+                  onChange={(e) => updateSlot(si, { timeStart: e.target.value })}
+                  placeholder="07:30"
+                  className={inputCls + " w-20"}
+                />
+                <span className="text-xs text-gray-400 dark:text-gray-500">–</span>
+                <input
+                  value={slot.timeEnd}
+                  onChange={(e) => updateSlot(si, { timeEnd: e.target.value })}
+                  placeholder="08:30"
+                  className={inputCls + " w-20"}
+                />
+                <button type="button" onClick={() => removeSlot(si)} aria-label="Remove slot"
+                  className="shrink-0 rounded p-1 text-gray-300 hover:text-red-500 dark:text-gray-600">
+                  <Trash2 className="size-3.5" />
+                </button>
+              </div>
             </div>
 
             {/* Categories indented under slot */}
             {(slot.cats.length > 0 || true) && (
-              <div className="border-t border-gray-100 px-3 pb-2.5 pt-2">
+              <div className="border-t border-gray-100 px-3 pb-2.5 pt-2 dark:border-gray-800">
                 <div className="space-y-1.5">
                   {slot.cats.map((cat, ci) => (
                     <div key={ci} className="flex items-center gap-2 pl-6">
                       <div className="flex flex-col gap-0.5">
-                        <button type="button" onClick={() => moveCat(si, ci, "up")} disabled={ci === 0}
-                          className="rounded p-0.5 text-gray-300 hover:text-gray-500 disabled:opacity-20">
+                        <button type="button" onClick={() => moveCat(si, ci, "up")} disabled={ci === 0} aria-label="Move up"
+                          className="rounded p-0.5 text-gray-300 hover:text-gray-500 disabled:opacity-20 dark:text-gray-600">
                           <ChevronUp className="size-3" />
                         </button>
-                        <button type="button" onClick={() => moveCat(si, ci, "down")} disabled={ci === slot.cats.length - 1}
-                          className="rounded p-0.5 text-gray-300 hover:text-gray-500 disabled:opacity-20">
+                        <button type="button" onClick={() => moveCat(si, ci, "down")} disabled={ci === slot.cats.length - 1} aria-label="Move down"
+                          className="rounded p-0.5 text-gray-300 hover:text-gray-500 disabled:opacity-20 dark:text-gray-600">
                           <ChevronDown className="size-3" />
                         </button>
                       </div>
@@ -183,8 +186,8 @@ export function MealStructureEditor({
                         placeholder="Category name"
                         className={inputCls + " flex-1 text-xs py-1.5"}
                       />
-                      <button type="button" onClick={() => removeCat(si, ci)}
-                        className="shrink-0 rounded p-1 text-gray-200 hover:text-red-500">
+                      <button type="button" onClick={() => removeCat(si, ci)} aria-label="Remove category"
+                        className="shrink-0 rounded p-1 text-gray-200 hover:text-red-500 dark:text-gray-700">
                         <Trash2 className="size-3" />
                       </button>
                     </div>

@@ -1,14 +1,17 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { Plus, Loader2, Pencil, Trash2, X, Check, ChevronDown, ChevronUp, UtensilsCrossed } from "lucide-react"
 import { formatPrice, getCurrencySymbol } from "@/lib/format-price"
 import { createDish, updateDish, deleteDish, saveDishModifiers } from "@/lib/actions/dining"
-import { toast } from "@/components/ui/toaster"
+import { useAction } from "@/lib/use-action"
 import { MediaPickerField } from "@/components/media-picker"
 import { inputClass } from "@/components/ui/field"
 import { SafeImg } from "@/components/dining/safe-img"
+import { EmptyState } from "@/components/ui/empty-state"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { ok, type ActionResult } from "@/lib/actions/types"
 
 type NutritionParam = { id: string; name: string; unit: string; featured: boolean }
 type VenueTag = { id: string; name: string; color: string; bgColor: string }
@@ -59,7 +62,7 @@ function ModifierGroupCard({
           <input type="checkbox" checked={group.multiSelect} onChange={(e) => onChange({ ...group, multiSelect: e.target.checked })} className="rounded" />
           Multi
         </label>
-        <button type="button" onClick={onDelete} className="text-red-400 hover:text-red-600"><X className="size-3.5" /></button>
+        <button type="button" onClick={onDelete} aria-label="Remove modifier group" className="text-red-400 hover:text-red-600"><X className="size-3.5" /></button>
       </div>
       <div className="space-y-1.5">
         {group.options.map((opt, i) => (
@@ -80,12 +83,13 @@ function ModifierGroupCard({
             <button
               type="button"
               title="Default"
+              aria-label={opt.isDefault ? "Unset as default" : "Set as default"}
               onClick={() => updateOpt(i, { isDefault: !opt.isDefault })}
               className={`size-5 rounded-full border text-xs transition ${opt.isDefault ? "border-brand bg-brand text-white" : "border-gray-300 text-gray-400 hover:border-brand"}`}
             >
               <Check className="mx-auto size-3" />
             </button>
-            <button type="button" onClick={() => onChange({ ...group, options: group.options.filter((_, j) => j !== i).map((o, j) => ({ ...o, order: j })) })} className="text-gray-400 hover:text-red-500">
+            <button type="button" aria-label="Remove option" onClick={() => onChange({ ...group, options: group.options.filter((_, j) => j !== i).map((o, j) => ({ ...o, order: j })) })} className="text-gray-400 hover:text-red-500">
               <X className="size-3" />
             </button>
           </div>
@@ -132,13 +136,34 @@ function DishForm({
     (dish?.modifierGroups ?? []).map((g) => ({ ...g, options: g.options ?? [] }))
   )
   const [showModifiers, setShowModifiers] = useState((dish?.modifierGroups?.length ?? 0) > 0)
-  const [pending, start] = useTransition()
 
   function toggleTag(id: string) {
     setSelectedTagIds((prev) => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next })
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const { run, pending } = useAction(
+    async (fd: FormData): Promise<ActionResult> => {
+      const res = dish ? await updateDish(dish.id, fd) : await createDish(venueId, fd)
+      if (!res.ok) return res
+
+      const dishId = dish?.id ?? (res as { data?: { id: string } }).data?.id
+      if (dishId && modifiers.length > 0) {
+        const modRes = await saveDishModifiers(dishId, modifiers.map((g, i) => ({
+          ...g,
+          order: i,
+          options: g.options.map((o, j) => ({ ...o, order: j })),
+        })))
+        if (!modRes.ok) return modRes
+      } else if (dishId && modifiers.length === 0 && (dish?.modifierGroups?.length ?? 0) > 0) {
+        await saveDishModifiers(dishId, [])
+      }
+
+      return ok(dish ? "Saved." : "Dish created.")
+    },
+    { onSuccess: () => { onDone(); router.refresh() } }
+  )
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
     fd.set("photo", photo)
@@ -152,34 +177,14 @@ function DishForm({
       }
     }
     fd.set("nutrition", JSON.stringify(Object.keys(nutritionObj).length > 0 ? nutritionObj : null))
-
-    start(async () => {
-      const res = dish ? await updateDish(dish.id, fd) : await createDish(venueId, fd)
-      if (!res.ok) { toast.error(res.error); return }
-
-      const dishId = dish?.id ?? (res as { data?: { id: string } }).data?.id
-      if (dishId && modifiers.length > 0) {
-        const modRes = await saveDishModifiers(dishId, modifiers.map((g, i) => ({
-          ...g,
-          order: i,
-          options: g.options.map((o, j) => ({ ...o, order: j })),
-        })))
-        if (!modRes.ok) { toast.error(modRes.error); return }
-      } else if (dishId && modifiers.length === 0 && (dish?.modifierGroups?.length ?? 0) > 0) {
-        await saveDishModifiers(dishId, [])
-      }
-
-      toast.success(dish ? "Saved." : "Dish created.")
-      onDone()
-      router.refresh()
-    })
+    run(fd)
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-gray-200 bg-white px-5 py-5 dark:border-gray-700 dark:bg-gray-900">
       <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{dish ? "Edit dish" : "New dish"}</h3>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className={lbl}>Name *</label>
           <input name="name" defaultValue={dish?.name} required placeholder="Dish name" className={inputClass} />
@@ -190,7 +195,7 @@ function DishForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className={lbl}>Photo</label>
           <MediaPickerField value={photo} onChange={setPhoto} folder="dining" />
@@ -333,22 +338,14 @@ export function DishList({
   const sp = useSearchParams()
   const [showForm, setShowForm] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
-  const [delPending, startDel] = useTransition()
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   const featuredParam = nutritionParams.find((p) => p.featured)
   const tagMap = new Map(venueTags.map((t) => [t.id, t]))
 
-  function handleDelete(id: string) {
-    if (confirmDeleteId !== id) { setConfirmDeleteId(id); return }
-    setConfirmDeleteId(null)
-    startDel(async () => {
-      const res = await deleteDish(id)
-      if (!res.ok) { toast.error(res.error); return }
-      toast.success(res.message ?? "Deleted.")
-      router.refresh()
-    })
-  }
+  const { run: runDelete, pending: delPending } = useAction(deleteDish, {
+    onSuccess: () => { setConfirmDeleteId(null); router.refresh() },
+  })
 
   function navigate(newQ?: string, newPage?: number) {
     const params = new URLSearchParams(sp.toString())
@@ -385,7 +382,10 @@ export function DishList({
       )}
 
       {dishes.length === 0 ? (
-        <p className="text-sm text-gray-400">{q ? "No dishes match the search." : "No dishes yet."}</p>
+        <EmptyState
+          icon={UtensilsCrossed}
+          title={q ? "No dishes match the search." : "No dishes yet."}
+        />
       ) : (
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
           <table className="w-full text-sm">
@@ -456,27 +456,14 @@ export function DishList({
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => setEditId(d.id)}
+                        <button onClick={() => setEditId(d.id)} aria-label="Edit"
                           className="grid size-7 place-items-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800">
                           <Pencil className="size-3.5" />
                         </button>
-                        {confirmDeleteId === d.id ? (
-                          <div className="flex items-center gap-1">
-                            <button onClick={() => handleDelete(d.id)} disabled={delPending}
-                              className="rounded px-1.5 py-0.5 text-[11px] font-medium text-red-600 hover:bg-red-50">
-                              Confirm
-                            </button>
-                            <button onClick={() => setConfirmDeleteId(null)}
-                              className="rounded px-1.5 py-0.5 text-[11px] font-medium text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
-                          <button onClick={() => handleDelete(d.id)} disabled={delPending}
-                            className="grid size-7 place-items-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20">
-                            <Trash2 className="size-3.5" />
-                          </button>
-                        )}
+                        <button onClick={() => setConfirmDeleteId(d.id)} disabled={delPending} aria-label="Delete"
+                          className="grid size-7 place-items-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20">
+                          <Trash2 className="size-3.5" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -500,6 +487,17 @@ export function DishList({
           </button>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(open) => !open && setConfirmDeleteId(null)}
+        title="Delete this dish?"
+        description={`"${dishes.find((d) => d.id === confirmDeleteId)?.name ?? ""}" will be permanently removed. This cannot be undone.`}
+        confirmLabel="Delete"
+        destructive
+        pending={delPending}
+        onConfirm={() => confirmDeleteId && runDelete(confirmDeleteId)}
+      />
     </div>
   )
 }

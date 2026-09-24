@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useTransition, useRef, type ReactNode } from "react"
+import { useState, useRef, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { createLocation, updateLocation, deleteLocation } from "@/lib/actions/dining"
-import { toast } from "@/components/ui/toaster"
+import { useAction } from "@/lib/use-action"
 import { inputClass } from "@/components/ui/field"
 
 type Location = { id: string; name: string; timezone: string }
@@ -37,7 +37,6 @@ export function LocationForm({ location, trigger }: Props) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
-  const [pending, start] = useTransition()
   const [tzQuery, setTzQuery] = useState(location?.timezone ?? "America/New_York")
   const [tzOpen, setTzOpen] = useState(false)
   const tzContainerRef = useRef<HTMLDivElement>(null)
@@ -50,28 +49,29 @@ export function LocationForm({ location, trigger }: Props) {
     setOpen(true)
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const { run: runSave, pending: savePending } = useAction(
+    (fd: FormData) => (location ? updateLocation(location.id, fd) : createLocation(fd)),
+    { onSuccess: () => { handleClose(); router.refresh() } }
+  )
+
+  const { run: runDelete, pending: deletePending } = useAction(
+    () => deleteLocation(location?.id ?? ""),
+    { onSuccess: () => { setConfirmingDelete(false); router.refresh() } }
+  )
+
+  const pending = savePending || deletePending
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
     fd.set("timezone", tzQuery.trim() || "UTC")
-    start(async () => {
-      const res = location ? await updateLocation(location.id, fd) : await createLocation(fd)
-      if (!res.ok) { toast.error(res.error); return }
-      toast.success(res.message ?? "Saved.")
-      handleClose()
-      router.refresh()
-    })
+    runSave(fd)
   }
 
   function handleDeleteClick() {
     if (!confirmingDelete) { setConfirmingDelete(true); return }
     if (!location) return
-    start(async () => {
-      const res = await deleteLocation(location.id)
-      if (!res.ok) { toast.error(res.error); setConfirmingDelete(false); return }
-      toast.success(res.message ?? "Deleted.")
-      router.refresh()
-    })
+    runDelete()
   }
 
   const filtered = TIMEZONES.filter((tz) =>

@@ -1,12 +1,14 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Pencil, Trash2, Loader2, CheckCircle } from "lucide-react"
+import { Plus, Pencil, Trash2, Loader2, CheckCircle, Megaphone } from "lucide-react"
 import { upsertTopic, deleteTopic, publishTopic, unpublishTopic } from "@/lib/actions/dining"
-import { toast } from "@/components/ui/toaster"
+import { useAction } from "@/lib/use-action"
 import { MediaPickerField } from "@/components/media-picker"
 import { inputClass } from "@/components/ui/field"
+import { EmptyState } from "@/components/ui/empty-state"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 
 type Topic = { id: string; venueId: string; title: string; bannerImage: string | null; body: string | null; publishedAt: Date | null }
 
@@ -15,23 +17,21 @@ const lbl = "mb-1 block text-xs font-medium text-gray-700"
 function TopicForm({ venueId, topic, onDone }: { venueId: string; topic?: Topic; onDone: () => void }) {
   const router = useRouter()
   const [banner, setBanner] = useState(topic?.bannerImage ?? "")
-  const [pending, start] = useTransition()
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const fd = new FormData(e.currentTarget)
-    start(async () => {
-      const res = await upsertTopic(venueId, topic?.id ?? null, {
+  const { run, pending } = useAction(
+    (fd: FormData) =>
+      upsertTopic(venueId, topic?.id ?? null, {
         title: (fd.get("title") as string).trim(),
         bannerImage: banner || null,
         body: (fd.get("body") as string) || null,
         highlights: [],
-      })
-      if (!res.ok) { toast.error(res.error); return }
-      toast.success(res.message ?? "Saved.")
-      onDone()
-      router.refresh()
-    })
+      }),
+    { onSuccess: () => { onDone(); router.refresh() } }
+  )
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    run(new FormData(e.currentTarget))
   }
 
   return (
@@ -68,28 +68,18 @@ export function TopicsList({ venueId, topics }: { venueId: string; topics: Topic
   const router = useRouter()
   const [showForm, setShowForm] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
-  const [pending, start] = useTransition()
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
-  function handleDelete(id: string) {
-    if (confirmDeleteId !== id) { setConfirmDeleteId(id); return }
-    setConfirmDeleteId(null)
-    start(async () => {
-      const res = await deleteTopic(id)
-      if (!res.ok) { toast.error(res.error); return }
-      toast.success(res.message ?? "Deleted.")
-      router.refresh()
-    })
-  }
+  const { run: runDelete, pending: deletePending } = useAction(deleteTopic, {
+    onSuccess: () => { setConfirmDeleteId(null); router.refresh() },
+  })
 
-  function handlePublish(id: string, isActive: boolean) {
-    start(async () => {
-      const res = isActive ? await unpublishTopic(id) : await publishTopic(id)
-      if (!res.ok) { toast.error(res.error); return }
-      toast.success(res.message ?? "Done.")
-      router.refresh()
-    })
-  }
+  const { run: runPublish, pending: publishPending } = useAction(
+    (id: string, isActive: boolean) => (isActive ? unpublishTopic(id) : publishTopic(id)),
+    { onSuccess: () => router.refresh() }
+  )
+
+  const pending = deletePending || publishPending
 
   return (
     <div className="space-y-4">
@@ -108,7 +98,7 @@ export function TopicsList({ venueId, topics }: { venueId: string; topics: Topic
       {showForm && <TopicForm venueId={venueId} onDone={() => setShowForm(false)} />}
 
       {topics.length === 0 && !showForm && (
-        <p className="text-sm text-gray-400">No announcements yet.</p>
+        <EmptyState icon={Megaphone} title="No announcements yet" />
       )}
 
       {topics.map((t) =>
@@ -123,40 +113,38 @@ export function TopicsList({ venueId, topics }: { venueId: string; topics: Topic
               </div>
               <div className="flex items-center gap-2">
                 {t.publishedAt ? (
-                  <button onClick={() => handlePublish(t.id, true)} disabled={pending}
+                  <button onClick={() => runPublish(t.id, true)} disabled={pending}
                     className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100 disabled:opacity-60">
                     <CheckCircle className="size-3" /> Current
                   </button>
                 ) : (
-                  <button onClick={() => handlePublish(t.id, false)} disabled={pending}
+                  <button onClick={() => runPublish(t.id, false)} disabled={pending}
                     className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 hover:bg-gray-200 disabled:opacity-60">
                     Set as current
                   </button>
                 )}
-                <button onClick={() => setEditId(t.id)} className="grid size-7 place-items-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                <button onClick={() => setEditId(t.id)} aria-label="Edit" className="grid size-7 place-items-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-600">
                   <Pencil className="size-3.5" />
                 </button>
-                {confirmDeleteId === t.id ? (
-                  <div className="flex items-center gap-1">
-                    <button onClick={() => handleDelete(t.id)} disabled={pending}
-                      className="rounded px-1.5 py-0.5 text-[11px] font-medium text-red-600 hover:bg-red-50 disabled:opacity-60">
-                      Confirm
-                    </button>
-                    <button onClick={() => setConfirmDeleteId(null)}
-                      className="rounded px-1.5 py-0.5 text-[11px] font-medium text-gray-400 hover:bg-gray-50">
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <button onClick={() => handleDelete(t.id)} disabled={pending} className="grid size-7 place-items-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-500">
-                    <Trash2 className="size-3.5" />
-                  </button>
-                )}
+                <button onClick={() => setConfirmDeleteId(t.id)} disabled={pending} aria-label="Delete" className="grid size-7 place-items-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-500">
+                  <Trash2 className="size-3.5" />
+                </button>
               </div>
             </div>
           </div>
         )
       )}
+
+      <ConfirmDialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(open) => !open && setConfirmDeleteId(null)}
+        title="Delete this announcement?"
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        destructive
+        pending={deletePending}
+        onConfirm={() => confirmDeleteId && runDelete(confirmDeleteId)}
+      />
     </div>
   )
 }

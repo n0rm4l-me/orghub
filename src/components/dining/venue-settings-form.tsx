@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2, Building2, Coffee, ChefHat, Trash2 } from "lucide-react"
 import { updateVenue, deleteVenue } from "@/lib/actions/dining"
-import { toast } from "@/components/ui/toaster"
+import { useAction } from "@/lib/use-action"
 import { inputClass } from "@/components/ui/field"
 
 type Venue = {
@@ -45,21 +45,24 @@ const lbl = "mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300"
 
 export function VenueSettingsForm({ venue }: { venue: Venue }) {
   const router = useRouter()
-  const [pending, start] = useTransition()
-  const [deleting, startDelete] = useTransition()
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [venueType, setVenueType] = useState<VenueType>((venue.venueType as VenueType) ?? "CAFETERIA")
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const { run, pending } = useAction(
+    (fd: FormData) => updateVenue(venue.id, fd),
+    { onSuccess: () => router.refresh() }
+  )
+
+  const { run: runDelete, pending: deleting } = useAction(
+    () => deleteVenue(venue.id),
+    { onSuccess: () => router.push("/admin/dining") }
+  )
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
     fd.set("venueType", venueType)
-    start(async () => {
-      const res = await updateVenue(venue.id, fd)
-      if (!res.ok) { toast.error(res.error); return }
-      toast.success(res.message ?? "Saved.")
-      router.refresh()
-    })
+    run(fd)
   }
 
   return (
@@ -131,12 +134,7 @@ export function VenueSettingsForm({ venue }: { venue: Venue }) {
                   Cancel
                 </button>
                 <button type="button" disabled={deleting}
-                  onClick={() => startDelete(async () => {
-                    const res = await deleteVenue(venue.id)
-                    if (!res.ok) { toast.error(res.error); return }
-                    toast.success("Venue deleted.")
-                    router.push("/admin/dining")
-                  })}
+                  onClick={() => runDelete()}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60">
                   {deleting && <Loader2 className="size-3.5 animate-spin" />}
                   Delete

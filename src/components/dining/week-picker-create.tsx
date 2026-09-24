@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useTransition, useRef, useEffect } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Loader2, X, CalendarDays, UtensilsCrossed } from "lucide-react"
 import { createWeekMenu } from "@/lib/actions/dining"
-import { toast } from "@/components/ui/toaster"
+import { useAction } from "@/lib/use-action"
 
 type MenuType = "WEEKLY" | "FIXED"
 
@@ -18,22 +18,28 @@ export function WeekPickerCreate({ venueId }: { venueId: string }) {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState("")
   const [menuType, setMenuType] = useState<MenuType>("WEEKLY")
-  const [pending, start] = useTransition()
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 50)
+    if (!open) return
+    const id = setTimeout(() => inputRef.current?.focus(), 50)
+    return () => clearTimeout(id)
   }, [open])
+
+  const { run, pending } = useAction(
+    (trimmed: string) => createWeekMenu(venueId, trimmed, menuType),
+    {
+      onSuccess: (data) => {
+        setOpen(false)
+        if (data) router.push(`/admin/dining/venues/${venueId}/menus/${data.id}`)
+      },
+    }
+  )
 
   function handleCreate() {
     const trimmed = name.trim()
     if (!trimmed) { inputRef.current?.focus(); return }
-    start(async () => {
-      const res = await createWeekMenu(venueId, trimmed, menuType)
-      if (!res.ok) { toast.error(res.error); return }
-      setOpen(false)
-      if (res.data) router.push(`/admin/dining/venues/${venueId}/menus/${res.data.id}`)
-    })
+    run(trimmed)
   }
 
   return (

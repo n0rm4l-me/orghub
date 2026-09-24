@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition, useRef, useEffect } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import {
   Plus, Loader2, Eye, EyeOff, GripVertical, Pencil, Trash2,
@@ -12,6 +12,8 @@ import {
   reorderFixedEntries, saveFixedEntryModifiers, getDishes,
   publishWeekMenu, unpublishWeekMenu, updateWeekMenuName, toggleSoldOut,
 } from "@/lib/actions/dining"
+import { useAction } from "@/lib/use-action"
+import { ok, type ActionResult } from "@/lib/actions/types"
 import { toast } from "@/components/ui/toaster"
 import { SafeImg } from "@/components/dining/safe-img"
 import { MediaPickerField } from "@/components/media-picker"
@@ -200,7 +202,7 @@ function ModifierGroupCard({
           />
           Multi
         </label>
-        <button type="button" onClick={onDelete} className="text-red-400 hover:text-red-600">
+        <button type="button" onClick={onDelete} aria-label="Delete group" className="text-red-400 hover:text-red-600">
           <X className="size-3.5" />
         </button>
       </div>
@@ -243,12 +245,13 @@ function ModifierGroupCard({
             <button
               type="button"
               title="Default"
+              aria-label="Set as default"
               onClick={() => updateOption(i, { isDefault: !opt.isDefault })}
               className={`size-5 rounded-full border text-xs transition ${opt.isDefault ? "border-brand bg-brand text-white" : "border-gray-300 text-gray-400 hover:border-brand"}`}
             >
               <Check className="mx-auto size-3" />
             </button>
-            <button type="button" onClick={() => removeOption(i)} className="text-gray-400 hover:text-red-500">
+            <button type="button" onClick={() => removeOption(i)} aria-label="Remove option" className="text-gray-400 hover:text-red-500">
               <X className="size-3" />
             </button>
           </div>
@@ -545,7 +548,10 @@ function EntryRow({
   onDelete: () => void
   onToggleSoldOut: (soldOut: boolean) => void
 }) {
-  const [soldOutPending, startSoldOut] = useTransition()
+  const { run: runToggleSoldOut, pending: soldOutPending } = useAction(
+    () => toggleSoldOut(entry.id, !entry.soldOut),
+    { onSuccess: () => onToggleSoldOut(!entry.soldOut) }
+  )
   const resolvedPhoto = entry.photo
   const resolvedName = entry.name ?? "Unnamed item"
   const tags = (entry.tagIds || "").split(",").filter(Boolean)
@@ -606,31 +612,30 @@ function EntryRow({
             Sold out
           </span>
         )}
-        <div className="flex gap-1 opacity-0 group-hover:opacity-100">
+        <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100">
           <button
             type="button"
             disabled={soldOutPending}
-            onClick={() => startSoldOut(async () => {
-              const res = await toggleSoldOut(entry.id, !entry.soldOut)
-              if (!res.ok) toast.error(res.error)
-              else { toast.success(res.message ?? "Done."); onToggleSoldOut(!entry.soldOut) }
-            })}
+            onClick={() => runToggleSoldOut()}
             title={entry.soldOut ? "Mark available" : "Mark as sold out"}
-            className={`grid size-7 place-items-center rounded-lg text-gray-400 hover:text-red-600 dark:hover:text-red-400 ${entry.soldOut ? "text-red-500 opacity-100! dark:text-red-400" : "hover:bg-red-50 dark:hover:bg-red-900/20"}`}
+            aria-label={entry.soldOut ? "Mark available" : "Mark as sold out"}
+            className={`grid size-9 place-items-center rounded-lg text-gray-400 hover:text-red-600 dark:hover:text-red-400 ${entry.soldOut ? "text-red-500 opacity-100! dark:text-red-400" : "hover:bg-red-50 dark:hover:bg-red-900/20"}`}
           >
             <Ban className="size-3.5" />
           </button>
           <button
             type="button"
             onClick={onEdit}
-            className="grid size-7 place-items-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800"
+            aria-label="Edit item"
+            className="grid size-9 place-items-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800"
           >
             <Pencil className="size-3.5" />
           </button>
           <button
             type="button"
             onClick={onDelete}
-            className="grid size-7 place-items-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
+            aria-label="Delete item"
+            className="grid size-9 place-items-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
           >
             <Trash2 className="size-3.5" />
           </button>
@@ -670,9 +675,52 @@ function SectionBlock({
   const [draftName, setDraftName] = useState(section.name)
   const [editingEntryId, setEditingEntryId] = useState<string | "new" | null>(null)
   const [entryDrag, setEntryDrag] = useState<{ from: number; over: number } | null>(null)
-  const [reorderPending, startReorder] = useTransition()
-  const [deletePending, startDelete] = useTransition()
-  const [savePending, startSave] = useTransition()
+  const { run: runReorder, pending: reorderPending } = useAction(
+    (ids: string[]) => reorderFixedEntries(section.id, ids),
+    { silent: true }
+  )
+
+  const { run: runSaveEntry, pending: savePending } = useAction(
+    async (data: Omit<Entry, "id" | "order">): Promise<ActionResult> => {
+      if (editingEntryId === "new") {
+        const res = await createFixedEntry(section.id, { ...data, price: data.price })
+        if (!res.ok) return res
+        const newEntry: Entry = { id: res.data.id, order: section.entries.length, ...data }
+        onEntriesChange([...section.entries, newEntry])
+        if (data.modifierGroups.length > 0) {
+          const modRes = await saveFixedEntryModifiers(newEntry.id, data.modifierGroups)
+          if (!modRes.ok) return modRes
+        }
+        setEditingEntryId(null)
+        return ok()
+      } else if (editingEntryId) {
+        const res = await updateFixedEntry(editingEntryId, { ...data, price: data.price })
+        if (!res.ok) return res
+        const modRes = await saveFixedEntryModifiers(editingEntryId, data.modifierGroups)
+        if (!modRes.ok) return modRes
+        onEntriesChange(
+          section.entries.map((e) =>
+            e.id === editingEntryId
+              ? { ...e, ...data, modifierGroups: data.modifierGroups as Entry["modifierGroups"] }
+              : e,
+          ),
+        )
+        setEditingEntryId(null)
+        return ok()
+      }
+      return ok()
+    }
+  )
+
+  const { run: runDeleteEntry, pending: deletePending } = useAction(
+    async (entryId: string): Promise<ActionResult> => {
+      const res = await deleteFixedEntry(entryId)
+      if (res.ok) {
+        onEntriesChange(section.entries.filter((e) => e.id !== entryId).map((e, i) => ({ ...e, order: i })))
+      }
+      return res
+    }
+  )
 
   useEffect(() => { onEditingChange?.(editingEntryId !== null) }, [editingEntryId])
 
@@ -682,55 +730,15 @@ function SectionBlock({
       .map((e, i) => ({ ...e, order: i }))
     onEntriesChange(reordered)
     setEntryDrag(null)
-    startReorder(async () => {
-      const res = await reorderFixedEntries(section.id, reordered.map((e) => e.id))
-      if (!res.ok) toast.error(res.error)
-    })
+    runReorder(reordered.map((e) => e.id))
   }
 
   function handleSaveEntry(data: Omit<Entry, "id" | "order">) {
-    if (editingEntryId === "new") {
-      startSave(async () => {
-        const res = await createFixedEntry(section.id, {
-          ...data,
-          price: data.price,
-        })
-        if (!res.ok) { toast.error(res.error); return }
-        const newEntry: Entry = {
-          id: (res as { data: { id: string } }).data.id,
-          order: section.entries.length,
-          ...data,
-        }
-        onEntriesChange([...section.entries, newEntry])
-        // Save modifiers
-        if (data.modifierGroups.length > 0) {
-          await saveFixedEntryModifiers(newEntry.id, data.modifierGroups)
-        }
-        setEditingEntryId(null)
-      })
-    } else if (editingEntryId) {
-      startSave(async () => {
-        const res = await updateFixedEntry(editingEntryId, { ...data, price: data.price })
-        if (!res.ok) { toast.error(res.error); return }
-        await saveFixedEntryModifiers(editingEntryId, data.modifierGroups)
-        onEntriesChange(
-          section.entries.map((e) =>
-            e.id === editingEntryId
-              ? { ...e, ...data, modifierGroups: data.modifierGroups as Entry["modifierGroups"] }
-              : e,
-          ),
-        )
-        setEditingEntryId(null)
-      })
-    }
+    runSaveEntry(data)
   }
 
   function handleDeleteEntry(entryId: string) {
-    startDelete(async () => {
-      const res = await deleteFixedEntry(entryId)
-      if (!res.ok) { toast.error(res.error); return }
-      onEntriesChange(section.entries.filter((e) => e.id !== entryId).map((e, i) => ({ ...e, order: i })))
-    })
+    runDeleteEntry(entryId)
   }
 
   const editingEntry = section.entries.find((e) => e.id === editingEntryId) ?? null
@@ -772,14 +780,16 @@ function SectionBlock({
         <button
           type="button"
           onClick={() => setCollapsed((c) => !c)}
-          className="text-gray-400 hover:text-gray-600"
+          aria-label={collapsed ? "Expand section" : "Collapse section"}
+          className="p-2 text-gray-400 hover:text-gray-600"
         >
           {collapsed ? <ChevronDown className="size-4" /> : <ChevronUp className="size-4" />}
         </button>
         <button
           type="button"
           onClick={onDelete}
-          className="text-gray-300 hover:text-red-500 dark:text-gray-600"
+          aria-label="Delete section"
+          className="p-2 text-gray-300 hover:text-red-500 dark:text-gray-600"
         >
           <Trash2 className="size-3.5" />
         </button>
@@ -887,18 +897,53 @@ export function FixedMenuEditor({
   const [savedName, setSavedName] = useState(menuName ?? "")
   const [sectionDrag, setSectionDrag] = useState<{ from: number; over: number } | null>(null)
   const [anyEditing, setAnyEditing] = useState(false)
-  const [namePending, startName] = useTransition()
-  const [sectionsPending, startSections] = useTransition()
-  const [publishPending, startPublish] = useTransition()
+  const { run: runName, pending: namePending } = useAction(
+    async (trimmed: string | null): Promise<ActionResult> => {
+      const res = await updateWeekMenuName(menuId, trimmed)
+      if (res.ok) setSavedName(trimmed ?? "")
+      return res
+    },
+    { silent: true }
+  )
+
+  function toSectionInput(list: Section[]) {
+    return list.map((s, i) => ({
+      id: s.id.startsWith("new-") ? undefined : s.id,
+      name: s.name,
+      order: i,
+    }))
+  }
+
+  const { run: runSyncSections, pending: syncPending } = useAction(
+    (list: Section[]) => upsertFixedSections(menuId, toSectionInput(list)),
+    { silent: true }
+  )
+
+  const { run: runAddSection, pending: addPending } = useAction(
+    async (list: Section[], tempId: string): Promise<ActionResult> => {
+      const res = await upsertFixedSections(menuId, toSectionInput(list))
+      if (!res.ok) return res
+      if (res.data?.sections) {
+        const saved = res.data.sections as { id: string; name: string; order: number }[]
+        const newSaved = saved[saved.length - 1]
+        if (newSaved) setSections((prev) => prev.map((s) => s.id === tempId ? { ...s, id: newSaved.id } : s))
+      }
+      return res
+    },
+    { silent: true, onSuccess: () => router.refresh() }
+  )
+
+  const sectionsPending = syncPending || addPending
+
+  const { run: runPublish, pending: publishPending } = useAction(
+    () => (publishedAt ? unpublishWeekMenu(menuId) : publishWeekMenu(menuId)),
+    { onSuccess: () => router.refresh() }
+  )
 
   function handleNameBlur() {
     const trimmed = name.trim() || null
     if (trimmed === savedName) return
-    startName(async () => {
-      const res = await updateWeekMenuName(menuId, trimmed)
-      if (!res.ok) { toast.error(res.error); return }
-      setSavedName(trimmed ?? "")
-    })
+    runName(trimmed)
   }
 
   function addSection() {
@@ -906,46 +951,19 @@ export function FixedMenuEditor({
     const newSection: Section = { id: tempId, name: "New section", order: sections.length, entries: [] }
     const updated = [...sections, newSection]
     setSections(updated)
-    startSections(async () => {
-      const res = await upsertFixedSections(menuId, updated.map((s, i) => ({
-        id: s.id.startsWith("new-") ? undefined : s.id,
-        name: s.name,
-        order: i,
-      })))
-      if (!res.ok) { toast.error(res.error); return }
-      if (res.data?.sections) {
-        const saved = res.data.sections as { id: string; name: string; order: number }[]
-        const newSaved = saved[saved.length - 1]
-        if (newSaved) setSections((prev) => prev.map((s) => s.id === tempId ? { ...s, id: newSaved.id } : s))
-      }
-      router.refresh()
-    })
+    runAddSection(updated, tempId)
   }
 
   function renameSection(sectionId: string, newName: string) {
     const updated = sections.map((s) => s.id === sectionId ? { ...s, name: newName } : s)
     setSections(updated)
-    startSections(async () => {
-      const res = await upsertFixedSections(menuId, updated.map((s, i) => ({
-        id: s.id.startsWith("new-") ? undefined : s.id,
-        name: s.name,
-        order: i,
-      })))
-      if (!res.ok) toast.error(res.error)
-    })
+    runSyncSections(updated)
   }
 
   function deleteSection(sectionId: string) {
     const updated = sections.filter((s) => s.id !== sectionId).map((s, i) => ({ ...s, order: i }))
     setSections(updated)
-    startSections(async () => {
-      const res = await upsertFixedSections(menuId, updated.map((s, i) => ({
-        id: s.id.startsWith("new-") ? undefined : s.id,
-        name: s.name,
-        order: i,
-      })))
-      if (!res.ok) toast.error(res.error)
-    })
+    runSyncSections(updated)
   }
 
   function handleSectionDrop(to: number) {
@@ -953,23 +971,11 @@ export function FixedMenuEditor({
     const reordered = reorder(sections, sectionDrag.from, to).map((s, i) => ({ ...s, order: i }))
     setSections(reordered)
     setSectionDrag(null)
-    startSections(async () => {
-      const res = await upsertFixedSections(menuId, reordered.map((s, i) => ({
-        id: s.id.startsWith("new-") ? undefined : s.id,
-        name: s.name,
-        order: i,
-      })))
-      if (!res.ok) toast.error(res.error)
-    })
+    runSyncSections(reordered)
   }
 
   function handlePublishToggle() {
-    startPublish(async () => {
-      const res = publishedAt ? await unpublishWeekMenu(menuId) : await publishWeekMenu(menuId)
-      if (!res.ok) { toast.error(res.error); return }
-      toast.success(res.message ?? "Done.")
-      router.refresh()
-    })
+    runPublish()
   }
 
   return (

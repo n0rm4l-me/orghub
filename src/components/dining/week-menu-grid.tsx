@@ -1,9 +1,11 @@
 "use client"
 
-import { useReducer, useTransition, useState } from "react"
+import { useReducer, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2, Eye, EyeOff, Ban } from "lucide-react"
 import { saveWeekMenuEntries, publishWeekMenu, unpublishWeekMenu, saveClosedDays, updateWeekMenuName } from "@/lib/actions/dining"
+import { useAction } from "@/lib/use-action"
+import { ok, type ActionResult } from "@/lib/actions/types"
 import { toast } from "@/components/ui/toaster"
 import { WeekMenuCell } from "@/components/dining/week-menu-cell"
 import type { DayOfWeek } from "@prisma/client"
@@ -93,40 +95,23 @@ export function WeekMenuGrid({
   const [activeDay, setActiveDay] = useState<DayOfWeek>("MON")
   const [name, setName] = useState(menuName ?? "")
   const [savedName, setSavedName] = useState(menuName ?? "")
-  const [savePending, startSave] = useTransition()
-  const [publishPending, startPublish] = useTransition()
-  const [closedPending, startClosed] = useTransition()
-  const [namePending, startName] = useTransition()
 
-  function isDayClosed(day: DayOfWeek) { return closedSlots.has(day) }
+  const { run: runClosed, pending: closedPending } = useAction(
+    (days: string[]) => saveClosedDays(menuId, days),
+    { silent: true }
+  )
 
-  function toggleSlot(slot: string) {
-    const next = new Set(closedSlots)
-    if (next.has(slot)) {
-      next.delete(slot)
-    } else {
-      next.add(slot)
-      if (!slot.includes(":")) {
-        for (const s of mealSlots) next.delete(`${slot}:${s.id}`)
-      }
-    }
-    setClosedSlots(next)
-    startClosed(async () => { await saveClosedDays(menuId, [...next]) })
-  }
-
-  function handleNameBlur() {
-    const trimmed = name.trim() || null
-    if (trimmed === savedName) return
-    startName(async () => {
+  const { run: runName, pending: namePending } = useAction(
+    async (trimmed: string | null): Promise<ActionResult> => {
       const res = await updateWeekMenuName(menuId, trimmed)
-      if (!res.ok) { toast.error(res.error); return }
-      setSavedName(trimmed ?? "")
-    })
-  }
+      if (res.ok) setSavedName(trimmed ?? "")
+      return res
+    },
+    { silent: true }
+  )
 
-  function handleSave() {
-    if (!name.trim()) { toast.error("Menu name is required."); return }
-    startSave(async () => {
+  const { run: runSave, pending: savePending } = useAction(
+    async (): Promise<ActionResult> => {
       const slotJobs = mealSlots
         .map((slot) => {
           const slotCats = categories.filter((c) => c.mealSlotId === slot.id)
@@ -144,19 +129,46 @@ export function WeekMenuGrid({
 
       const results = await Promise.all(slotJobs)
       const failed = results.find((r) => r && !r.ok)
-      if (failed && !failed.ok) { toast.error(failed.error); return }
-      toast.success("Saved.")
-      router.refresh()
-    })
+      if (failed && !failed.ok) return failed
+      return ok("Saved.")
+    },
+    { onSuccess: () => router.refresh() }
+  )
+
+  const { run: runPublish, pending: publishPending } = useAction(
+    () => (publishedAt ? unpublishWeekMenu(menuId) : publishWeekMenu(menuId)),
+    { onSuccess: () => router.refresh() }
+  )
+
+  function isDayClosed(day: DayOfWeek) { return closedSlots.has(day) }
+
+  function toggleSlot(slot: string) {
+    const next = new Set(closedSlots)
+    if (next.has(slot)) {
+      next.delete(slot)
+    } else {
+      next.add(slot)
+      if (!slot.includes(":")) {
+        for (const s of mealSlots) next.delete(`${slot}:${s.id}`)
+      }
+    }
+    setClosedSlots(next)
+    runClosed([...next])
+  }
+
+  function handleNameBlur() {
+    const trimmed = name.trim() || null
+    if (trimmed === savedName) return
+    runName(trimmed)
+  }
+
+  function handleSave() {
+    if (!name.trim()) { toast.error("Menu name is required."); return }
+    runSave()
   }
 
   function handlePublishToggle() {
-    startPublish(async () => {
-      const res = publishedAt ? await unpublishWeekMenu(menuId) : await publishWeekMenu(menuId)
-      if (!res.ok) { toast.error(res.error); return }
-      toast.success(res.message ?? "Done.")
-      router.refresh()
-    })
+    runPublish()
   }
 
   const dayClosed = isDayClosed(activeDay)

@@ -254,6 +254,7 @@ export function WeekMenuCell({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); open() }}
+              aria-label="Edit"
               className="grid size-7 place-items-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-brand dark:hover:bg-gray-800"
             >
               <Pencil className="size-3.5" />
@@ -261,6 +262,7 @@ export function WeekMenuCell({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); handleClear() }}
+              aria-label="Clear"
               className="grid size-7 place-items-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/10 dark:hover:text-red-400"
             >
               <X className="size-3.5" />

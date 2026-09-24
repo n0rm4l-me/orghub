@@ -1,10 +1,9 @@
 "use client"
 
-import { useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { CheckCircle, Loader2 } from "lucide-react"
 import { publishWeekMenu, unpublishWeekMenu } from "@/lib/actions/dining"
-import { toast } from "@/components/ui/toaster"
+import { useAction } from "@/lib/use-action"
 
 export function MenuPublishToggle({
   menuId,
@@ -14,17 +13,10 @@ export function MenuPublishToggle({
   published: boolean
 }) {
   const router = useRouter()
-  const [pending, start] = useTransition()
-
-  function handle() {
-    start(async () => {
-      const res = published
-        ? await unpublishWeekMenu(menuId)
-        : await publishWeekMenu(menuId)
-      if (!res.ok) { toast.error(res.error); return }
-      router.refresh()
-    })
-  }
+  const { run: handle, pending } = useAction(
+    () => (published ? unpublishWeekMenu(menuId) : publishWeekMenu(menuId)),
+    { onSuccess: () => router.refresh() }
+  )
 
   if (pending) {
     return <Loader2 className="size-3.5 animate-spin text-gray-400" />
