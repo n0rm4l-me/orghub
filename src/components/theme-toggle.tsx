@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react"
 import { Monitor, Moon, Sun } from "lucide-react"
 
-type Theme = "light" | "system" | "dark"
+export type Theme = "light" | "system" | "dark"
 
-function applyTheme(t: Theme) {
+export function applyTheme(t: Theme) {
   const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
   if (t === "dark" || (t === "system" && prefersDark)) {
     document.documentElement.classList.add("dark")

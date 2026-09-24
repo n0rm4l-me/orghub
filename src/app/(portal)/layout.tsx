@@ -1,6 +1,7 @@
 import { Header } from "@/components/header"
 import { AnnouncementBanner } from "@/components/announcement-banner"
 import { PortalMain } from "@/components/portal-width"
+import { PortalAppearanceSync } from "@/components/portal-appearance-sync"
 
 /**
  * Chrome for the reader-facing side of the portal.
@@ -12,6 +13,7 @@ import { PortalMain } from "@/components/portal-width"
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
+      <PortalAppearanceSync />
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[60]

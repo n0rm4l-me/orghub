@@ -2,9 +2,9 @@
 
 import { useState } from "react"
 
-type FontSize = "sm" | "md" | "lg"
+export type FontSize = "sm" | "md" | "lg"
 
-function applyFontSize(f: FontSize) {
+export function applyFontSize(f: FontSize) {
   document.documentElement.classList.remove("font-sm", "font-lg")
   if (f === "sm") document.documentElement.classList.add("font-sm")
   else if (f === "lg") document.documentElement.classList.add("font-lg")

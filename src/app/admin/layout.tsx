@@ -8,6 +8,7 @@ import { getSettings } from "@/lib/settings"
 import { requireRole, can } from "@/lib/rbac"
 import { AdminNav } from "@/components/admin-nav"
 import { AdminMobileSidebar } from "@/components/admin-mobile-sidebar"
+import { AdminAppearanceReset } from "@/components/admin-appearance-reset"
 import { BrandLogo } from "@/components/brand-logo"
 import { parseModules } from "@/lib/modules"
 import { gravatarUrl } from "@/lib/gravatar"
@@ -43,6 +44,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-screen bg-background">
+      <AdminAppearanceReset />
       {/* Mobile top bar + drawer */}
       <AdminMobileSidebar
         canAdminister={canAdminister}
