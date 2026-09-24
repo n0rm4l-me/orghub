@@ -436,10 +436,27 @@ Smaller items, independent of the design-unification phases above:
   change (replacing an inline pattern with a modal, or a hand-rolled modal
   with the shared one) that should be visually checked before shipping, not
   assumed safe from a code diff.
-- **OPEN.** `submit-button.tsx` uses `px-4` / `disabled:opacity-70`; the
-  canonical shape documented in `STYLE_GUIDE.md:211` is `px-3.5` /
-  `disabled:opacity-60`. Several dining buttons still hand-roll their own
-  non-canonical padding instead of using `<SubmitButton>`.
+- **CITATION DOESN'T HOLD UP, needs a human call, not a mechanical fix
+  2026-09-25.** Re-checked this against the current (local-only, not
+  committed) `STYLE_GUIDE.md` before touching `submit-button.tsx`:
+  `disabled:opacity-60` doesn't appear anywhere in it (only `opacity-40`,
+  on unrelated Cancel/Delete examples); `px-3.5` does exist, but on the
+  "Primary action (CTA in PageHeader)" `<Link>` pattern, a different button
+  role with a different sizing approach (`py-2`-driven height, not
+  `submit-button.tsx`'s fixed `h-9`). Since `STYLE_GUIDE.md` isn't
+  version-controlled, either it was edited since this note was written, or
+  the citation was already approximate. Separately, this session's own
+  design-unification plan (`.claude/plans/zesty-sprouting-frost.md`) set
+  `h-9`/`px-4` as the target size for the primitive `Button` component,
+  which is what `submit-button.tsx` already matches: changing it to
+  `px-3.5` now would make it disagree with that plan instead of
+  `STYLE_GUIDE.md`. Not making an unverified change on a citation that
+  doesn't check out. Whoever picks this up next should reconcile
+  `STYLE_GUIDE.md` against the design-unification plan first (they may
+  simply be describing two different eras of the same button), then update
+  whichever one is stale. The "several dining buttons hand-roll their own
+  padding instead of using `<SubmitButton>`" half of this note is still
+  worth someone's time regardless of which target padding wins.
 - **NEEDS A DECISION, not urgent.** `text-gray-400 dark:text-gray-500` (58
   occurrences) may be backwards for contrast: `gray-500` is dimmer than
   `gray-400`, so it reduces contrast on a dark background where more contrast
