@@ -48,7 +48,7 @@ export function Editor({ initialContent, onChange, folder }: Props) {
     editorProps: {
       attributes: {
         class:
-          "prose prose-gray max-w-none min-h-[400px] rounded-lg px-0 py-4 text-foreground prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-p:leading-relaxed focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand/40",
+          "prose prose-gray max-w-none min-h-[400px] rounded-lg px-0 py-4 text-foreground prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-p:leading-relaxed focus:outline-none",
       },
     },
   })
@@ -56,7 +56,7 @@ export function Editor({ initialContent, onChange, folder }: Props) {
   if (!editor) return null
 
   return (
-    <div className="border border-border rounded-xl overflow-hidden bg-card">
+    <div className="border border-border rounded-xl overflow-hidden bg-card transition focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20">
       <Toolbar editor={editor} folder={folder} />
       <div className="px-6">
         <EditorContent editor={editor} />
