@@ -8,6 +8,12 @@ export async function GET(
   { params }: { params: Promise<{ path: string[] }> },
 ) {
   const { path } = await params
+  // Defense in depth: reject traversal segments outright rather than relying
+  // on Next's own routing or the storage backend to have already normalized
+  // them, since neither is guaranteed here.
+  if (path.some((segment) => segment === ".." || segment.includes("\0"))) {
+    return new NextResponse(null, { status: 400 })
+  }
   const pathStr = path.join("/")
   const wParam = req.nextUrl.searchParams.get("w")
   const w = wParam ? parseInt(wParam, 10) : NaN

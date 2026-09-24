@@ -604,18 +604,72 @@ Smaller items, independent of the design-unification phases above:
   (validation, notification side effects, the `isAdminReply` flag
   `addComment` computes from the caller's role) have no coverage; the
   matrix now covers 4 of ~15 action files.
-- **PENDING AUDIT. Input validation and IDOR review never finished.** No
-  validation library in `package.json` (no zod, no valibot). Server actions
-  read `formData.get(...) as string` directly and generally don't check that a
-  client-supplied `id` belongs to the caller's scope. To reproduce the
-  investigation: for each action in `src/lib/actions/`, check whether inputs
-  are length-bounded, numbers are NaN-checked, enums are validated against
-  their union, and whether the `id` argument is checked against the caller's
-  role/scope before the mutation runs. Also re-check
-  [src/app/api/upload/route.ts](src/app/api/upload/route.ts) for file-type/size
-  limits and path traversal in the storage key, and
-  [src/app/uploads/[...path]/route.ts](<src/app/uploads/[...path]/route.ts>)
-  for whether serving is authenticated or freely enumerable.
+- **AUDIT COMPLETE 2026-09-25. One HIGH-severity finding, fixed same day.**
+  Read every file in `src/lib/actions/` (20 files), both upload routes,
+  `rbac.ts`, `dining-scope.ts`, `storage.ts`, and the schema. Full findings
+  below; headline result: **no classic IDOR** (no case where a
+  lower-privileged role can touch another user's row it has no business
+  relationship to) anywhere in `src/lib/actions/`. `dining.ts`'s
+  `findEditableVenue`/`locationFilter` venue-scoping (already tested,
+  `actions.roles.test.ts`) checked out as correct for every mutator in that
+  file, not just the two already covered by a test.
+  - **FIXED, HIGH severity: stored XSS via SVG upload.**
+    [src/app/api/upload/route.ts](src/app/api/upload/route.ts) allowlisted
+    `image/svg+xml`, excluded it from the resize/re-encode pass (served
+    byte-for-byte), and `next.config.ts` has no `Content-Security-Policy`.
+    Any authenticated user, any role, could upload an SVG containing
+    `<script>`, get back a same-origin `/uploads/...` URL, and share it: a
+    victim (including an ADMIN) navigating to that URL directly (a link
+    click, not an `<img>` render, since `<img>`-loaded SVGs don't execute
+    scripts) would run the attacker's script with their own live session.
+    Removed `image/svg+xml` from the upload allowlist. Verified 2
+    already-existing SVGs in the live DB before deciding whether to touch
+    the serving side too: one is the site's actual live logo
+    (`SiteSettings.logoUrl`), admin-uploaded, rendered only via `<img>`
+    (which doesn't execute embedded scripts), so left the serving-side MIME
+    mapping alone rather than break that, since the fix that matters is
+    closing the upload path for untrusted/low-privilege users, not
+    retroactively distrusting 2 known-benign, admin-uploaded files. Added
+    [src/__tests__/upload-route.test.ts](src/__tests__/upload-route.test.ts)
+    so this can't silently regress (asserts SVG is rejected regardless of
+    role, and that `getCurrentUser()` is actually what gates the route).
+  - **FIXED, same file: auth bypassed the deactivated-user check.** The
+    route called `auth()` directly instead of `getCurrentUser()`
+    ([rbac.ts](src/lib/rbac.ts) documents exactly why this distinction
+    matters: JWT role claims go stale, and only `getCurrentUser()` re-checks
+    `active` in the DB). A deactivated/off-boarded user could still upload
+    through this one route as long as their session hadn't expired, even
+    though every server action correctly rejects them. Switched to
+    `getCurrentUser()`.
+  - **FIXED, defense in depth:**
+    [src/app/uploads/[...path]/route.ts](<src/app/uploads/[...path]/route.ts>)
+    passed the path parameter straight to the storage backend with no
+    rejection of `..` segments anywhere in the app code. Not confirmed
+    exploitable (depends on infra: reverse proxy normalization, whether the
+    S3-compatible backend would even honor a traversal key), but there's no
+    reason to rely on that when a one-line rejection removes the question
+    entirely. Confirmed serving *is* intentionally unauthenticated
+    (matches the "public-read" portal design already documented above) and
+    the storage key itself can't be influenced by a client-supplied filename
+    (built from `randomUUID()`, not `file.name`), so no other change needed
+    there.
+  - **Lower severity, not fixed, triage list for later:** `announcements.ts`
+    `linkUrl` has no scheme validation (an EDITOR could store a `javascript:`
+    URI; partially mitigated by `target="_blank"` on non-relative links, but
+    that's browser behavior, not a real guarantee). `nav.ts`'s
+    `validUrl()` already does this correctly for quick links, worth
+    reusing. `kudos.ts` `sendKudos`'s `value` field has no length bound;
+    `amount` has no ceiling independent of the monthly-budget check (not
+    exploitable with the default budget/redemption settings, becomes one if
+    an admin sets `kudosMonthlyBudget` to 0 while enabling redemption).
+    `polls.ts` `parsePoll` bounds option count but not each option's text
+    length. `comments.ts` `addComment` doesn't filter to published articles
+    before allowing a comment, and doesn't check a reply's `parentId`
+    belongs to the same article. `reactions.ts`/`suggestions.ts` `toggleVote`
+    don't check the target row exists/isn't hidden before creating a vote
+    (inconsistent with `addComment`'s own `hidden: false` check in the same
+    file). None of these are IDOR or let one user touch another's private
+    data; they're data-integrity/robustness gaps.
 
 ---
 

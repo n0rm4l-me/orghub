@@ -1,18 +1,19 @@
 import { NextResponse } from "next/server"
 import { randomUUID } from "crypto"
 import { revalidatePath } from "next/cache"
-import { auth } from "@/auth"
+import { getCurrentUser } from "@/lib/rbac"
 import { db } from "@/lib/db"
 import { uploadToStorage } from "@/lib/storage"
 import { logAudit } from "@/lib/audit"
 
 const MAX_BYTES = 10 * 1024 * 1024  // 10 MB
+// No SVG: served inline with no sanitization, an uploaded <script> executes
+// on direct navigation to its /uploads URL under the app's own origin.
 const ALLOWED_TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png":  "png",
   "image/webp": "webp",
   "image/gif":  "gif",
-  "image/svg+xml": "svg",
   "application/pdf": "pdf",
 }
 
@@ -55,8 +56,8 @@ async function downscale(buffer: Buffer, contentType: string): Promise<Buffer> {
 }
 
 export async function POST(req: Request) {
-  const session = await auth()
-  if (!session?.user?.id) {
+  const user = await getCurrentUser()
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
@@ -106,11 +107,11 @@ export async function POST(req: Request) {
       context: folder,
       // The stored size, not the uploaded one: downscaling may have shrunk it.
       size: buffer.length,
-      uploadedById: session.user.id,
+      uploadedById: user.id,
     },
   })
 
-  await logAudit({ userId: session.user.id, action: "media.upload", resourceType: "Media", resourceId: media.id, metadata: { filename: file.name, context: folder } })
+  await logAudit({ userId: user.id, action: "media.upload", resourceType: "Media", resourceId: media.id, metadata: { filename: file.name, context: folder } })
   revalidatePath("/admin/media")
   return NextResponse.json({ id: media.id, url, key, filename: file.name })
 }
