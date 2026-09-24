@@ -4,9 +4,7 @@ import { useState } from "react"
 import { Plus, X, Search, Loader2, Pencil } from "lucide-react"
 import { getDishes } from "@/lib/actions/dining"
 import { SafeImg } from "@/components/dining/safe-img"
-
-type NutritionParam = { id: string; name: string; unit: string; featured: boolean }
-type VenueTag = { id: string; name: string; color: string; bgColor: string }
+import type { NutritionParam, VenueTag } from "@/lib/dining-types"
 
 type EntryData = {
   dishId?: string | null

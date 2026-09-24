@@ -12,9 +12,7 @@ import { SafeImg } from "@/components/dining/safe-img"
 import { EmptyState } from "@/components/ui/empty-state"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { ok, type ActionResult } from "@/lib/actions/types"
-
-type NutritionParam = { id: string; name: string; unit: string; featured: boolean }
-type VenueTag = { id: string; name: string; color: string; bgColor: string }
+import type { NutritionParam, VenueTag } from "@/lib/dining-types"
 
 type ModifierOption = { id?: string; label: string; priceDelta: number; isDefault: boolean; order: number }
 type ModifierGroup = { id?: string; name: string; required: boolean; multiSelect: boolean; order: number; options: ModifierOption[] }

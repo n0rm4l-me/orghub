@@ -9,6 +9,7 @@ import { ok, type ActionResult } from "@/lib/actions/types"
 import { toast } from "@/components/ui/toaster"
 import { WeekMenuCell } from "@/components/dining/week-menu-cell"
 import type { DayOfWeek } from "@prisma/client"
+import type { NutritionParam, VenueTag } from "@/lib/dining-types"
 
 const DAYS: { key: DayOfWeek; label: string }[] = [
   { key: "MON", label: "Mon" },
@@ -21,8 +22,6 @@ const DAYS: { key: DayOfWeek; label: string }[] = [
 
 type MealSlot = { id: string; name: string; order: number }
 type Category = { id: string; name: string; mealSlotId: string; order: number }
-type NutritionParam = { id: string; name: string; unit: string; featured: boolean }
-type VenueTag = { id: string; name: string; color: string; bgColor: string }
 
 type EntryData = {
   id?: string

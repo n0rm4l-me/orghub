@@ -5,24 +5,7 @@ import { Plus, Check, UtensilsCrossed } from "lucide-react"
 import { SafeImg } from "@/components/dining/safe-img"
 import { formatPrice, formatPriceDelta } from "@/lib/format-price"
 import { useCart } from "@/lib/cart"
-
-type ModifierOption = { id: string; label: string; priceDelta: number; isDefault: boolean; color?: string | null }
-type ModifierGroup = { id: string; name: string; required: boolean; multiSelect: boolean; options: ModifierOption[] }
-type Tag = { id: string; name: string; color: string; bgColor: string }
-type NutritionParam = { id: string; name: string; unit: string; featured: boolean }
-
-type Entry = {
-  id: string
-  name: string | null
-  description: string | null
-  photo: string | null
-  price: number | null
-  nutrition: Record<string, number> | null
-  tagIds: string
-  note: string | null
-  soldOut: boolean
-  modifierGroups: ModifierGroup[]
-}
+import type { ModifierGroup, NutritionParam, VenueTag, MenuEntry } from "@/lib/dining-types"
 
 function initSelected(groups: ModifierGroup[]): Record<string, string[]> {
   const out: Record<string, string[]> = {}
@@ -35,8 +18,8 @@ function initSelected(groups: ModifierGroup[]): Record<string, string[]> {
 export function EntryCard({
   entry, tags, nutritionParams, currency,
 }: {
-  entry: Entry
-  tags: Tag[]
+  entry: MenuEntry
+  tags: VenueTag[]
   nutritionParams: NutritionParam[]
   currency: string
 }) {
@@ -84,7 +67,7 @@ export function EntryCard({
 
   const entryTags = (entry.tagIds || "").split(",").filter(Boolean)
     .map((tid) => tags.find((t) => t.id === tid))
-    .filter((t): t is Tag => !!t)
+    .filter((t): t is VenueTag => !!t)
 
   const featured = nutritionParams.find((p) => p.featured)
   const others = nutritionParams.filter((p) => !p.featured)

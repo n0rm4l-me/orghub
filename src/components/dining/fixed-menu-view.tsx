@@ -1,32 +1,15 @@
 import { EntryCard } from "@/components/dining/entry-card"
-
-type ModifierOption = { id: string; label: string; priceDelta: number; isDefault: boolean; color?: string | null }
-type ModifierGroup = { id: string; name: string; required: boolean; multiSelect: boolean; options: ModifierOption[] }
-type Tag = { id: string; name: string; color: string; bgColor: string }
-type NutritionParam = { id: string; name: string; unit: string; featured: boolean }
-
-type Entry = {
-  id: string
-  name: string | null
-  description: string | null
-  photo: string | null
-  price: number | null
-  nutrition: Record<string, number> | null
-  tagIds: string
-  note: string | null
-  soldOut: boolean
-  modifierGroups: ModifierGroup[]
-}
+import type { NutritionParam, VenueTag, MenuEntry } from "@/lib/dining-types"
 
 type Section = {
   id: string
   name: string
-  entries: Entry[]
+  entries: MenuEntry[]
 }
 
 interface Props {
   sections: Section[]
-  tags: Tag[]
+  tags: VenueTag[]
   nutritionParams?: NutritionParam[]
   currency?: string
 }

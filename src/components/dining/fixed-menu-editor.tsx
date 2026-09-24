@@ -17,6 +17,7 @@ import { ok, type ActionResult } from "@/lib/actions/types"
 import { toast } from "@/components/ui/toaster"
 import { SafeImg } from "@/components/dining/safe-img"
 import { MediaPickerField } from "@/components/media-picker"
+import type { NutritionParam, VenueTag } from "@/lib/dining-types"
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -53,9 +54,6 @@ type Section = {
   order: number
   entries: Entry[]
 }
-
-type VenueTag = { id: string; name: string; color: string; bgColor: string }
-type NutritionParam = { id: string; name: string; unit: string; featured: boolean }
 
 type Dish = {
   id: string
