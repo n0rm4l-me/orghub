@@ -390,20 +390,25 @@ Everything else, roughly ordered by blast radius:
   `next/dynamic` usage anywhere in `src/`. Extract the extensions list to its
   own module, render stored content server-side via `@tiptap/html`, lazy-load
   the actual `Editor` component only in the admin content form.
-- **PARTIAL 2026-09-25.** [src/app/(portal)/page.tsx](<src/app/(portal)/page.tsx>)
-  (the feed): the `lastFeedVisitAt` lookup, active-poll data, and top-kudos
-  data were 3 separate sequential `await`s after the main `Promise.all`,
-  even though none of the three depends on either of the others (only on
-  `user`/`settings`, both already resolved). Merged into one `Promise.all`;
-  the poll lookup's own internal 2-step dependency (fetch the poll, then its
-  votes) stays sequential inside an extracted `loadActivePollData()`, since
-  that one genuinely can't be parallelized. Verified with `tsc`, `eslint`,
-  `vitest`, and a full `npx next build`; re-read the extracted function
-  against the original field-by-field since this is the highest-traffic
-  page and can't be visually checked right now. Kudos and article-detail
-  pages likely have the same pattern, not yet touched: same risk profile
-  (unverifiable, high-traffic), lower priority once this one page proved the
-  restructuring pattern works.
+- **FIXED 2026-09-25, all 3 pages that had this pattern.**
+  [src/app/(portal)/page.tsx](<src/app/(portal)/page.tsx>) (the feed): the
+  `lastFeedVisitAt` lookup, active-poll data, and top-kudos data were 3
+  separate sequential `await`s after the main `Promise.all`, even though
+  none of the three depends on either of the others (only on
+  `user`/`settings`, both already resolved). Merged into one `Promise.all`.
+  [src/app/(portal)/kudos/page.tsx](<src/app/(portal)/kudos/page.tsx>): same
+  pattern, active-poll data and top-kudos data merged the same way.
+  [src/app/(portal)/articles/[id]/page.tsx](<src/app/(portal)/articles/[id]/page.tsx>):
+  the current user's like-reaction lookup and active-poll data were
+  sequential despite being independent (both only need `user`/`article.id`,
+  already resolved); merged. All three keep each poll lookup's own internal
+  2-step dependency (fetch the poll, then its votes) sequential inside an
+  extracted `loadActivePollData()`, since that one genuinely can't be
+  parallelized. Verified each with `tsc`, `eslint`, `vitest`, and a full
+  `npx next build`; re-read each extracted function against its original
+  field-by-field since these are the highest-traffic pages and can't be
+  visually checked right now (the feed page's version was additionally
+  live-verified via curl after deploy).
 - **FIXED 2026-09-25** [src/lib/views.ts](src/lib/views.ts) `recordView`
   (called from
   [articles/[id]/page.tsx:74](<src/app/(portal)/articles/[id]/page.tsx#L74>))

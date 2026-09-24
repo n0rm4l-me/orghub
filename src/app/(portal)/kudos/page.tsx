@@ -81,29 +81,28 @@ export default async function KudosPage({ searchParams }: Props) {
 
   const kudosValues = settings.kudosValues.split(",").map((v) => v.trim()).filter(Boolean)
 
-  let activePollData: ActivePollData | null = null
-  if (pollsEnabled && allBlocks.includes("activePolls")) {
+  async function loadActivePollData(): Promise<ActivePollData | null> {
     const activePollRaw = await db.poll.findFirst({
       where: { status: "ACTIVE" },
       include: { options: { include: { _count: { select: { votes: true } } }, orderBy: { order: "asc" } }, _count: { select: { votes: true } } },
     })
-    if (activePollRaw) {
-      const votedOptionIds = user
-        ? (await db.pollVote.findMany({ where: { pollId: activePollRaw.id, userId: user.id }, select: { optionId: true } })).map((v) => v.optionId)
-        : []
-      activePollData = {
-        poll: { id: activePollRaw.id, question: activePollRaw.question, anonymous: activePollRaw.anonymous, multiChoice: activePollRaw.multiChoice, resultsVisibility: activePollRaw.resultsVisibility, status: activePollRaw.status, endsAt: activePollRaw.endsAt },
-        options: activePollRaw.options.map((o) => ({ id: o.id, text: o.text, voteCount: o._count.votes })),
-        totalVotes: activePollRaw._count.votes,
-        votedOptionIds,
-      }
+    if (!activePollRaw) return null
+
+    const votedOptionIds = user
+      ? (await db.pollVote.findMany({ where: { pollId: activePollRaw.id, userId: user.id }, select: { optionId: true } })).map((v) => v.optionId)
+      : []
+    return {
+      poll: { id: activePollRaw.id, question: activePollRaw.question, anonymous: activePollRaw.anonymous, multiChoice: activePollRaw.multiChoice, resultsVisibility: activePollRaw.resultsVisibility, status: activePollRaw.status, endsAt: activePollRaw.endsAt },
+      options: activePollRaw.options.map((o) => ({ id: o.id, text: o.text, voteCount: o._count.votes })),
+      totalVotes: activePollRaw._count.votes,
+      votedOptionIds,
     }
   }
 
-  let topKudosData: TopKudosEntry[] = []
-  if (allBlocks.includes("topKudos")) {
-    topKudosData = await getTopKudosRecipients(5)
-  }
+  const [activePollData, topKudosData] = await Promise.all([
+    pollsEnabled && allBlocks.includes("activePolls") ? loadActivePollData() : Promise.resolve(null),
+    allBlocks.includes("topKudos") ? getTopKudosRecipients(5) : Promise.resolve([] as TopKudosEntry[]),
+  ])
 
   const content = (
     <>
