@@ -164,8 +164,33 @@ is already token-based and `Panel` is already a `Card` composition;
 Every other primitive in `src/components/ui/` (`admin-table`, `stat-card`,
 `empty-state`, `toaster`, `confirm-dialog`, `table-pagination`, `skeleton`,
 `avatar`, `delete-button`, `status-toggle`, `reject-button`) has zero
-`gray-*`/`bg-white` classes. `submit-button.tsx` no longer exists as a
-separate file (folded into `button.tsx`).
+`gray-*`/`bg-white` classes.
+
+**Correction, 2026-09-25: the "`submit-button.tsx` no longer exists, folded
+into `button.tsx`" line above was wrong.**
+[src/components/submit-button.tsx](src/components/submit-button.tsx) exists
+right now, is a different component (wraps `useFormStatus()` for
+progressive-enhancement `<form action={serverAction}>` submissions with no
+client state, not a styling variant of `Button`), and doesn't import from
+`button.tsx` at all. Not clear whether this was a stale observation or a
+straightforward mistake by whoever verified Phase 1; flagging so nobody
+trusts it without checking again themselves.
+
+**Near-miss, 2026-09-25: this session's own dead-exports audit (see
+"Dead-code and duplication audits" below) deleted
+[button.tsx](src/components/ui/button.tsx) and
+[badge.tsx](src/components/ui/badge.tsx) for having zero current
+importers**, without cross-referencing this section first, which already
+documented them as Phase 1 foundation work verified complete and correct,
+just not yet adopted anywhere. Caught by re-reading this section afterward
+and restored both files to their exact pre-deletion content (`git show` on
+the parent commit). The actually-dead primitives from that same audit pass
+(`AvatarBadge`/`AvatarGroup`/`AvatarGroupCount`, `CardAction`, the exported
+`toastManager`) were not named anywhere in the design-unification plan and
+stayed removed. Lesson for whoever runs the next dead-code pass on
+`src/components/ui/`: cross-check this section before deleting anything
+there, "zero importers" and "dead" are not the same claim for a primitive
+that's mid-rollout.
 
 **What's actually still open**: the primitives are correct and ready, but
 the individual page and component files mostly don't use them yet. Re-ran
@@ -542,10 +567,12 @@ FIXED is a documented decision, not an oversight.
 
 ### Unused exports and duplicated logic
 
-- **FIXED.** Deleted 2 whole dead files
-  ([src/components/ui/button.tsx](src/components/ui/button.tsx),
-  [src/components/ui/badge.tsx](src/components/ui/badge.tsx): zero imports of
-  either anywhere), 3 unused variants in otherwise-live files
+- **PARTLY REVERTED, see the note in "Design unification" above.** Initially
+  deleted `button.tsx`/`badge.tsx` for having zero current importers; both
+  were actually Phase 1 design-unification foundation work, verified
+  complete and intentionally awaiting adoption, not dead. Restored to their
+  exact pre-deletion content. Still deleted: 3 unused variants in
+  otherwise-live files
   (`AvatarBadge`/`AvatarGroup`/`AvatarGroupCount` from
   [avatar.tsx](src/components/ui/avatar.tsx), `CardAction` from
   [card.tsx](src/components/ui/card.tsx)), un-exported
