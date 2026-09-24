@@ -101,20 +101,6 @@ export async function deleteOrphanedObjects(keys: string[]): Promise<ActionResul
   return ok(`Deleted ${keys.length} orphaned object${keys.length === 1 ? "" : "s"}`)
 }
 
-export async function deleteMedia(id: string): Promise<ActionResult> {
-  const user = await requireRole("EDITOR")
-  const media = await db.media.findUnique({ where: { id }, select: { key: true, url: true } })
-  if (!media) return fail("Not found")
-  await deleteFromStorage(media.key).catch(() => {})
-  await db.$transaction([
-    db.article.updateMany({ where: { coverImage: media.url }, data: { coverImage: null } }),
-    db.media.delete({ where: { id } }),
-  ])
-  await logAudit({ userId: user.id, action: "media.delete", resourceType: "Media", resourceId: id })
-  revalidatePath("/admin/media")
-  return ok("Deleted")
-}
-
 export async function deleteMediaBulk(ids: string[]): Promise<ActionResult> {
   const user = await requireRole("EDITOR")
   if (!ids.length) return fail("No items selected")

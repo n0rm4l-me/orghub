@@ -113,14 +113,6 @@ async function persistNavOrder(user: { id: string }, order: string[]): Promise<v
   revalidateSettings()
 }
 
-export async function saveNavOrder(order: string[]): Promise<ActionResult> {
-  const user = await requireRole("EDITOR")
-  if (!order.every((id) => NAV_ITEM_IDS.has(id)) || new Set(order).size !== order.length)
-    return fail("Invalid nav item.")
-  await persistNavOrder(user, order)
-  return ok("Navigation saved.")
-}
-
 export async function toggleNavItem(id: string): Promise<ActionResult> {
   const user = await requireRole("EDITOR")
   if (!NAV_ITEM_IDS.has(id)) return fail("Invalid nav item.")
@@ -289,26 +281,3 @@ export async function toggleLocalAuth(enabled: boolean): Promise<ActionResult> {
   return ok(enabled ? "Password login enabled." : "Password login disabled.")
 }
 
-export async function saveTheme(formData: FormData): Promise<ActionResult> {
-  const user = await requireRole("ADMIN")
-
-  const primaryColor = ((formData.get("primaryColor") as string) ?? "").trim()
-  if (!HEX_COLOR.test(primaryColor))
-    return fail("Pick a colour in #rrggbb format.", "primaryColor")
-
-  await db.siteSettings.upsert({
-    where: { id: "singleton" },
-    create: { id: "singleton", primaryColor },
-    update: { primaryColor },
-  })
-
-  await logAudit({
-    userId: user.id,
-    action: "settings.theme",
-    resourceType: "SiteSettings",
-    metadata: { primaryColor },
-  })
-
-  revalidateSettings()
-  return ok("Theme applied.")
-}

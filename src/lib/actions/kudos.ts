@@ -445,12 +445,3 @@ export async function saveKudosSettings(formData: FormData): Promise<ActionResul
   revalidatePath("/admin/modules/kudos")
   return ok("Kudos settings saved.")
 }
-
-export async function resetKudosBudgets(): Promise<ActionResult> {
-  await requireRole("ADMIN")
-  // Budget is computed on the fly from createdAt, so "reset" is a no-op in the DB.
-  // This endpoint exists for external jobs that want to signal a reset via the API.
-  // They can also call the REST endpoint POST /api/admin/kudos/reset-budgets.
-  revalidatePath("/kudos")
-  return ok("Budgets reset for the current month.")
-}

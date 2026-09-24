@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Loader2, Trash2 } from "lucide-react"
+import { Trash2 } from "lucide-react"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { useAction } from "@/lib/use-action"
 import type { ActionResult } from "@/lib/actions/types"
@@ -65,9 +65,4 @@ export function DeleteButton({ onDelete, entity, name, note, variant = "link" }:
       />
     </>
   )
-}
-
-/** Inline spinner for row-level actions that do not open a dialog. */
-export function Spinner({ className = "size-3.5" }: { className?: string }) {
-  return <Loader2 className={`${className} animate-spin`} aria-hidden />
 }
