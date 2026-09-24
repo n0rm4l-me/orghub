@@ -447,12 +447,21 @@ Smaller items, independent of the design-unification phases above:
   once with a fully stripped environment (`env -i`, no `DATABASE_URL` or
   anything else set) to confirm it'll actually pass in GitHub Actions' clean
   runner, not just this machine.
-- **OPEN. Coverage is minimal.** Three test files total, one of them broken.
-  Nothing tests dining, kudos, polls, suggestions, or the authorization
-  boundary per server action (a VIEWER rejected, an EDITOR out of scope
-  rejected, an ADMIN allowed). That authorization matrix is the highest
-  value test to add next: cheap with a seeded DB, highest blast radius if
-  silently broken.
+- **PARTIAL 2026-09-25.** Added
+  [src/__tests__/actions.roles.test.ts](src/__tests__/actions.roles.test.ts):
+  a VIEWER rejected from an ADMIN-only action (`createLocation`,
+  `deleteKudos`), an ADMIN allowed (`deleteKudos`), and — the case that
+  actually matters, since it's the one bug pattern that silently over- or
+  under-scopes instead of just failing — an EDITOR rejected from a venue
+  under a *different* location (`upsertMealSlots`) alongside an EDITOR
+  allowed on their *own* location's venue, so the scoping filter is proven
+  to reject correctly without also locking out legitimate access. Followed
+  the existing `actions.auth.test.ts` mocking style (no DB, no seed data);
+  the venue-scoping mock's `findFirst` actually inspects `where.locationId`
+  rather than always returning the row, otherwise the out-of-scope test
+  would pass without exercising anything. Still open: dining, polls,
+  suggestions have zero coverage beyond this, and the matrix only covers 2
+  of the ~15 action files.
 - **PENDING AUDIT. Input validation and IDOR review never finished.** No
   validation library in `package.json` (no zod, no valibot). Server actions
   read `formData.get(...) as string` directly and generally don't check that a
