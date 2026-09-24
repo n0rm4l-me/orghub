@@ -110,10 +110,37 @@ for actual users, so treat this as a local testing-tool limitation, not a
 found bug, and verify by reading the action code rather than by clicking
 through it. See `project_orghub_local_dev.md` memory for the exact repro.
 
-Not yet assessed hands-on: Media upload and the "browse uploaded"/insert-
-into-editor flow, Translation (any provider), Navigation reordering,
-Appearance beyond brand color/logo (layout presets, sidebar widgets),
-Categories admin, Announcements, orghub-mobile's actual screens on a device.
+**FIXED (2026-09-24). `deleteMediaBulk` only cleared `Article.coverImage`.**
+[src/lib/actions/media.ts](src/lib/actions/media.ts) deletes the storage
+object and the `Media` row for whatever's selected in the media browser, but
+the reference-cleanup only ever nulled `Article.coverImage`. Seven other
+fields `findOrphanedObjects` (a few lines above it, in the same file) already
+knows how to check were left pointing at a URL that now 404s forever:
+`Dish.photo`, `FixedMenuEntry.photo`, `WeekMenuEntry.photo`,
+`MonthlyTopic.bannerImage`, `MonthlyTopicHighlight.image`, `User.avatarUrl`,
+`SiteSettings.logoUrl`/`logoOnLightUrl`. Added the matching `updateMany` for
+each, verified end to end against the live demo DB (created a throwaway
+`Media` row, pointed `User.avatarUrl` at it, ran the transaction directly,
+confirmed both `avatarUrl` and the `Media` row were correctly cleared).
+**Not covered by this fix, still a real gap:** images embedded inside
+Article/Page rich-text body content. `findOrphanedObjects` walks that JSON
+to find broken-image candidates but nothing rewrites the JSON on delete, so
+a media file that's embedded in an article body (not just used as a cover
+image) still breaks silently. Fixing that needs a Tiptap-JSON-aware
+node-replacement step, not a simple `updateMany`.
+
+Assessed via code review (not hands-on, see the testing-tool limitation
+above extends to any admin form; these five don't use content-form.tsx
+though, so they're lower-risk to verify hands-on next time regardless):
+Navigation reordering, layout/sidebar-widget settings, module toggles,
+dining-currency settings, and Categories and Announcements admin CRUD are
+all well-validated (enum membership checked, XSS-safe URL validation on
+logo/brand fields, a real guard against disabling local auth with no other
+provider configured, audit logging on every mutation). No further findings.
+
+Not yet assessed at all: Media upload and the "browse uploaded"/insert-
+into-editor flow, Translation (any provider), orghub-mobile's actual screens
+on a device.
 
 ---
 

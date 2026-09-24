@@ -107,8 +107,20 @@ export async function deleteMediaBulk(ids: string[]): Promise<ActionResult> {
   const rows = await db.media.findMany({ where: { id: { in: ids } }, select: { key: true, url: true } })
   await Promise.all(rows.map((r) => deleteFromStorage(r.key).catch(() => {})))
   const urls = rows.map((r) => r.url)
+  // Clear every simple (non-rich-text) field that can point at one of these
+  // URLs, so a deleted file doesn't leave a permanently broken image behind.
+  // Article/Page body content can also embed these URLs but isn't handled
+  // here: rewriting Tiptap JSON is a separate, larger fix.
   await db.$transaction([
     db.article.updateMany({ where: { coverImage: { in: urls } }, data: { coverImage: null } }),
+    db.dish.updateMany({ where: { photo: { in: urls } }, data: { photo: null } }),
+    db.fixedMenuEntry.updateMany({ where: { photo: { in: urls } }, data: { photo: null } }),
+    db.weekMenuEntry.updateMany({ where: { photo: { in: urls } }, data: { photo: null } }),
+    db.monthlyTopic.updateMany({ where: { bannerImage: { in: urls } }, data: { bannerImage: null } }),
+    db.monthlyTopicHighlight.updateMany({ where: { image: { in: urls } }, data: { image: null } }),
+    db.user.updateMany({ where: { avatarUrl: { in: urls } }, data: { avatarUrl: null } }),
+    db.siteSettings.updateMany({ where: { logoUrl: { in: urls } }, data: { logoUrl: null } }),
+    db.siteSettings.updateMany({ where: { logoOnLightUrl: { in: urls } }, data: { logoOnLightUrl: null } }),
     db.media.deleteMany({ where: { id: { in: ids } } }),
   ])
   await logAudit({ userId: user.id, action: "media.delete", metadata: { count: ids.length } })
