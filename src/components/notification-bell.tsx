@@ -80,6 +80,10 @@ export function NotificationBell() {
   // header and occupies a connection while dish photos are downloading; pausing
   // when hidden costs nothing and leaves more connections for the page content.
   useEffect(() => {
+    // fetchCount is async; the eventual setCount happens after the awaited
+    // fetch, not synchronously here, but the lint rule can't see through the
+    // useCallback boundary to confirm that.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCount()
     const id = setInterval(() => {
       if (document.visibilityState === "visible") fetchCount()

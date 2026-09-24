@@ -15,11 +15,11 @@ type EmbedData =
 export function PollEmbedView({ node, deleteNode, editor }: NodeViewProps) {
   const pollId = node.attrs.pollId as string
   const [data, setData] = useState<EmbedData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(!!pollId)
   const editable = editor.isEditable
 
   useEffect(() => {
-    if (!pollId) { setLoading(false); return }
+    if (!pollId) return
     getPollForEmbed(pollId).then((d) => {
       setData(d)
       setLoading(false)

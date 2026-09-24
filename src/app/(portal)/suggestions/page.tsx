@@ -69,7 +69,7 @@ export default async function SuggestionsPage({ searchParams }: Props) {
 
       {/* Status filter tabs */}
       <div className="mb-5 flex flex-wrap gap-1.5">
-        <a
+        <Link
           href="/suggestions"
           className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
             !status
@@ -78,9 +78,9 @@ export default async function SuggestionsPage({ searchParams }: Props) {
           }`}
         >
           All
-        </a>
+        </Link>
         {STATUSES.map((s) => (
-          <a
+          <Link
             key={s}
             href={`/suggestions?status=${s}`}
             className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
@@ -90,7 +90,7 @@ export default async function SuggestionsPage({ searchParams }: Props) {
             }`}
           >
             {STATUS_LABEL[s]}
-          </a>
+          </Link>
         ))}
       </div>
 
