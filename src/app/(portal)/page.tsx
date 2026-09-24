@@ -182,6 +182,10 @@ export default async function FeedPage({ searchParams }: Props) {
   const PER_PAGE = settings.feedPageSize ?? 15
   const pollsEnabled = parseModules(settings.enabledModules).has("polls")
   const kudosEnabled = parseModules(settings.enabledModules).has("kudos")
+  const allBlocks = [
+    ...(settings.sidebarOrder?.split(",").filter(Boolean) ?? []),
+    ...(settings.leftSidebarOrder?.split(",").filter(Boolean) ?? []),
+  ]
 
   const [articles, total, categories, quickLinks, upcomingEvents, user, pinnedRaw] =
     await Promise.all([
@@ -207,15 +211,47 @@ export default async function FeedPage({ searchParams }: Props) {
         : Promise.resolve([]),
     ])
 
-  let lastFeedVisitAt: Date | null = null
-
-  if (user) {
-    const feedUser = await db.user.findUnique({
-      where: { id: user.id },
-      select: { lastFeedVisitAt: true },
+  async function loadActivePollData(): Promise<ActivePollData | null> {
+    const activePollRaw = await db.poll.findFirst({
+      where: { status: "ACTIVE" },
+      orderBy: { createdAt: "desc" },
+      include: {
+        options: { orderBy: { order: "asc" }, include: { _count: { select: { votes: true } } } },
+        _count: { select: { votes: true } },
+      },
     })
-    lastFeedVisitAt = feedUser?.lastFeedVisitAt ?? null
+    if (!activePollRaw) return null
+
+    const userVotes = user
+      ? await db.pollVote.findMany({
+          where: { pollId: activePollRaw.id, userId: user.id },
+          select: { optionId: true },
+        })
+      : []
+    return {
+      poll: {
+        id: activePollRaw.id,
+        question: activePollRaw.question,
+        anonymous: activePollRaw.anonymous,
+        multiChoice: activePollRaw.multiChoice,
+        resultsVisibility: activePollRaw.resultsVisibility,
+        status: activePollRaw.status,
+        endsAt: activePollRaw.endsAt,
+      },
+      options: activePollRaw.options.map((o) => ({ id: o.id, text: o.text, voteCount: o._count.votes })),
+      totalVotes: activePollRaw._count.votes,
+      votedOptionIds: userVotes.map((v) => v.optionId),
+    }
   }
+
+  const [feedUser, activePollData, topKudosData] = await Promise.all([
+    user
+      ? db.user.findUnique({ where: { id: user.id }, select: { lastFeedVisitAt: true } })
+      : Promise.resolve(null),
+    pollsEnabled && allBlocks.includes("activePolls") ? loadActivePollData() : Promise.resolve(null),
+    kudosEnabled && allBlocks.includes("topKudos") ? getTopKudosRecipients(5) : Promise.resolve([] as TopKudosEntry[]),
+  ])
+  const lastFeedVisitAt = feedUser?.lastFeedVisitAt ?? null
 
   function mapArticle(a: (typeof articles)[0]) {
     return {
@@ -247,48 +283,6 @@ export default async function FeedPage({ searchParams }: Props) {
   const totalPages = Math.ceil(total / PER_PAGE)
   const eventsEnabled = parseModules(settings.enabledModules).has("events")
   const feedLayout = settings.feedLayout ?? "sidebar-right"
-
-  const allBlocks = [
-    ...(settings.sidebarOrder?.split(",").filter(Boolean) ?? []),
-    ...(settings.leftSidebarOrder?.split(",").filter(Boolean) ?? []),
-  ]
-  let activePollData: ActivePollData | null = null
-  if (pollsEnabled && allBlocks.includes("activePolls")) {
-    const activePollRaw = await db.poll.findFirst({
-      where: { status: "ACTIVE" },
-      orderBy: { createdAt: "desc" },
-      include: {
-        options: { orderBy: { order: "asc" }, include: { _count: { select: { votes: true } } } },
-        _count: { select: { votes: true } },
-      },
-    })
-    if (activePollRaw) {
-      const userVotes = user
-        ? await db.pollVote.findMany({
-            where: { pollId: activePollRaw.id, userId: user.id },
-            select: { optionId: true },
-          })
-        : []
-      activePollData = {
-        poll: {
-          id: activePollRaw.id,
-          question: activePollRaw.question,
-          anonymous: activePollRaw.anonymous,
-          multiChoice: activePollRaw.multiChoice,
-          resultsVisibility: activePollRaw.resultsVisibility,
-          status: activePollRaw.status,
-          endsAt: activePollRaw.endsAt,
-        },
-        options: activePollRaw.options.map((o) => ({ id: o.id, text: o.text, voteCount: o._count.votes })),
-        totalVotes: activePollRaw._count.votes,
-        votedOptionIds: userVotes.map((v) => v.optionId),
-      }
-    }
-  }
-  let topKudosData: TopKudosEntry[] = []
-  if (kudosEnabled && allBlocks.includes("topKudos")) {
-    topKudosData = await getTopKudosRecipients(5)
-  }
 
   const cardStyle = (settings.feedCardStyle ?? "preview") as "compact" | "default" | "preview"
   const rightBlocks = settings.sidebarOrder?.split(",").filter(Boolean) ?? ["quickLinks", "browseByTopic", "upcomingEvents"]
