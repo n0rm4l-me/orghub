@@ -54,6 +54,7 @@ export default async function EditEventPage({ params }: Props) {
       />
       <ContentForm
         kind="article"
+        entityLabel="Event"
         categories={categories}
         action={updateArticle.bind(null, id)}
         values={{

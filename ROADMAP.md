@@ -38,14 +38,16 @@ module-enabled flag; the comment-reply notification call is now
 
 ## Feature gaps
 
-- **OPEN. Dining cart has no checkout.**
+- **DECIDED (2026-09-24), still OPEN as a feature. Dining cart has no checkout.**
   [src/components/dining/cart-widget.tsx:137](src/components/dining/cart-widget.tsx#L137):
   "Place Order" fires `toast.info("Online ordering coming soon")`.
   `src/lib/cart.tsx` holds add/remove/quantity/subtotal client-side state with
-  no server action or API route that ever persists an order. Decide whether
-  this ships as a real order flow (needs an `Order` model, an admin queue, and
-  a submit action) or gets removed from the UI until it does; right now it's a
-  dead end a user can click into.
+  no server action or API route that ever persists an order. Decision: leave
+  as is rather than either building a full `Order` model + admin queue (a real
+  feature, not a bug fix) or deleting the cart UI (would throw away working
+  code for no reason). The toast is honest, not a silent failure, so this is
+  a scoped-out feature, not a correctness bug. Building the real order flow
+  is a legitimate future roadmap item on its own, not a quick fix.
 
 - **OPEN. Admin "Auth providers" page is read-only.**
   [src/app/admin/auth-providers/page.tsx](src/app/admin/auth-providers/page.tsx)
@@ -55,26 +57,63 @@ module-enabled flag; the comment-reply notification call is now
   product where ops sets env vars, but worth an explicit decision rather than
   leaving it looking like an unfinished CRUD screen.
 
-- **PARTIAL. Mobile REST API auth is inconsistent across routes.**
-  `getMobileUser` (Bearer JWT check) is enforced on `mobile-me` and
-  `translate`. The feed, article detail, events, and dining routes have no
-  auth check at all, gated only by whether the module is enabled. If the
-  intent is "public read of published content," this is fine and should just
-  be documented; if the intent was "requires a logged-in employee," it's a
-  gap. Decide the intent, then either add the check everywhere or state
-  explicitly that these are public reads.
+- **RESOLVED (2026-09-24). Mobile REST API's auth split is intentional, not a gap.**
+  `getMobileUser` is enforced on `mobile-me` and `translate` only; feed,
+  article detail, events, and dining reads have no auth check. Checked
+  against the web portal's own model: [src/middleware.ts](src/middleware.ts)'s
+  `matcher` only protects `/admin/:path*`, `/login`, and the auth callback,
+  so the portal feed/events/dining pages are ALSO publicly readable
+  server-side (`(portal)/page.tsx` calls `getCurrentUser()` for conditional
+  UI, never redirects an anonymous visitor). Mutations (comment, react,
+  translate) require auth in both the web actions and the mobile routes.
+  The mobile API mirrors the web app's actual public-read/authenticated-write
+  design; this was a correct read of an unfinished-looking gap, not a bug.
 
-- **OPEN. `orghub-mobile` has three stub screens and a large uncommitted
-  working tree.** Separate repo, `/Users/petr.petrenko/Documents/git/orghub-mobile`.
+- **FIXED (2026-09-24). `orghub-mobile`'s uncommitted work is now committed**
+  (commit `4b8f872`, 43 files). No remote is configured on that repo, so this
+  was purely a local-disk-loss risk; it's closed now.
+- **OPEN. `orghub-mobile` has three stub screens.**
   `app/kudos.tsx`, `app/polls.tsx`, `app/suggestions.tsx` all render
   `<ComingSoonScreen>` and nothing else, despite the web backend fully
-  supporting all three. Separately and more urgently: as of 2026-09-24 the
-  working tree has ~2500 lines of uncommitted changes across 11 tracked files
-  plus 29 untracked files (dining screens, calendar, comments, likes, an API
-  client, auth). Only two commits exist in the repo's history
-  ("Initial commit" and "Mobile design unification"). This work is at risk of
-  being lost (accidental checkout, disk loss, wrong branch) until it's
-  committed. Commit it first, then decide the three stub screens' priority.
+  supporting all three, and despite `lib/useAuth.ts`/`lib/api.ts` already
+  existing to build them on. Decide priority for building these three out.
+
+- **FIXED (2026-09-24). Admin Events form said "Create article" instead of
+  "Create event".** `content-form.tsx` is correctly shared between Articles
+  and Events (events are `Article` rows with `eventDate` fields, so the
+  field-visibility logic is right to treat them the same), but its button
+  copy read `` `Create ${kind}` `` where `kind` is hardcoded to `"article"`
+  for the events pages. Added an `entityLabel` override prop, wired it to
+  `"Event"` on both `admin/events/new` and `admin/events/[id]/edit`.
+
+---
+
+## Deeper functional assessment (2026-09-24, hands-on)
+
+Went module by module against the live demo DB, not just reading code.
+Confirmed working correctly with no changes needed: admin Users (last-admin
+demotion/deactivation is blocked both in the UI, disabled controls, and
+server-side in `users.ts`, not just one or the other), Audit log (real
+categorized history, not a stub), Suggestions admin moderation (hide/show
+toggle and status dropdown both persist correctly), Kudos send end to end
+with a second user (including the Serializable-isolation change from the
+critical-fixes pass), Polls voting, Suggestions submit/vote/comment.
+
+Could not directly browser-verify the admin create/edit flows for Articles,
+Pages, and Events (anywhere `content-form.tsx`'s Tiptap editor is mounted):
+simulating a submit-button click on those specific forms falls through to
+a native browser GET instead of reaching React's `onSubmit`, reproducibly,
+even after a multi-second wait post-navigation. The `onSubmit`/`preventDefault`
+code is unremarkable and matches every other working form in the app, and
+real articles/events already exist in the demo DB proving the flow works
+for actual users, so treat this as a local testing-tool limitation, not a
+found bug, and verify by reading the action code rather than by clicking
+through it. See `project_orghub_local_dev.md` memory for the exact repro.
+
+Not yet assessed hands-on: Media upload and the "browse uploaded"/insert-
+into-editor flow, Translation (any provider), Navigation reordering,
+Appearance beyond brand color/logo (layout presets, sidebar widgets),
+Categories admin, Announcements, orghub-mobile's actual screens on a device.
 
 ---
 

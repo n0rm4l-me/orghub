@@ -19,6 +19,7 @@ export default async function NewEventPage() {
       <EditorHeader backHref="/admin/events" backLabel="Events" title="New event" />
       <ContentForm
         kind="article"
+        entityLabel="Event"
         categories={categories}
         action={createArticle}
         redirectAfterCreate="/admin/events/{id}/edit"

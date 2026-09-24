@@ -38,6 +38,11 @@ interface ParentPage {
 interface Props {
   /** `article` shows the summary and category fields; `page` hides them. */
   kind: "article" | "page"
+  /**
+   * Overrides the copy that would otherwise be derived from `kind`, for
+   * callers reusing the article shape for a different entity (e.g. events).
+   */
+  entityLabel?: string
   values?: ContentFormValues
   categories?: Category[]
   parentPages?: ParentPage[]
@@ -54,6 +59,7 @@ const EMPTY_DOC = { type: "doc", content: [{ type: "paragraph" }] }
 
 export function ContentForm({
   kind,
+  entityLabel,
   values,
   categories = [],
   parentPages,
@@ -70,7 +76,7 @@ export function ContentForm({
   const [coverImageUrl, setCoverImageUrl] = useState(values?.coverImage ?? "")
   const [savedAt, setSavedAt] = useState<string | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
-  const label = kind === "article" ? "Article" : "Page"
+  const label = entityLabel ?? (kind === "article" ? "Article" : "Page")
 
   const { run, pending } = useAction(action, {
     silent: true,
@@ -225,7 +231,7 @@ export function ContentForm({
                 disabled:opacity-60"
             >
               {pending && <Loader2 className="size-3.5 animate-spin" aria-hidden />}
-              {pending ? "Saving…" : isNew ? `Create ${kind}` : "Save changes"}
+              {pending ? "Saving…" : isNew ? `Create ${label}` : "Save changes"}
             </button>
 
             {/* Fixed-height status line so the panel never resizes. */}
