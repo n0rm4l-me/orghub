@@ -22,6 +22,51 @@ listed in "Recently fixed" instead of repeated here as open work.
 
 ---
 
+## Framework currency (Next.js 16)
+
+This repo's `AGENTS.md`/`CLAUDE.md` (gitignored, "AI assistant config files")
+carry a real, first-party Next.js 16.3.2 block (confirmed genuine by reading
+`node_modules/next/dist/server/lib/generate-agent-files.js`'s source, not just
+trusting the text) pointing at `node_modules/next/dist/docs/` for
+version-matched docs, since training data can be stale for a fast-moving
+framework. Worth an occasional skim, not just a one-time read; a
+`node_modules` reinstall/upgrade regenerates it. What came out of reading it
+once, 2026-09-25:
+
+- **FIXED.** `src/middleware.ts` renamed to
+  [src/proxy.ts](src/proxy.ts) (function renamed `middleware` → `proxy` too):
+  the `middleware` filename/export are deprecated in Next.js 16 in favor of
+  `proxy`, purely a naming/convention change, same signature, same matcher
+  config, verified with `tsc`, `eslint`, `vitest`, and a real `npx next
+  build`. Not urgent (still works either way, `next build`'s own output
+  labels the route "Proxy (Middleware)" regardless of which filename is
+  used), but there's no reason to carry a deprecated name forward.
+- **Worth knowing, not changed:** `revalidateTag` calls in
+  [settings.ts](src/lib/actions/settings.ts) already correctly pass a second
+  argument (`{}`, a valid empty `CacheLifeConfig`) since Next.js 16 made the
+  single-argument form a type error, so whoever wrote `revalidateSettings()`
+  already knew about this. The docs note `revalidateTag` is meant for
+  stale-while-revalidate semantics and recommend `updateTag` (new in Next.js
+  16, Server-Actions-only) for read-your-own-writes cases, which arguably
+  describes `revalidateSettings()` better (an admin saving settings likely
+  wants to see their own change immediately, not tolerate brief staleness).
+  Didn't switch it: no evidence of an actual staleness problem right now, and
+  swapping a working call for a "more semantically correct" one on a doc's
+  general advice alone, without a concrete symptom, isn't a great trade.
+  Worth trying `updateTag` if an admin ever reports settings appearing to lag
+  after saving.
+- **Not checked yet, flagging for whoever picks this up:** the same docs
+  cover React 19.2 (View Transitions, `useEffectEvent`, `Activity`), stable
+  `cacheLife`/`cacheTag` (drop the `unstable_` prefix if used anywhere, grep
+  turned up none in `src/`), `next/image` default changes
+  (`minimumCacheTTL` 60s→4h, `qualities` now `[75]` only, local
+  query-string images need `localPatterns.search`), and Cache Components
+  (`cacheComponents` config, opt-in). None of these came up as an active
+  problem in this pass, but nobody has gone through this app's `next/image`
+  usage or Server Component structure specifically checking for them.
+
+---
+
 ## Critical: security and correctness
 
 All five items originally here were fixed and verified on 2026-09-24 (real
@@ -60,7 +105,7 @@ module-enabled flag; the comment-reply notification call is now
 - **RESOLVED (2026-09-24). Mobile REST API's auth split is intentional, not a gap.**
   `getMobileUser` is enforced on `mobile-me` and `translate` only; feed,
   article detail, events, and dining reads have no auth check. Checked
-  against the web portal's own model: [src/middleware.ts](src/middleware.ts)'s
+  against the web portal's own model: [src/proxy.ts](src/proxy.ts)'s
   `matcher` only protects `/admin/:path*`, `/login`, and the auth callback,
   so the portal feed/events/dining pages are ALSO publicly readable
   server-side (`(portal)/page.tsx` calls `getCurrentUser()` for conditional

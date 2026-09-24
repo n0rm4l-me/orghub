@@ -56,8 +56,8 @@ export function hasRole(user: CurrentUser | null, min: Role): boolean {
  * Denials land on `/no-access`, which sits outside the `/admin` layout on
  * purpose: sending an under-privileged user to an admin route that re-runs this
  * same check would redirect forever. Holding a valid cookie for a deactivated
- * account is likewise routed there rather than to `/login`, since the middleware
- * bounces signed-in visitors straight back off the login page.
+ * account is likewise routed there rather than to `/login`, since the proxy
+ * (`src/proxy.ts`) bounces signed-in visitors straight back off the login page.
  */
 export async function requireRole(min: Role): Promise<CurrentUser> {
   const session = await getSession()

@@ -26,7 +26,7 @@ function isRateLimited(ip: string): boolean {
 
 const { auth } = NextAuth(authConfig)
 
-export default async function middleware(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   if (req.method === "POST" && req.nextUrl.pathname.startsWith("/api/auth/callback/")) {
     const ip =
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
