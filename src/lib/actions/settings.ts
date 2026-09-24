@@ -171,7 +171,6 @@ export async function saveEnabledModules(modules: string[]): Promise<ActionResul
 
 
 const VALID_LAYOUTS     = new Set(["content", "sidebar-right", "sidebar-left", "sidebar-both"])
-const VALID_WIDTHS      = new Set(["narrow", "default", "wide"])
 const VALID_PAGE_SIZE   = new Set([5, 10, 15, 20, 25, 30])
 const VALID_CARD_STYLES = new Set(["compact", "default", "preview"])
 
@@ -185,14 +184,11 @@ export async function saveLayout(formData: FormData): Promise<ActionResult> {
   const eventsLayout  = (formData.get("eventsLayout")  as string) || "content"
   const diningLayout        = (formData.get("diningLayout")        as string) || "content"
   const suggestionsLayout   = (formData.get("suggestionsLayout")   as string) || "content"
-  const portalWidth         = (formData.get("portalWidth")         as string) || "default"
   const feedPageSize  = Number(formData.get("feedPageSize")) || 15
   const feedCardStyle = (formData.get("feedCardStyle") as string) || "preview"
 
   if (!VALID_LAYOUTS.has(feedLayout) || !VALID_LAYOUTS.has(articleLayout) || !VALID_LAYOUTS.has(pagesLayout) || !VALID_LAYOUTS.has(kudosLayout) || !VALID_LAYOUTS.has(eventsLayout) || !VALID_LAYOUTS.has(diningLayout) || !VALID_LAYOUTS.has(suggestionsLayout))
     return fail("Invalid layout value.")
-  if (!VALID_WIDTHS.has(portalWidth))
-    return fail("Invalid width value.")
   if (!VALID_PAGE_SIZE.has(feedPageSize))
     return fail("Invalid page size.")
   if (!VALID_CARD_STYLES.has(feedCardStyle))
@@ -200,15 +196,15 @@ export async function saveLayout(formData: FormData): Promise<ActionResult> {
 
   await db.siteSettings.upsert({
     where: { id: "singleton" },
-    create: { id: "singleton", feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, diningLayout, suggestionsLayout, portalWidth, feedPageSize, feedCardStyle },
-    update: { feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, diningLayout, suggestionsLayout, portalWidth, feedPageSize, feedCardStyle },
+    create: { id: "singleton", feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, diningLayout, suggestionsLayout, feedPageSize, feedCardStyle },
+    update: { feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, diningLayout, suggestionsLayout, feedPageSize, feedCardStyle },
   })
 
   await logAudit({
     userId: user.id,
     action: "settings.layout",
     resourceType: "SiteSettings",
-    metadata: { feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, diningLayout, suggestionsLayout, portalWidth, feedPageSize, feedCardStyle },
+    metadata: { feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, diningLayout, suggestionsLayout, feedPageSize, feedCardStyle },
   })
 
   revalidateSettings()

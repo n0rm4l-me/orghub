@@ -156,66 +156,6 @@ function CardStylePicker({ name, value }: { name: string; value: string }) {
   )
 }
 
-const WIDTH_PRESETS = [
-  {
-    value: "narrow",
-    label: "Narrow",
-    preview: (
-      <div className="flex h-6 w-full items-center justify-center">
-        <div className="h-full w-3/5 rounded bg-current opacity-30" />
-      </div>
-    ),
-  },
-  {
-    value: "default",
-    label: "Default",
-    preview: (
-      <div className="flex h-6 w-full items-center justify-center">
-        <div className="h-full w-4/5 rounded bg-current opacity-30" />
-      </div>
-    ),
-  },
-  {
-    value: "wide",
-    label: "Wide",
-    preview: (
-      <div className="flex h-6 w-full items-center justify-center">
-        <div className="h-full w-full rounded bg-current opacity-30" />
-      </div>
-    ),
-  },
-]
-
-function WidthPicker({ name, value }: { name: string; value: string }) {
-  return (
-    <div className="py-3">
-      <p className="mb-2 text-sm font-medium text-gray-800">Portal width</p>
-      <div className="grid grid-cols-3 gap-2">
-        {WIDTH_PRESETS.map((preset) => (
-          <label key={preset.value} className="cursor-pointer">
-            <input
-              type="radio"
-              name={name}
-              value={preset.value}
-              defaultChecked={value === preset.value}
-              className="peer sr-only"
-            />
-            <div
-              className="flex flex-col gap-1.5 rounded-lg border-2 border-gray-200 p-2 text-gray-400
-                transition peer-checked:border-brand peer-checked:text-brand"
-            >
-              {preset.preview}
-              <span className="text-center text-[10px] font-medium leading-tight">
-                {preset.label}
-              </span>
-            </div>
-          </label>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 interface Props {
   feedLayout: string
   articleLayout: string
@@ -224,13 +164,12 @@ interface Props {
   eventsLayout: string
   diningLayout: string
   suggestionsLayout: string
-  portalWidth: string
   feedPageSize: number
   feedCardStyle: string
   enabledModules: Set<ModuleId>
 }
 
-export function LayoutForm({ feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, diningLayout, suggestionsLayout, portalWidth, feedPageSize, feedCardStyle, enabledModules }: Props) {
+export function LayoutForm({ feedLayout, articleLayout, pagesLayout, kudosLayout, eventsLayout, diningLayout, suggestionsLayout, feedPageSize, feedCardStyle, enabledModules }: Props) {
   const { run, pending } = useAction(saveLayout)
 
   return (
@@ -258,7 +197,6 @@ export function LayoutForm({ feedLayout, articleLayout, pagesLayout, kudosLayout
         }
       >
         <div className="divide-y divide-gray-100">
-          <WidthPicker name="portalWidth" value={portalWidth} />
           <CardStylePicker name="feedCardStyle" value={feedCardStyle} />
           <div className="py-3">
             <label htmlFor="feedPageSize" className="mb-2 block text-sm font-medium text-gray-800">

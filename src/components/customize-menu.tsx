@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react"
 import { SlidersHorizontal } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { FontSizeToggle } from "@/components/font-size-toggle"
-import { PortalWidthPills } from "@/components/portal-width"
 
 export function CustomizeMenu() {
   const [open, setOpen] = useState(false)
@@ -45,12 +44,6 @@ export function CustomizeMenu() {
               Text size
             </p>
             <FontSizeToggle />
-          </div>
-          <div>
-            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-white/50">
-              Page width
-            </p>
-            <PortalWidthPills />
           </div>
         </div>
       )}

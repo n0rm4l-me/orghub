@@ -50,7 +50,6 @@ export default async function AppearancePage() {
           kudosLayout={settings.kudosLayout ?? "content"}
           diningLayout={settings.diningLayout ?? "content"}
           suggestionsLayout={settings.suggestionsLayout ?? "content"}
-          portalWidth={settings.portalWidth ?? "default"}
           feedPageSize={settings.feedPageSize ?? 15}
           feedCardStyle={settings.feedCardStyle ?? "preview"}
           enabledModules={enabledModules}
