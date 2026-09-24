@@ -430,16 +430,23 @@ Smaller items, independent of the design-unification phases above:
 
 ## Testing and CI
 
-- **OPEN. Tests aren't part of CI at all.**
-  [.github/workflows/docker.yml](.github/workflows/docker.yml)'s `verify` job
-  runs `tsc` and `eslint`, never `npx vitest run`. Add it.
-- **OPEN. `src/__tests__/rbac.test.ts` fails at import time**, not from a
-  logic bug: `Cannot find module '.../node_modules/next/server' imported from
-  next-auth/lib/env.js`, an ESM resolution mismatch between this Next.js
-  version and vitest's module resolution. The other two suites
-  (`format-price.test.ts`, `actions.auth.test.ts`, 12 tests) pass. Fix the
-  import resolution (likely a vitest alias/moduleNameMapper for `next/server`)
-  before wiring tests into CI, otherwise CI goes red on arrival.
+- **FIXED 2026-09-25** [.github/workflows/docker.yml](.github/workflows/docker.yml)'s
+  `verify` job now runs `npx vitest run` after `tsc`/`eslint`.
+- **FIXED 2026-09-25** [src/__tests__/rbac.test.ts](src/__tests__/rbac.test.ts)
+  no longer fails at import time. Root cause: `next-auth` does `import ... from
+  "next/server"` with no extension; Next 16.3.2 ships no `exports` map for
+  that package, so Node's strict ESM resolver (which Vitest's SSR
+  externalization hands `next-auth` off to, bypassing Vite's own resolver and
+  any `resolve.alias`) can't find it, while Next's own bundler resolves it
+  extension-optionally and never hits this. Fix: added `test.server.deps.inline:
+  ["next-auth"]` to [vitest.config.ts](vitest.config.ts), forcing `next-auth`
+  through Vite's resolver instead. (Tried a `resolve.alias` for `next/server`
+  first — didn't help on its own, because externalized deps skip
+  `resolve.alias` entirely; removed it once `deps.inline` alone proved
+  sufficient.) All 3 suites (19 tests) now pass, verified once locally and
+  once with a fully stripped environment (`env -i`, no `DATABASE_URL` or
+  anything else set) to confirm it'll actually pass in GitHub Actions' clean
+  runner, not just this machine.
 - **OPEN. Coverage is minimal.** Three test files total, one of them broken.
   Nothing tests dining, kudos, polls, suggestions, or the authorization
   boundary per server action (a VIEWER rejected, an EDITOR out of scope
