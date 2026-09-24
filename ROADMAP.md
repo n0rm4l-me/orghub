@@ -230,18 +230,39 @@ shape: track `bg-gray-200` → `bg-border`, knob `bg-white` → `bg-card`),
 `category-manager.tsx`, `layout-form.tsx`, `sidebar-widgets-form.tsx`,
 `user-row-actions.tsx`.
 
-Still open, the larger admin components (checked 2026-09-24, instance counts
-of `text-gray-[0-9]|border-gray-[0-9]|bg-gray-[0-9]|bg-white` per file):
-`content-form.tsx` (31), `editor.tsx` (21), `brand-form.tsx` (20),
-`media-picker.tsx` (19), `kudos-redeem-types-panel.tsx` (16),
-`media-grid.tsx` (15), `poll-form.tsx` (15), `kudos-settings-form.tsx` (14),
-`nav-manager.tsx` (13), `translation-settings-form.tsx` (12),
-`poll-results.tsx` (9), `media-page-client.tsx` (9). These are bigger and
-higher-traffic (the rich-text editor and its popovers, the media library,
-the brand/logo settings form) so budget more care per file than the
-mechanical page migrations above. `boolean-toggle.tsx` and
+**Phase 2 complete (2026-09-24).** The remaining larger components are also
+done: `content-form.tsx`, `editor.tsx`, `brand-form.tsx`, `media-picker.tsx`,
+`kudos-redeem-types-panel.tsx`, `media-grid.tsx`, `poll-form.tsx`,
+`kudos-settings-form.tsx`, `nav-manager.tsx`, `translation-settings-form.tsx`,
+`poll-results.tsx`, `media-page-client.tsx`. `boolean-toggle.tsx` and
 `sidebar-order-manager.tsx` from the plan's original list no longer exist,
-deleted as dead code earlier this session.
+deleted as dead code earlier this session. Two things worth flagging from
+this batch specifically:
+
+- `media-grid.tsx` had 11 `dark:*-gray-*` classes that I myself added earlier
+  this same session (before re-discovering that admin is forced light-mode),
+  not inherited debt. Removed them along with the light-mode migration.
+- `media-picker.tsx`'s `MediaPickerField`'s `tone === "dark"` branch
+  (`border-gray-700 bg-gray-800`) was correctly left alone: that's a
+  deliberate "preview this logo against a permanently dark swatch" prop for
+  brand-form's logo-on-dark-background preview, unrelated to the app's theme
+  system, not a missed gray class.
+
+Whole-tree audit counts, `src/app` + `src/components`:
+
+```
+bg-white                   137  (was 205 at session start)
+text-gray-[0-9]            856  (was 1231)
+border-gray-[0-9]          375  (was 509)
+dark:bg-gray-[0-9]         156  (was 165)
+dark:text-gray-[0-9]       308  (was 327)
+dark:border-gray-[0-9]     157  (was 166)
+```
+
+Phase 2 (admin) is done per the plan's own file list. Remaining counts are
+almost entirely Phase 3 (portal, 12 pages + components) and Phase 4 (dining
+editors, 12 files) territory; read the plan for both file lists before
+starting either.
 
 ---
 

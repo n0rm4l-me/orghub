@@ -70,16 +70,16 @@ export function PollForm({ poll, options: initialOptions }: Props) {
     setOpts(next)
   }
 
-  const inputCls = "block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+  const inputCls = "block w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
   const selectCls = `${inputCls} appearance-none pr-8`
-  const labelCls = "mb-1 block text-sm font-medium text-gray-700"
+  const labelCls = "mb-1 block text-sm font-medium text-foreground"
 
   return (
     <form onSubmit={handleSubmit}>
       <div className="flex flex-col items-start gap-6 lg:flex-row lg:gap-8">
 
         {/* Main column */}
-        <div className="min-w-0 w-full flex-1 space-y-5 rounded-xl border border-gray-200 bg-white p-6">
+        <div className="min-w-0 w-full flex-1 space-y-5 rounded-xl border border-border bg-card p-6">
           <div>
             <label htmlFor="question" className={labelCls}>Question</label>
             <input
@@ -113,7 +113,7 @@ export function PollForm({ poll, options: initialOptions }: Props) {
                     type="button"
                     onClick={() => moveOpt(i, -1)}
                     disabled={i === 0}
-                    className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                    className="p-1 text-muted-foreground hover:text-muted-foreground disabled:opacity-30"
                     title="Move up"
                   >
                     <ArrowUp className="size-3.5" />
@@ -122,7 +122,7 @@ export function PollForm({ poll, options: initialOptions }: Props) {
                     type="button"
                     onClick={() => moveOpt(i, 1)}
                     disabled={i === opts.length - 1}
-                    className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                    className="p-1 text-muted-foreground hover:text-muted-foreground disabled:opacity-30"
                     title="Move down"
                   >
                     <ArrowDown className="size-3.5" />
@@ -131,7 +131,7 @@ export function PollForm({ poll, options: initialOptions }: Props) {
                     <button
                       type="button"
                       onClick={() => setOpts(opts.filter((_, j) => j !== i))}
-                      className="p-1 text-gray-400 hover:text-red-600"
+                      className="p-1 text-muted-foreground hover:text-red-600"
                       title="Remove"
                     >
                       <X className="size-3.5" />
@@ -155,8 +155,8 @@ export function PollForm({ poll, options: initialOptions }: Props) {
 
         {/* Sidebar */}
         <aside className="w-full lg:sticky lg:top-8 lg:w-64 lg:shrink-0 space-y-4">
-          <section className="rounded-xl border border-gray-200 bg-white p-4">
-            <h2 className="mb-3 text-sm font-semibold text-gray-900">Settings</h2>
+          <section className="rounded-xl border border-border bg-card p-4">
+            <h2 className="mb-3 text-sm font-semibold text-foreground">Settings</h2>
 
             <div className="space-y-3">
               <div>
@@ -172,7 +172,7 @@ export function PollForm({ poll, options: initialOptions }: Props) {
                     <option value="ACTIVE">Active</option>
                     <option value="CLOSED">Closed</option>
                   </select>
-                  <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-gray-400" aria-hidden />
+                  <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
                 </div>
               </div>
 
@@ -190,7 +190,7 @@ export function PollForm({ poll, options: initialOptions }: Props) {
                     <option value="AFTER_CLOSE">After close</option>
                     <option value="NEVER">Never (admin only)</option>
                   </select>
-                  <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-gray-400" aria-hidden />
+                  <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
                 </div>
               </div>
 
@@ -206,21 +206,21 @@ export function PollForm({ poll, options: initialOptions }: Props) {
               </div>
 
               <div className="space-y-2 pt-1">
-                <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
                   <input
                     type="checkbox"
                     checked={anonymous}
                     onChange={(e) => setAnonymous(e.target.checked)}
-                    className="size-4 rounded border-gray-300 text-brand focus:ring-brand"
+                    className="size-4 rounded border-border text-brand focus:ring-brand"
                   />
                   Anonymous voting
                 </label>
-                <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
                   <input
                     type="checkbox"
                     checked={multiChoice}
                     onChange={(e) => setMultiChoice(e.target.checked)}
-                    className="size-4 rounded border-gray-300 text-brand focus:ring-brand"
+                    className="size-4 rounded border-border text-brand focus:ring-brand"
                   />
                   Allow multiple choices
                 </label>
@@ -238,7 +238,7 @@ export function PollForm({ poll, options: initialOptions }: Props) {
               {pending ? "Saving…" : isEdit ? "Save changes" : "Create poll"}
             </button>
 
-            <p className="mt-2 flex min-h-4 items-center justify-center gap-1 text-[11px] text-gray-400">
+            <p className="mt-2 flex min-h-4 items-center justify-center gap-1 text-[11px] text-muted-foreground">
               {pending ? (
                 "Saving…"
               ) : savedAt ? (

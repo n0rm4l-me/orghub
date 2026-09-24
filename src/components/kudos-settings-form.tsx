@@ -38,12 +38,12 @@ export function KudosSettingsForm({
     run(fd)
   }
 
-  const inputCls = "w-full rounded-lg border border-gray-200 px-3 py-2 text-base sm:text-sm text-gray-900 outline-none focus:border-brand focus:ring-1 focus:ring-brand"
-  const labelCls = "mb-1 block text-sm font-medium text-gray-700"
+  const inputCls = "w-full rounded-lg border border-border px-3 py-2 text-base sm:text-sm text-foreground outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+  const labelCls = "mb-1 block text-sm font-medium text-foreground"
 
   return (
-    <form onSubmit={submit} className="rounded-xl border border-gray-200 bg-white px-5 py-5">
-      <h2 className="mb-4 text-sm font-semibold text-gray-900">Settings</h2>
+    <form onSubmit={submit} className="rounded-xl border border-border bg-card px-5 py-5">
+      <h2 className="mb-4 text-sm font-semibold text-foreground">Settings</h2>
 
       <div className="space-y-4">
         <div>
@@ -59,7 +59,7 @@ export function KudosSettingsForm({
             onChange={(e) => setBudget(e.target.value)}
             className={inputCls}
           />
-          <p className="mt-1 text-xs text-gray-400">Set to 0 for unlimited.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Set to 0 for unlimited.</p>
         </div>
 
         <div>
@@ -73,13 +73,13 @@ export function KudosSettingsForm({
             placeholder="Innovation,Teamwork,Quality"
             className={inputCls}
           />
-          <p className="mt-1 text-xs text-gray-400">Comma-separated. Leave empty to hide the values picker.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Comma-separated. Leave empty to hide the values picker.</p>
         </div>
 
-        <div className="flex items-center justify-between gap-4 rounded-lg border border-gray-100 bg-gray-50 px-4 py-3">
+        <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-muted px-4 py-3">
           <div>
-            <p className="text-sm font-medium text-gray-900">Enable Redeem button</p>
-            <p className="mt-0.5 text-xs text-gray-500">
+            <p className="text-sm font-medium text-foreground">Enable Redeem button</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
               Shows a Redeem button on the kudos wall so users can exchange coins via webhook.
             </p>
           </div>
@@ -89,10 +89,10 @@ export function KudosSettingsForm({
             aria-checked={redeemEnabled}
             onClick={() => setRedeemEnabled((v) => !v)}
             className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2
-              border-transparent transition-colors ${redeemEnabled ? "bg-brand" : "bg-gray-200"}`}
+              border-transparent transition-colors ${redeemEnabled ? "bg-brand" : "bg-border"}`}
           >
             <span
-              className={`pointer-events-none inline-block size-4 rounded-full bg-white shadow
+              className={`pointer-events-none inline-block size-4 rounded-full bg-card shadow
                 transition-transform ${redeemEnabled ? "translate-x-4" : "translate-x-0"}`}
             />
           </button>
@@ -111,7 +111,7 @@ export function KudosSettingsForm({
                 placeholder="https://your-service.example.com/webhook/kudos-redeem"
                 className={inputCls}
               />
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-xs text-muted-foreground">
                 POST with JSON: userId, email, amount, redemptionId.
               </p>
             </div>
@@ -127,7 +127,7 @@ export function KudosSettingsForm({
                 placeholder="e.g. 1000 coins = 200 points"
                 className={inputCls}
               />
-              <p className="mt-1 text-xs text-gray-400">Shown next to the Redeem button.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Shown next to the Redeem button.</p>
             </div>
           </>
         )}
@@ -144,7 +144,7 @@ export function KudosSettingsForm({
           {pending ? "Saving…" : "Save settings"}
         </button>
         {savedAt && (
-          <p className="flex items-center gap-1 text-xs text-gray-400">
+          <p className="flex items-center gap-1 text-xs text-muted-foreground">
             <Check className="size-3 text-emerald-500" />
             Saved at {savedAt}
           </p>

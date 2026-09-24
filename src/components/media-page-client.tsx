@@ -96,7 +96,7 @@ export function OrphanedList({ orphans }: { orphans: OrphanedObject[] }) {
 
   if (orphans.length === 0) return (
     <div className="flex flex-col items-center py-16 text-center">
-      <p className="text-sm text-gray-400">No orphaned objects. Storage is clean.</p>
+      <p className="text-sm text-muted-foreground">No orphaned objects. Storage is clean.</p>
     </div>
   )
 
@@ -122,7 +122,7 @@ export function OrphanedList({ orphans }: { orphans: OrphanedObject[] }) {
   return (
     <div>
       <div className="mb-3 flex items-center gap-3">
-        <span className="text-sm text-gray-500">{orphans.length} file{orphans.length === 1 ? "" : "s"}</span>
+        <span className="text-sm text-muted-foreground">{orphans.length} file{orphans.length === 1 ? "" : "s"}</span>
         <button
           type="button"
           onClick={handleDeleteAll}
@@ -133,20 +133,20 @@ export function OrphanedList({ orphans }: { orphans: OrphanedObject[] }) {
           Delete all
         </button>
       </div>
-      <div className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200">
+      <div className="divide-y divide-border overflow-hidden rounded-xl border border-border">
         {orphans.map((o) => {
           const name = o.key.split("/").pop() ?? o.key
           const isImage = /\.(jpe?g|png|webp|gif|svg)$/i.test(o.key)
           return (
             <div key={o.key} className="flex items-center gap-3 px-4 py-2.5">
-              <div className="size-10 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+              <div className="size-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                 {isImage && (
                   <img src={`/uploads/${o.key}`} alt={name} className="h-full w-full object-cover" />
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-gray-800">{name}</p>
-                <p className="text-xs text-gray-400">{o.key.split("/")[0]} · {formatBytes(o.size)}</p>
+                <p className="truncate text-sm font-medium text-foreground">{name}</p>
+                <p className="text-xs text-muted-foreground">{o.key.split("/")[0]} · {formatBytes(o.size)}</p>
               </div>
               <button
                 type="button"
@@ -205,14 +205,14 @@ export function GlobalDropZone() {
     <div className="pointer-events-none fixed inset-0 z-50 flex flex-col items-center justify-center
       bg-brand/10 backdrop-blur-sm">
       <div className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-brand
-        bg-white/90 px-16 py-12 shadow-xl">
+        bg-card/90 px-16 py-12 shadow-xl">
         {uploading
           ? <Loader2 className="size-12 animate-spin text-brand" />
           : <Upload className="size-12 text-brand" />}
-        <p className="text-base font-semibold text-gray-800">
+        <p className="text-base font-semibold text-foreground">
           {uploading ? "Uploading…" : "Drop files to upload"}
         </p>
-        <p className="text-sm text-gray-400">Images and PDFs up to 10 MB</p>
+        <p className="text-sm text-muted-foreground">Images and PDFs up to 10 MB</p>
       </div>
     </div>
   )

@@ -22,8 +22,8 @@ interface Props {
 
 interface FormState { label: string; rateLabel: string; webhook: string }
 
-const inputCls = "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 outline-none focus:border-brand focus:ring-1 focus:ring-brand"
-const lbl = "mb-1 block text-xs font-medium text-gray-700"
+const inputCls = "w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+const lbl = "mb-1 block text-xs font-medium text-foreground"
 
 function TypeForm({
   initial,
@@ -39,7 +39,7 @@ function TypeForm({
   const [s, setS] = useState(initial)
   const set = (k: keyof FormState, v: string) => setS((p) => ({ ...p, [k]: v }))
   return (
-    <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+    <div className="space-y-3 rounded-lg border border-border bg-muted p-3">
       <div>
         <label className={lbl}>Label *</label>
         <input type="text" value={s.label} onChange={(e) => set("label", e.target.value)} placeholder="Gift Card" className={inputCls} />
@@ -51,7 +51,7 @@ function TypeForm({
       <div>
         <label className={lbl}>
           Webhook URL{" "}
-          <span className="font-normal text-gray-400">(overrides global fallback)</span>
+          <span className="font-normal text-muted-foreground">(overrides global fallback)</span>
         </label>
         <input type="url" value={s.webhook} onChange={(e) => set("webhook", e.target.value)} placeholder="https://..." className={inputCls} />
       </div>
@@ -65,7 +65,7 @@ function TypeForm({
           {busy && <Loader2 className="size-3 animate-spin" />}
           Save
         </button>
-        <button type="button" onClick={onCancel} className="text-xs text-gray-400 transition hover:text-gray-700">
+        <button type="button" onClick={onCancel} className="text-xs text-muted-foreground transition hover:text-foreground">
           Cancel
         </button>
       </div>
@@ -141,9 +141,9 @@ export function KudosRedeemTypesPanel({ initialTypes }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white px-5 py-5">
+    <div className="rounded-xl border border-border bg-card px-5 py-5">
       <div className="mb-1 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-900">Redemption types</h2>
+        <h2 className="text-sm font-semibold text-foreground">Redemption types</h2>
         {!addOpen && (
           <button
             type="button"
@@ -155,13 +155,13 @@ export function KudosRedeemTypesPanel({ initialTypes }: Props) {
           </button>
         )}
       </div>
-      <p className="mb-4 text-xs text-gray-400">
+      <p className="mb-4 text-xs text-muted-foreground">
         Each type can have its own rate label and webhook. Leave webhook empty to use the global fallback.
         Users pick a type in the redeem dialog when multiple types are active.
       </p>
 
       {types.length === 0 && !addOpen && (
-        <p className="text-sm text-gray-400">No types yet — users see a plain coin redeem flow.</p>
+        <p className="text-sm text-muted-foreground">No types yet — users see a plain coin redeem flow.</p>
       )}
 
       <div className="space-y-2">
@@ -175,10 +175,10 @@ export function KudosRedeemTypesPanel({ initialTypes }: Props) {
               busy={pending}
             />
           ) : (
-            <div key={t.id} className="flex items-center gap-1.5 rounded-lg border border-gray-100 px-3 py-2.5">
+            <div key={t.id} className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2.5">
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-gray-900">{t.label}</p>
-                {t.rateLabel && <p className="truncate text-xs text-gray-400">{t.rateLabel}</p>}
+                <p className="truncate text-sm font-medium text-foreground">{t.label}</p>
+                {t.rateLabel && <p className="truncate text-xs text-muted-foreground">{t.rateLabel}</p>}
               </div>
               <button
                 type="button"
@@ -186,14 +186,14 @@ export function KudosRedeemTypesPanel({ initialTypes }: Props) {
                 aria-checked={t.active}
                 onClick={() => handleToggle(t.id, !t.active)}
                 title={t.active ? "Active — click to disable" : "Inactive — click to enable"}
-                className={`relative mr-1 inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${t.active ? "bg-brand" : "bg-gray-200"}`}
+                className={`relative mr-1 inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${t.active ? "bg-brand" : "bg-border"}`}
               >
-                <span className={`pointer-events-none inline-block size-3 rounded-full bg-white shadow transition-transform ${t.active ? "translate-x-3" : "translate-x-0"}`} />
+                <span className={`pointer-events-none inline-block size-3 rounded-full bg-card shadow transition-transform ${t.active ? "translate-x-3" : "translate-x-0"}`} />
               </button>
               <button
                 type="button"
                 onClick={() => setEditId(t.id)}
-                className="grid size-6 place-items-center rounded-md text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+                className="grid size-6 place-items-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-muted-foreground"
                 aria-label="Edit"
               >
                 <Pencil className="size-3.5" aria-hidden />
@@ -201,7 +201,7 @@ export function KudosRedeemTypesPanel({ initialTypes }: Props) {
               <button
                 type="button"
                 onClick={() => setDeleteId(t.id)}
-                className="grid size-6 place-items-center rounded-md text-gray-400 transition hover:bg-red-50 hover:text-red-500"
+                className="grid size-6 place-items-center rounded-md text-muted-foreground transition hover:bg-red-50 hover:text-red-500"
                 aria-label="Delete"
               >
                 <Trash2 className="size-3.5" aria-hidden />

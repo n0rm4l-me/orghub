@@ -146,8 +146,8 @@ export function ContentForm({
             autoFocus={isNew}
             placeholder={`${label} title`}
             aria-label={`${label} title`}
-            className="w-full border-none bg-transparent text-3xl font-bold tracking-tight text-gray-900
-              caret-[var(--brand)] outline-none placeholder:text-gray-300"
+            className="w-full border-none bg-transparent text-3xl font-bold tracking-tight text-foreground
+              caret-[var(--brand)] outline-none placeholder:text-muted-foreground"
           />
 
           {kind === "article" && (
@@ -158,8 +158,8 @@ export function ContentForm({
               maxLength={300}
               placeholder="One-line summary shown in the feed"
               aria-label="Summary"
-              className="w-full border-none bg-transparent text-base text-gray-500
-                caret-[var(--brand)] outline-none placeholder:text-gray-300"
+              className="w-full border-none bg-transparent text-base text-muted-foreground
+                caret-[var(--brand)] outline-none placeholder:text-muted-foreground"
             />
           )}
 
@@ -174,12 +174,12 @@ export function ContentForm({
         </div>
 
         <aside className="flex w-full flex-col gap-4 lg:sticky lg:top-8 lg:w-64 lg:shrink-0">
-          <section className="order-last rounded-xl border border-gray-200 bg-white p-4 lg:order-first">
-            <h2 className="mb-3 text-sm font-semibold text-gray-900">Publishing</h2>
+          <section className="order-last rounded-xl border border-border bg-card p-4 lg:order-first">
+            <h2 className="mb-3 text-sm font-semibold text-foreground">Publishing</h2>
 
             {kind === "article" && (
               <div className="mb-3 flex items-center justify-between gap-2">
-                <span className="text-sm text-gray-600">Comments</span>
+                <span className="text-sm text-muted-foreground">Comments</span>
                 <button
                   type="button"
                   onClick={() => { setCommentsEnabled((v) => !v); setDirty(true) }}
@@ -188,7 +188,7 @@ export function ContentForm({
                     font-semibold transition ${
                       commentsEnabled
                         ? "bg-brand/10 text-brand hover:bg-brand/20"
-                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                        : "bg-muted text-muted-foreground hover:bg-border"
                     }`}
                 >
                   {commentsEnabled ? "On" : "Off"}
@@ -197,7 +197,7 @@ export function ContentForm({
             )}
 
             <div className="mb-3 flex items-center justify-between gap-2">
-              <span className="text-sm text-gray-600">Visibility</span>
+              <span className="text-sm text-muted-foreground">Visibility</span>
               <button
                 type="button"
                 onClick={() => {
@@ -210,7 +210,7 @@ export function ContentForm({
                   font-semibold transition ${
                     published
                       ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      : "bg-muted text-muted-foreground hover:bg-border"
                   }`}
               >
                 {published ? (
@@ -235,7 +235,7 @@ export function ContentForm({
             </button>
 
             {/* Fixed-height status line so the panel never resizes. */}
-            <p className="mt-2 flex min-h-4 items-center justify-center gap-1 text-[11px] text-gray-400">
+            <p className="mt-2 flex min-h-4 items-center justify-center gap-1 text-[11px] text-muted-foreground">
               {dirty ? (
                 "Unsaved changes"
               ) : savedAt ? (
@@ -244,18 +244,18 @@ export function ContentForm({
                   Saved at {savedAt}
                 </>
               ) : (
-                <kbd className="hidden rounded border border-gray-200 bg-gray-50 px-1 font-sans sm:inline">⌘S</kbd>
+                <kbd className="hidden rounded border border-border bg-muted px-1 font-sans sm:inline">⌘S</kbd>
               )}
             </p>
           </section>
 
           {kind === "page" && parentPages && parentPages.length > 0 && (
-            <section className="rounded-xl border border-gray-200 bg-white p-4">
-              <h2 className="mb-2.5 text-sm font-semibold text-gray-900">Parent page</h2>
+            <section className="rounded-xl border border-border bg-card p-4">
+              <h2 className="mb-2.5 text-sm font-semibold text-foreground">Parent page</h2>
               <select
                 name="parentId"
                 defaultValue={values?.parentId ?? ""}
-                className="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-700
+                className="w-full rounded-lg border border-border px-2.5 py-1.5 text-xs text-foreground
                   outline-none focus:border-brand focus:ring-1 focus:ring-brand"
               >
                 <option value="">None (top-level)</option>
@@ -267,7 +267,7 @@ export function ContentForm({
           )}
 
           {kind === "article" && (
-            <section className="rounded-xl border border-gray-200 bg-white p-4">
+            <section className="rounded-xl border border-border bg-card p-4">
               <MediaPicker
                 label="Cover image"
                 name="coverImage"
@@ -279,14 +279,14 @@ export function ContentForm({
           )}
 
           {kind === "article" && (
-            <section className="rounded-xl border border-gray-200 bg-white p-4">
-              <h2 className="mb-3 text-sm font-semibold text-gray-900">Event</h2>
-              <p className="mb-3 text-xs text-gray-400 leading-relaxed">
+            <section className="rounded-xl border border-border bg-card p-4">
+              <h2 className="mb-3 text-sm font-semibold text-foreground">Event</h2>
+              <p className="mb-3 text-xs text-muted-foreground leading-relaxed">
                 Optional. Fill in to show this article as a calendar event.
               </p>
               <div className="space-y-3">
                 <div>
-                  <label htmlFor="eventDate" className="mb-1 block text-xs text-gray-600">Start date &amp; time</label>
+                  <label htmlFor="eventDate" className="mb-1 block text-xs text-muted-foreground">Start date &amp; time</label>
                   <input
                     id="eventDate"
                     name="eventDate"
@@ -296,12 +296,12 @@ export function ContentForm({
                         ? new Date(values.eventDate).toISOString().slice(0, 16)
                         : ""
                     }
-                    className="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-700
+                    className="w-full rounded-lg border border-border px-2.5 py-1.5 text-xs text-foreground
                       outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                   />
                 </div>
                 <div>
-                  <label htmlFor="eventEndDate" className="mb-1 block text-xs text-gray-600">End date &amp; time</label>
+                  <label htmlFor="eventEndDate" className="mb-1 block text-xs text-muted-foreground">End date &amp; time</label>
                   <input
                     id="eventEndDate"
                     name="eventEndDate"
@@ -311,12 +311,12 @@ export function ContentForm({
                         ? new Date(values.eventEndDate).toISOString().slice(0, 16)
                         : ""
                     }
-                    className="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-700
+                    className="w-full rounded-lg border border-border px-2.5 py-1.5 text-xs text-foreground
                       outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                   />
                 </div>
                 <div>
-                  <label htmlFor="eventLocation" className="mb-1 block text-xs text-gray-600">Location</label>
+                  <label htmlFor="eventLocation" className="mb-1 block text-xs text-muted-foreground">Location</label>
                   <input
                     id="eventLocation"
                     name="eventLocation"
@@ -324,8 +324,8 @@ export function ContentForm({
                     maxLength={200}
                     defaultValue={values?.eventLocation ?? ""}
                     placeholder="e.g. Room A, 3F"
-                    className="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-700
-                      outline-none placeholder:text-gray-300 focus:border-brand focus:ring-1 focus:ring-brand"
+                    className="w-full rounded-lg border border-border px-2.5 py-1.5 text-xs text-foreground
+                      outline-none placeholder:text-muted-foreground focus:border-brand focus:ring-1 focus:ring-brand"
                   />
                 </div>
               </div>
@@ -333,10 +333,10 @@ export function ContentForm({
           )}
 
           {kind === "article" && (
-            <section className="rounded-xl border border-gray-200 bg-white p-4">
-              <h2 className="mb-2.5 text-sm font-semibold text-gray-900">Category</h2>
+            <section className="rounded-xl border border-border bg-card p-4">
+              <h2 className="mb-2.5 text-sm font-semibold text-foreground">Category</h2>
               {categories.length === 0 ? (
-                <p className="text-xs leading-relaxed text-gray-400">
+                <p className="text-xs leading-relaxed text-muted-foreground">
                   No categories defined yet.
                 </p>
               ) : (
@@ -379,8 +379,8 @@ function Radio({
 }) {
   return (
     <label
-      className="flex items-center gap-2 rounded-md px-1.5 py-1 text-sm text-gray-700
-        transition hover:bg-gray-50"
+      className="flex items-center gap-2 rounded-md px-1.5 py-1 text-sm text-foreground
+        transition hover:bg-muted"
     >
       <input
         type="radio"

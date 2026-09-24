@@ -32,23 +32,23 @@ function MediaBrowsePanel({ onPick, onClose }: { onPick: (url: string) => void; 
   )
 
   return (
-    <div ref={ref} className="absolute right-0 top-full z-30 mt-1 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-gray-200
-      bg-white shadow-xl">
-      <div className="border-b border-gray-100 px-2 py-1.5">
+    <div ref={ref} className="absolute right-0 top-full z-30 mt-1 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-border
+      bg-card shadow-xl">
+      <div className="border-b border-border px-2 py-1.5">
         <input
           autoFocus
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search images…"
-          className="w-full rounded px-2 py-1 text-xs outline-none placeholder:text-gray-400 focus:bg-gray-50"
+          className="w-full rounded px-2 py-1 text-xs outline-none placeholder:text-muted-foreground focus:bg-muted"
         />
       </div>
       {!items ? (
-        <p className="flex items-center justify-center gap-2 px-3 py-4 text-xs text-gray-400">
+        <p className="flex items-center justify-center gap-2 px-3 py-4 text-xs text-muted-foreground">
           <Loader2 className="size-3.5 animate-spin" /> Loading…
         </p>
       ) : filtered.length === 0 ? (
-        <p className="px-3 py-4 text-xs text-gray-400">
+        <p className="px-3 py-4 text-xs text-muted-foreground">
           {query ? "No matches." : "No images uploaded yet."}
         </p>
       ) : (
@@ -59,7 +59,7 @@ function MediaBrowsePanel({ onPick, onClose }: { onPick: (url: string) => void; 
               type="button"
               onClick={() => { onPick(m.url); onClose() }}
               title={m.filename}
-              className="overflow-hidden rounded border border-gray-100 hover:border-brand transition"
+              className="overflow-hidden rounded border border-border hover:border-brand transition"
             >
               <img src={m.url} alt={m.filename} className="aspect-square w-full object-cover" />
             </button>
@@ -103,13 +103,13 @@ export function MediaPicker({ value, onChange, name = "photo", label = "Image", 
 
   return (
     <div>
-      {label && <p className="mb-1.5 text-xs font-medium text-gray-700">{label}</p>}
+      {label && <p className="mb-1.5 text-xs font-medium text-foreground">{label}</p>}
       <input type="hidden" name={name} value={value} />
       <input ref={inputRef} type="file" accept="image/*" className="sr-only"
         onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }} />
 
       {value ? (
-        <div className="relative w-full overflow-hidden rounded-lg border border-gray-200"
+        <div className="relative w-full overflow-hidden rounded-lg border border-border"
           style={{ aspectRatio: "16/9" }}>
           <img src={value} alt="" className="h-full w-full object-cover" />
           <button type="button" onClick={() => onChange("")} aria-label="Remove image"
@@ -144,15 +144,15 @@ export function MediaPicker({ value, onChange, name = "photo", label = "Image", 
             className={`flex w-full cursor-pointer flex-col items-center justify-center gap-2
               rounded-lg border-2 border-dashed transition
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40
-              ${dragging ? "border-brand bg-brand/5" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"}`}
+              ${dragging ? "border-brand bg-brand/5" : "border-border hover:border-border hover:bg-muted"}`}
             style={{ aspectRatio: "16/9" }}
           >
             {uploading ? (
               <Loader2 className="size-6 animate-spin text-brand" />
             ) : (
               <>
-                <Upload className="size-5 text-gray-400" />
-                <span className="text-xs text-gray-500">
+                <Upload className="size-5 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">
                   {dragging ? "Drop to upload" : "Click or drag an image here"}
                 </span>
               </>
@@ -161,7 +161,7 @@ export function MediaPicker({ value, onChange, name = "photo", label = "Image", 
           <button
             type="button"
             onClick={() => setBrowseOpen((v) => !v)}
-            className="mt-1.5 flex items-center gap-1 text-xs text-gray-400 hover:text-brand transition"
+            className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground hover:text-brand transition"
           >
             <Images className="size-3.5" />
             Browse uploaded
@@ -196,13 +196,13 @@ export function MediaPickerField({ value, onChange, tone, folder }: { value: str
     return (
       <div className="flex items-center gap-2">
         <SafeImg src={value} alt=""
-          className={`h-9 w-[80px] rounded border object-contain p-1 ${tone === "dark" ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"}`}
-          placeholderClassName={`h-9 w-[80px] rounded border ${tone === "dark" ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-gray-50"}`} />
+          className={`h-9 w-[80px] rounded border object-contain p-1 ${tone === "dark" ? "border-gray-700 bg-gray-800" : "border-border bg-card"}`}
+          placeholderClassName={`h-9 w-[80px] rounded border ${tone === "dark" ? "border-gray-700 bg-gray-800" : "border-border bg-muted"}`} />
         <button type="button" onClick={() => onChange("")}
-          className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-500 hover:border-red-200 hover:text-red-500 transition">
+          className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground hover:border-red-200 hover:text-red-500 transition">
           Remove
         </button>
-        <label className="cursor-pointer rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 transition">
+        <label className="cursor-pointer rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted transition">
           <input type="file" accept="image/*,image/svg+xml" className="sr-only"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }} />
           Change
@@ -212,8 +212,8 @@ export function MediaPickerField({ value, onChange, tone, folder }: { value: str
   }
 
   return (
-    <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-gray-200
-      px-4 py-2.5 text-xs text-gray-500 transition hover:border-gray-300 hover:bg-gray-50 w-fit">
+    <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-border
+      px-4 py-2.5 text-xs text-muted-foreground transition hover:border-border hover:bg-muted w-fit">
       <input type="file" accept="image/*,image/svg+xml" className="sr-only"
         onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }} />
       {uploading

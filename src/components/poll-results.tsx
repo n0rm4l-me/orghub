@@ -24,11 +24,11 @@ export function PollResults({ options, totalVotes, anonymous, voters = [] }: Pro
   }, {})
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6">
-      <h2 className="mb-4 text-sm font-semibold text-gray-700">
+    <div className="rounded-xl border border-border bg-card p-6">
+      <h2 className="mb-4 text-sm font-semibold text-foreground">
         Results — {totalVotes} vote{totalVotes === 1 ? "" : "s"}
         {anonymous && (
-          <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-400">
+          <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
             Anonymous
           </span>
         )}
@@ -40,19 +40,19 @@ export function PollResults({ options, totalVotes, anonymous, voters = [] }: Pro
           return (
             <div key={opt.id}>
               <div className="mb-1 flex items-center justify-between gap-2">
-                <span className="text-sm text-gray-700">{opt.text}</span>
-                <span className="shrink-0 text-xs font-semibold text-gray-900">
-                  {pct}% <span className="font-normal text-gray-600">({opt.voteCount})</span>
+                <span className="text-sm text-foreground">{opt.text}</span>
+                <span className="shrink-0 text-xs font-semibold text-foreground">
+                  {pct}% <span className="font-normal text-muted-foreground">({opt.voteCount})</span>
                 </span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+              <div className="h-2 overflow-hidden rounded-full bg-muted">
                 <div
                   className="h-full rounded-full bg-brand transition-all duration-500"
                   style={{ width: `${pct}%` }}
                 />
               </div>
               {!anonymous && names.length > 0 && (
-                <p className="mt-1.5 text-[11px] text-gray-600 leading-relaxed">
+                <p className="mt-1.5 text-[11px] text-muted-foreground leading-relaxed">
                   {names.join(", ")}
                 </p>
               )}
@@ -61,7 +61,7 @@ export function PollResults({ options, totalVotes, anonymous, voters = [] }: Pro
         })}
       </div>
       {totalVotes === 0 && (
-        <p className="mt-4 text-sm text-gray-600">No votes yet.</p>
+        <p className="mt-4 text-sm text-muted-foreground">No votes yet.</p>
       )}
     </div>
   )

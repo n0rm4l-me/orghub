@@ -48,7 +48,7 @@ export function Editor({ initialContent, onChange, folder }: Props) {
     editorProps: {
       attributes: {
         class:
-          "prose prose-gray max-w-none min-h-[400px] rounded-lg px-0 py-4 text-gray-800 prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-relaxed focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand/40",
+          "prose prose-gray max-w-none min-h-[400px] rounded-lg px-0 py-4 text-foreground prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-p:leading-relaxed focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand/40",
       },
     },
   })
@@ -56,7 +56,7 @@ export function Editor({ initialContent, onChange, folder }: Props) {
   if (!editor) return null
 
   return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+    <div className="border border-border rounded-xl overflow-hidden bg-card">
       <Toolbar editor={editor} folder={folder} />
       <div className="px-6">
         <EditorContent editor={editor} />
@@ -81,17 +81,17 @@ function Toolbar({ editor, folder }: { editor: ReturnType<typeof useEditor>; fol
       className={`p-1.5 rounded transition ${
         active
           ? "bg-blue-100 text-blue-700"
-          : "text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+          : "text-muted-foreground hover:bg-muted hover:text-foreground"
       }`}
     >
       <Icon className="w-4 h-4" />
     </button>
   )
 
-  const divider = <div className="w-px h-5 bg-gray-200 mx-1" />
+  const divider = <div className="w-px h-5 bg-border mx-1" />
 
   return (
-    <div className="flex items-center gap-0.5 px-4 py-2.5 border-b border-gray-100 flex-wrap bg-gray-50/50">
+    <div className="flex items-center gap-0.5 px-4 py-2.5 border-b border-border flex-wrap bg-muted/50">
       {btn(editor.isActive("bold"), () => editor.chain().focus().toggleBold().run(), Bold, "Bold")}
       {btn(editor.isActive("italic"), () => editor.chain().focus().toggleItalic().run(), Italic, "Italic")}
       {btn(editor.isActive("underline"), () => editor.chain().focus().toggleUnderline().run(), UnderlineIcon, "Underline")}
@@ -195,35 +195,35 @@ function InsertImageButton({ editor, folder }: { editor: ReturnType<typeof useEd
         type="button"
         onClick={handleOpen}
         title="Insert image"
-        className="p-1.5 rounded transition text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+        className="p-1.5 rounded transition text-muted-foreground hover:bg-muted hover:text-foreground"
       >
         <ImageIcon className="w-4 h-4" />
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-20 mt-1 w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-gray-200 bg-white shadow-lg">
-          <div className="flex items-center gap-2 border-b border-gray-100 px-2 py-1.5">
+        <div className="absolute left-0 top-full z-20 mt-1 w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-border bg-card shadow-lg">
+          <div className="flex items-center gap-2 border-b border-border px-2 py-1.5">
             <input
               autoFocus
               type="text"
               placeholder="Search images…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="min-w-0 flex-1 rounded px-2 py-1 text-xs text-gray-700 outline-none placeholder:text-gray-400 focus:bg-gray-50"
+              className="min-w-0 flex-1 rounded px-2 py-1 text-xs text-foreground outline-none placeholder:text-muted-foreground focus:bg-muted"
             />
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
-              className="flex shrink-0 items-center gap-1 rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+              className="flex shrink-0 items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:bg-muted disabled:opacity-50"
             >
               {uploading ? <Loader2 className="size-3 animate-spin" /> : <Upload className="size-3" />}
               Upload
             </button>
           </div>
           {loading ? (
-            <p className="px-3 py-3 text-xs text-gray-400">Loading…</p>
+            <p className="px-3 py-3 text-xs text-muted-foreground">Loading…</p>
           ) : filtered.length === 0 ? (
-            <p className="px-3 py-3 text-xs text-gray-400">
+            <p className="px-3 py-3 text-xs text-muted-foreground">
               {query ? "No matches." : "No images uploaded yet."}
             </p>
           ) : (
@@ -233,7 +233,7 @@ function InsertImageButton({ editor, folder }: { editor: ReturnType<typeof useEd
                   key={m.id}
                   type="button"
                   onClick={() => insert(m.url)}
-                  className="group overflow-hidden rounded border border-gray-100 hover:border-brand transition"
+                  className="group overflow-hidden rounded border border-border hover:border-brand transition"
                   title={m.filename}
                 >
                   <img src={m.url} alt={m.filename} className="aspect-square w-full object-cover" />
@@ -289,31 +289,31 @@ function InsertPollButton({ editor }: { editor: ReturnType<typeof useEditor> }) 
         type="button"
         onClick={handleOpen}
         title="Insert poll"
-        className="flex items-center gap-1 rounded px-1.5 py-1 text-gray-500 transition hover:bg-gray-100 hover:text-gray-800 text-xs"
+        className="flex items-center gap-1 rounded px-1.5 py-1 text-muted-foreground transition hover:bg-muted hover:text-foreground text-xs"
       >
         <BarChart2 className="w-4 h-4" />
         Poll
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-20 mt-1 w-72 max-w-[calc(100vw-2rem)] rounded-lg border border-gray-200 bg-white shadow-lg">
+        <div className="absolute left-0 top-full z-20 mt-1 w-72 max-w-[calc(100vw-2rem)] rounded-lg border border-border bg-card shadow-lg">
           {loading ? (
-            <p className="px-3 py-2 text-xs text-gray-400">Loading polls...</p>
+            <p className="px-3 py-2 text-xs text-muted-foreground">Loading polls...</p>
           ) : !polls?.length ? (
-            <p className="px-3 py-2 text-xs text-gray-400">No active polls found.</p>
+            <p className="px-3 py-2 text-xs text-muted-foreground">No active polls found.</p>
           ) : (
             <>
-              <div className="border-b border-gray-100 px-2 py-1.5">
+              <div className="border-b border-border px-2 py-1.5">
                 <input
                   autoFocus
                   type="text"
                   placeholder="Search polls…"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="w-full rounded px-2 py-1 text-xs text-gray-700 outline-none placeholder:text-gray-400 focus:bg-gray-50"
+                  className="w-full rounded px-2 py-1 text-xs text-foreground outline-none placeholder:text-muted-foreground focus:bg-muted"
                 />
               </div>
               {filtered.length === 0 ? (
-                <p className="px-3 py-2 text-xs text-gray-400">No matches.</p>
+                <p className="px-3 py-2 text-xs text-muted-foreground">No matches.</p>
               ) : (
                 <ul className="max-h-52 overflow-y-auto">
                   {filtered.map((p) => (
@@ -321,7 +321,7 @@ function InsertPollButton({ editor }: { editor: ReturnType<typeof useEditor> }) 
                       <button
                         type="button"
                         onClick={() => insert(p.id)}
-                        className="w-full truncate px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50"
+                        className="w-full truncate px-3 py-2 text-left text-xs text-foreground hover:bg-muted"
                       >
                         {p.question}
                       </button>

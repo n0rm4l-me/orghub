@@ -60,12 +60,12 @@ export function TranslationSettingsForm({ provider: initProvider, languages: ini
   }
 
   return (
-    <form onSubmit={submit} className="rounded-xl border border-gray-200 bg-white px-5 py-5">
-      <h2 className="mb-4 text-sm font-semibold text-gray-900">Settings</h2>
+    <form onSubmit={submit} className="rounded-xl border border-border bg-card px-5 py-5">
+      <h2 className="mb-4 text-sm font-semibold text-foreground">Settings</h2>
 
       <div className="space-y-5">
         <div>
-          <p className="mb-2 text-xs font-medium text-gray-700">Translation provider</p>
+          <p className="mb-2 text-xs font-medium text-foreground">Translation provider</p>
           <div className="space-y-1.5">
             {PROVIDERS.map((p) => (
               <label
@@ -73,7 +73,7 @@ export function TranslationSettingsForm({ provider: initProvider, languages: ini
                 className={`flex cursor-pointer items-start gap-2.5 rounded-lg border px-3 py-2.5 transition ${
                   provider === p.value
                     ? "border-brand bg-brand/5"
-                    : "border-gray-200 hover:bg-gray-50"
+                    : "border-border hover:bg-muted"
                 }`}
               >
                 <input
@@ -85,8 +85,8 @@ export function TranslationSettingsForm({ provider: initProvider, languages: ini
                   className="mt-0.5 accent-brand"
                 />
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{p.label}</p>
-                  <p className="text-xs text-gray-400">{p.hint}</p>
+                  <p className="text-sm font-medium text-foreground">{p.label}</p>
+                  <p className="text-xs text-muted-foreground">{p.hint}</p>
                 </div>
               </label>
             ))}
@@ -94,7 +94,7 @@ export function TranslationSettingsForm({ provider: initProvider, languages: ini
         </div>
 
         <div>
-          <p className="mb-2 text-xs font-medium text-gray-700">Available languages</p>
+          <p className="mb-2 text-xs font-medium text-foreground">Available languages</p>
           <div className="flex flex-wrap gap-2">
             {PRESET_LANGS.map((l) => (
               <label
@@ -102,7 +102,7 @@ export function TranslationSettingsForm({ provider: initProvider, languages: ini
                 className={`flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition ${
                   langs.has(l.value)
                     ? "border-brand bg-brand/10 font-medium text-brand"
-                    : "border-gray-200 text-gray-500 hover:bg-gray-50"
+                    : "border-border text-muted-foreground hover:bg-muted"
                 }`}
               >
                 <input
@@ -119,7 +119,7 @@ export function TranslationSettingsForm({ provider: initProvider, languages: ini
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-700">
+          <label className="mb-1 block text-xs font-medium text-foreground">
             Additional languages
           </label>
           <input
@@ -127,10 +127,10 @@ export function TranslationSettingsForm({ provider: initProvider, languages: ini
             value={extra}
             onChange={(e) => setExtra(e.target.value)}
             placeholder="pt, ko, ar, de, ..."
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground
               outline-none focus:border-brand focus:ring-1 focus:ring-brand"
           />
-          <p className="mt-1 text-xs text-gray-400">
+          <p className="mt-1 text-xs text-muted-foreground">
             BCP-47 language codes, comma-separated. Names are resolved automatically.
           </p>
         </div>
@@ -146,7 +146,7 @@ export function TranslationSettingsForm({ provider: initProvider, languages: ini
             Save
           </button>
           {savedAt && (
-            <span className="text-xs text-gray-400">Saved {savedAt}</span>
+            <span className="text-xs text-muted-foreground">Saved {savedAt}</span>
           )}
         </div>
       </div>

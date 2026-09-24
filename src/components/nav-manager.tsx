@@ -49,14 +49,14 @@ export function NavManager({ moduleItems, pages, links }: Props) {
         title="Main menu"
         description="Header navigation order. Feed is always first."
       >
-        <ul className="divide-y divide-gray-100">
+        <ul className="divide-y divide-border">
           {/* Static Feed item */}
           <li className="flex items-center gap-3 py-2.5 opacity-40 select-none">
             <div className="flex shrink-0 flex-col">
               <div className="grid size-5 place-items-center" />
               <div className="grid size-5 place-items-center" />
             </div>
-            <span className="flex-1 text-sm font-medium text-gray-900">Feed</span>
+            <span className="flex-1 text-sm font-medium text-foreground">Feed</span>
             <Toggle checked disabled />
           </li>
 
@@ -72,7 +72,7 @@ export function NavManager({ moduleItems, pages, links }: Props) {
 
           {/* Pages */}
           {!hasModuleItems && pages.length === 0 ? (
-            <li className="py-4 text-center text-sm text-gray-400">
+            <li className="py-4 text-center text-sm text-muted-foreground">
               No pages yet.{" "}
               <Link href="/admin/pages/new" className="font-medium text-brand hover:underline">
                 Create one
@@ -113,7 +113,7 @@ export function NavManager({ moduleItems, pages, links }: Props) {
             description="Add shortcuts to payroll, the service desk, or the VPN guide."
           />
         ) : (
-          <ul className="mt-4 divide-y divide-gray-100 border-t border-gray-100">
+          <ul className="mt-4 divide-y divide-border border-t border-border">
             {links.map((link, i) => (
               <LinkRow
                 key={link.id}
@@ -152,7 +152,7 @@ function ModuleRow({
         label={item.label}
       />
 
-      <span className="flex-1 text-sm font-medium text-gray-900">{item.label}</span>
+      <span className="flex-1 text-sm font-medium text-foreground">{item.label}</span>
 
       <span className="shrink-0 rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-medium text-brand">
         module
@@ -197,15 +197,15 @@ function PageRow({
       />
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-gray-900">
+        <p className="truncate text-sm font-medium text-foreground">
           {indent && (
-            <span className="mr-1 select-none text-gray-300" aria-hidden>
+            <span className="mr-1 select-none text-muted-foreground" aria-hidden>
               └{" "}
             </span>
           )}
           {page.title}
         </p>
-        <p className="truncate font-mono text-xs text-gray-400">/pages/{page.slug}</p>
+        <p className="truncate font-mono text-xs text-muted-foreground">/pages/{page.slug}</p>
       </div>
 
       {!page.published && (
@@ -242,10 +242,10 @@ function Toggle({
       className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent
         transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand
         focus-visible:ring-offset-2 disabled:opacity-50
-        ${checked ? "bg-brand" : "bg-gray-200"}`}
+        ${checked ? "bg-brand" : "bg-border"}`}
     >
       <span
-        className={`pointer-events-none inline-block size-4 transform rounded-full bg-white
+        className={`pointer-events-none inline-block size-4 transform rounded-full bg-card
           shadow ring-0 transition duration-200 ease-in-out
           ${checked ? "translate-x-4" : "translate-x-0"}`}
       />
@@ -267,8 +267,8 @@ function LinkRow({ link, isFirst, isLast }: { link: QuickLink; isFirst: boolean;
       />
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-gray-900">{link.label}</p>
-        <p className="truncate font-mono text-xs text-gray-400">{link.url}</p>
+        <p className="truncate text-sm font-medium text-foreground">{link.label}</p>
+        <p className="truncate font-mono text-xs text-muted-foreground">{link.url}</p>
       </div>
 
       <DeleteButton
@@ -349,8 +349,8 @@ function Reorder({
   }
 
   const base =
-    "grid size-5 place-items-center rounded text-gray-400 transition enabled:hover:bg-gray-100 " +
-    "enabled:hover:text-gray-700 disabled:opacity-25"
+    "grid size-5 place-items-center rounded text-muted-foreground transition enabled:hover:bg-muted " +
+    "enabled:hover:text-foreground disabled:opacity-25"
 
   return (
     <div className="flex shrink-0 flex-col" aria-hidden={pending}>

@@ -34,8 +34,7 @@ function CopyIconButton({ url }: { url: string }) {
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
       }}
-      className="rounded p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700
-        dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+      className="rounded p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground"
       title="Copy URL"
       aria-label="Copy URL"
     >
@@ -72,34 +71,34 @@ function MediaCard({
       }}
       className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border transition
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40
-        ${selected ? "border-brand ring-2 ring-brand/20" : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"}
-        bg-white dark:bg-gray-900`}
+        ${selected ? "border-brand ring-2 ring-brand/20" : "border-border hover:border-muted-foreground/40"}
+        bg-card`}
     >
       {/* checkbox */}
       <div
         aria-hidden
-        className={`absolute left-2 top-2 z-10 grid size-5 place-items-center rounded-md border-2 bg-white
-          transition-opacity dark:bg-gray-900
-          ${selected ? "border-brand opacity-100" : `border-gray-300 dark:border-gray-600 ${anySelected ? "opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"}`}`}
+        className={`absolute left-2 top-2 z-10 grid size-5 place-items-center rounded-md border-2 bg-card
+          transition-opacity
+          ${selected ? "border-brand opacity-100" : `border-muted-foreground/40 ${anySelected ? "opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"}`}`}
       >
         {selected && <Check className="size-3 text-brand" strokeWidth={3} />}
       </div>
 
       {/* thumbnail */}
-      <div className="flex h-40 items-center justify-center bg-gray-50 dark:bg-gray-800">
+      <div className="flex h-40 items-center justify-center bg-muted">
         {isImage ? (
           <img src={`${item.url}?w=320`} alt={item.filename} className="h-full w-full object-cover" width={160} height={160} loading="lazy" />
         ) : (
-          <FileText className="size-10 text-gray-300 dark:text-gray-600" />
+          <FileText className="size-10 text-muted-foreground" />
         )}
       </div>
 
       {/* meta */}
       <div className="flex items-center justify-between gap-1 px-2.5 py-2">
         <div className="min-w-0">
-          <p className="truncate text-xs font-medium text-gray-800 dark:text-gray-200">{item.filename}</p>
+          <p className="truncate text-xs font-medium text-foreground">{item.filename}</p>
           <div className="flex items-center gap-1.5">
-            <p className="text-[11px] text-gray-400 dark:text-gray-500">{formatBytes(item.size)}</p>
+            <p className="text-[11px] text-muted-foreground">{formatBytes(item.size)}</p>
             {item.context && (
               <span className="rounded-full bg-brand/10 px-1.5 py-px text-[10px] font-medium text-brand">{item.context}</span>
             )}
@@ -140,14 +139,13 @@ export function MediaGrid({ items }: { items: MediaItem[] }) {
   return (
     <div>
       <div className="mb-3 flex items-center gap-3">
-        <span className="text-sm text-gray-500 dark:text-gray-400">{count} selected</span>
+        <span className="text-sm text-muted-foreground">{count} selected</span>
         <button
           type="button"
           disabled={count === 0 || pending}
           onClick={handleBulkDelete}
           className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-sm
-            font-medium text-red-600 transition hover:bg-red-100 active:bg-red-200 disabled:opacity-30 disabled:cursor-default
-            dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-400 dark:hover:bg-red-950/60"
+            font-medium text-red-600 transition hover:bg-red-100 active:bg-red-200 disabled:opacity-30 disabled:cursor-default"
         >
           <Trash2 className="size-3.5" />
           Delete
@@ -156,10 +154,9 @@ export function MediaGrid({ items }: { items: MediaItem[] }) {
           type="button"
           disabled={count === 0}
           onClick={() => setSelected(new Set())}
-          className="inline-flex items-center rounded-lg border border-gray-200 px-3 py-1.5 text-sm
-            font-medium text-gray-600 transition hover:bg-gray-50 hover:border-gray-300
-            disabled:opacity-30 disabled:cursor-default
-            dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:border-gray-600"
+          className="inline-flex items-center rounded-lg border border-border px-3 py-1.5 text-sm
+            font-medium text-muted-foreground transition hover:bg-muted hover:border-muted-foreground/40
+            disabled:opacity-30 disabled:cursor-default"
         >
           Clear
         </button>

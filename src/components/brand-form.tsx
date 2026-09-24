@@ -56,17 +56,17 @@ export function BrandForm({ siteName, logoUrl, logoOnLightUrl, primaryColor }: P
         run(new FormData(e.currentTarget))
       }}
     >
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-        <div className="border-b border-gray-100 px-5 py-4">
-          <p className="text-sm font-semibold text-gray-900">Brand identity</p>
-          <p className="mt-0.5 text-xs text-gray-400">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="border-b border-border px-5 py-4">
+          <p className="text-sm font-semibold text-foreground">Brand identity</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
             Name, logos, and the accent colour used across the portal.
           </p>
         </div>
 
         <div className="grid grid-cols-1 gap-0 md:grid-cols-2">
           {/* Left: inputs */}
-          <div className="space-y-5 p-5 md:border-r md:border-gray-100">
+          <div className="space-y-5 p-5 md:border-r md:border-border">
             <Field
               label="Site name"
               htmlFor="siteName"
@@ -86,8 +86,8 @@ export function BrandForm({ siteName, logoUrl, logoOnLightUrl, primaryColor }: P
             </Field>
 
             <div>
-              <p className="mb-1 text-xs font-medium text-gray-700">Logo for dark background</p>
-              <p className="mb-2 text-[11px] text-gray-400">
+              <p className="mb-1 text-xs font-medium text-foreground">Logo for dark background</p>
+              <p className="mb-2 text-[11px] text-muted-foreground">
                 Shown in the portal header. Use a light (white) version — it sits on the brand colour.
               </p>
               <input type="hidden" name="logoUrl" value={logo} />
@@ -95,16 +95,16 @@ export function BrandForm({ siteName, logoUrl, logoOnLightUrl, primaryColor }: P
             </div>
 
             <div>
-              <p className="mb-1 text-xs font-medium text-gray-700">Logo for light background</p>
-              <p className="mb-2 text-[11px] text-gray-400">
+              <p className="mb-1 text-xs font-medium text-foreground">Logo for light background</p>
+              <p className="mb-2 text-[11px] text-muted-foreground">
                 Shown on the sign-in screen. Use a dark or coloured version — it sits on white.
               </p>
               <input type="hidden" name="logoOnLightUrl" value={lightLogo} />
               <MediaPickerField value={lightLogo} onChange={setLightLogo} />
             </div>
 
-            <div className="space-y-3 border-t border-gray-100 pt-4">
-              <p className="text-sm font-medium text-gray-800">Brand colour</p>
+            <div className="space-y-3 border-t border-border pt-4">
+              <p className="text-sm font-medium text-foreground">Brand colour</p>
               <div
                 className="grid grid-cols-4 gap-2"
                 role="radiogroup"
@@ -132,7 +132,7 @@ export function BrandForm({ siteName, logoUrl, logoOnLightUrl, primaryColor }: P
                           aria-hidden
                         />
                       </span>
-                      <span className="text-center text-[10px] leading-tight text-gray-500">
+                      <span className="text-center text-[10px] leading-tight text-muted-foreground">
                         {preset.name}
                       </span>
                     </button>
@@ -147,7 +147,7 @@ export function BrandForm({ siteName, logoUrl, logoOnLightUrl, primaryColor }: P
                   value={color}
                   onChange={(e) => pick(e.target.value)}
                   aria-label="Colour picker"
-                  className="size-9 shrink-0 rounded-lg border border-gray-200 p-0.5"
+                  className="size-9 shrink-0 rounded-lg border border-border p-0.5"
                 />
                 <input
                   type="text"
@@ -163,7 +163,7 @@ export function BrandForm({ siteName, logoUrl, logoOnLightUrl, primaryColor }: P
                   maxLength={7}
                   className={`${inputClass} w-28 font-mono`}
                 />
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-muted-foreground">
                   {validHex ? "Any #rrggbb value." : "Needs #rrggbb format."}
                 </p>
               </div>
@@ -171,8 +171,8 @@ export function BrandForm({ siteName, logoUrl, logoOnLightUrl, primaryColor }: P
           </div>
 
           {/* Right: live preview */}
-          <div className="bg-white p-5 md:sticky md:top-0 md:self-start">
-            <p className="mb-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Preview</p>
+          <div className="bg-card p-5 md:sticky md:top-0 md:self-start">
+            <p className="mb-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">Preview</p>
             <div className="space-y-2">
               <div className="overflow-hidden rounded-lg" style={{ backgroundColor: color }}>
                 <div className="flex h-12 items-center gap-4 px-3">
@@ -183,7 +183,7 @@ export function BrandForm({ siteName, logoUrl, logoOnLightUrl, primaryColor }: P
                   </nav>
                 </div>
               </div>
-              <div className="flex h-12 items-center rounded-lg border border-gray-200 bg-white px-3">
+              <div className="flex h-12 items-center rounded-lg border border-border bg-card px-3">
                 <BrandLogo
                   key={`l-${lightLogo}`}
                   logoUrl={logo || null}
@@ -193,7 +193,7 @@ export function BrandForm({ siteName, logoUrl, logoOnLightUrl, primaryColor }: P
                   tone="dark"
                 />
               </div>
-              <p className="text-[10px] text-gray-400">Top: portal header. Bottom: sign-in screen.</p>
+              <p className="text-[10px] text-muted-foreground">Top: portal header. Bottom: sign-in screen.</p>
               <div className="flex items-center gap-2 pt-1">
                 <button
                   type="button"
@@ -210,8 +210,8 @@ export function BrandForm({ siteName, logoUrl, logoOnLightUrl, primaryColor }: P
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t border-gray-100 px-5 py-3">
-          <span className="text-xs text-gray-400">
+        <div className="flex items-center justify-between border-t border-border px-5 py-3">
+          <span className="text-xs text-muted-foreground">
             {dirty ? "Unsaved changes" : ""}
           </span>
           <button
