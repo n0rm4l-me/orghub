@@ -56,7 +56,7 @@ export function LikeButton({ articleId, initialCount, initialLiked, isLoggedIn }
         transition disabled:opacity-50 min-h-[36px] sm:min-h-0 sm:py-1 ${
           liked
             ? "bg-rose-50 text-rose-500 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-400 dark:hover:bg-rose-900/50"
-            : "text-gray-400 hover:bg-rose-50 hover:text-rose-400 dark:hover:bg-rose-900/30 dark:hover:text-rose-400"
+            : "text-muted-foreground hover:bg-rose-50 hover:text-rose-400 dark:hover:bg-rose-900/30 dark:hover:text-rose-400"
         }`}
     >
       <Heart className={`size-3.5 ${liked ? "fill-rose-500" : ""}`} aria-hidden />

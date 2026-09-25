@@ -4,7 +4,7 @@ function SidebarSkeleton() {
   return (
     <aside className="hidden w-64 shrink-0 space-y-4 lg:block">
       {[3, 5].map((rows, card) => (
-        <div key={card} className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900">
+        <div key={card} className="rounded-xl border border-border bg-card p-5">
           <Skeleton className="mb-4 h-4 w-32" />
           <div className="space-y-3">
             {Array.from({ length: rows }).map((_, i) => (
@@ -32,7 +32,7 @@ export function FeedSkeleton({ layout = "sidebar-right" }: { layout?: string }) 
   const mainContent = (
     <div className={hasSidebar ? "min-w-0 flex-1" : undefined}>
       {/* Featured card with cover image area */}
-      <div className="mb-3 overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+      <div className="mb-3 overflow-hidden rounded-2xl border border-border bg-card">
         <Skeleton className="h-48 w-full rounded-none" />
         <div className="p-6">
           <div className="mb-3 flex gap-2">
@@ -51,7 +51,7 @@ export function FeedSkeleton({ layout = "sidebar-right" }: { layout?: string }) 
       {/* List */}
       <div className="space-y-2">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex items-start gap-4 rounded-xl border border-gray-200 bg-white px-5 py-4 dark:border-gray-700 dark:bg-gray-900">
+          <div key={i} className="flex items-start gap-4 rounded-xl border border-border bg-card px-5 py-4">
             <Skeleton className="h-12 w-1 rounded-full" />
             <div className="min-w-0 flex-1">
               <Skeleton className="mb-1.5 h-2.5 w-20" />
@@ -91,13 +91,13 @@ export function FeedSkeleton({ layout = "sidebar-right" }: { layout?: string }) 
 /** Admin table placeholder. `cols` should match the real header count. */
 export function TableSkeleton({ rows = 6, cols = 5 }: { rows?: number; cols?: number }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-      <div className="flex gap-6 border-b border-gray-100 px-6 py-3">
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="flex gap-6 border-b border-border px-6 py-3">
         {Array.from({ length: cols }).map((_, i) => (
           <Skeleton key={i} className="h-2.5 flex-1" />
         ))}
       </div>
-      <div className="divide-y divide-gray-50">
+      <div className="divide-y divide-border">
         {Array.from({ length: rows }).map((_, r) => (
           <div key={r} className="flex items-center gap-6 px-6 py-4">
             {Array.from({ length: cols }).map((_, c) => (
@@ -124,10 +124,10 @@ export function ArticleSkeleton() {
       {/* Cover image placeholder */}
       <Skeleton className="mb-4 h-52 w-full rounded-2xl" />
       {/* White content card */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-8 dark:border-gray-700 dark:bg-gray-900">
+      <div className="rounded-2xl border border-border bg-card p-8">
         <Skeleton className="mb-3 h-9 w-11/12" />
         <Skeleton className="mb-6 h-9 w-2/3" />
-        <div className="mb-4 flex items-center gap-3 border-b border-gray-100 pb-4">
+        <div className="mb-4 flex items-center gap-3 border-b border-border pb-4">
           <Skeleton className="size-10 shrink-0 rounded-full" />
           <div className="space-y-1.5">
             <Skeleton className="h-3.5 w-32" />
@@ -149,8 +149,8 @@ export function EditorSkeleton() {
       <div className="min-w-0 flex-1 space-y-5">
         <Skeleton className="h-9 w-2/3" />
         <Skeleton className="h-5 w-1/2" />
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-          <div className="flex gap-1.5 border-b border-gray-100 bg-gray-50/50 px-4 py-3">
+        <div className="overflow-hidden rounded-xl border border-border bg-card">
+          <div className="flex gap-1.5 border-b border-border bg-muted/50 px-4 py-3">
             {Array.from({ length: 14 }).map((_, i) => (
               <Skeleton key={i} className="h-6 w-6" />
             ))}
@@ -161,12 +161,12 @@ export function EditorSkeleton() {
         </div>
       </div>
       <aside className="w-64 shrink-0 space-y-4">
-        <div className="space-y-3 rounded-xl border border-gray-200 bg-white p-4">
+        <div className="space-y-3 rounded-xl border border-border bg-card p-4">
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-7 w-full" />
           <Skeleton className="h-9 w-full" />
         </div>
-        <div className="space-y-2.5 rounded-xl border border-gray-200 bg-white p-4">
+        <div className="space-y-2.5 rounded-xl border border-border bg-card p-4">
           <Skeleton className="h-4 w-20" />
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-3.5 w-3/4" />
@@ -198,12 +198,12 @@ export function PageHeaderSkeleton() {
 /** Card with a heading strip and rows, matching `Panel`. */
 export function PanelSkeleton({ rows = 4 }: { rows?: number }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-      <div className="border-b border-gray-100 px-5 py-4">
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="border-b border-border px-5 py-4">
         <Skeleton className="mb-1.5 h-3.5 w-28" />
         <Skeleton className="h-2.5 w-72" />
       </div>
-      <div className="divide-y divide-gray-100 px-5">
+      <div className="divide-y divide-border px-5">
         {Array.from({ length: rows }).map((_, i) => (
           <div key={i} className="flex items-center gap-3 py-2.5">
             <Skeleton className="size-5 shrink-0 rounded" />
@@ -226,7 +226,7 @@ export function DashboardSkeleton() {
       <PageHeaderSkeleton />
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-xl border border-gray-200 bg-white p-4">
+          <div key={i} className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-start justify-between">
               <Skeleton className="h-3.5 w-20" />
               <Skeleton className="size-4" />
@@ -236,12 +236,12 @@ export function DashboardSkeleton() {
           </div>
         ))}
       </div>
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-        <div className="flex h-12 items-center justify-between border-b border-gray-100 px-5">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="flex h-12 items-center justify-between border-b border-border px-5">
           <Skeleton className="h-3.5 w-32" />
           <Skeleton className="h-3 w-20" />
         </div>
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-border">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="flex items-center gap-3 px-5 py-3">
               <Skeleton className="size-1.5 shrink-0 rounded-full" />
@@ -262,7 +262,7 @@ export function FormSkeleton({ fields = 3 }: { fields?: number }) {
     <div className="max-w-xl">
       <Skeleton className="mb-1 h-7 w-40" />
       <Skeleton className="mb-8 h-3.5 w-72" />
-      <div className="space-y-5 rounded-xl border border-gray-200 bg-white p-6">
+      <div className="space-y-5 rounded-xl border border-border bg-card p-6">
         {Array.from({ length: fields }).map((_, i) => (
           <div key={i}>
             <Skeleton className="mb-2 h-3.5 w-24" />

@@ -51,26 +51,26 @@ export function UserMenu({ initials, gravatarUrl, name, canAdmin, signOutAction 
       {open && (
         <div
           className="absolute right-0 top-full mt-1.5 w-56 overflow-hidden rounded-xl border
-            border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800"
+            border-border bg-popover shadow-lg"
         >
           {canAdmin && (
             <Link
               href="/admin"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700
-                transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700"
+              className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground
+                transition-colors hover:bg-muted"
             >
-              <LayoutDashboard className="size-4 text-gray-400" aria-hidden />
+              <LayoutDashboard className="size-4 text-muted-foreground" aria-hidden />
               Admin panel
             </Link>
           )}
-          <form action={signOutAction} className="border-t border-gray-100 dark:border-gray-700">
+          <form action={signOutAction} className="border-t border-border">
             <button
               type="submit"
-              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700
-                transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700"
+              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-foreground
+                transition-colors hover:bg-muted"
             >
-              <LogOut className="size-4 text-gray-400" aria-hidden />
+              <LogOut className="size-4 text-muted-foreground" aria-hidden />
               Sign out
             </button>
           </form>

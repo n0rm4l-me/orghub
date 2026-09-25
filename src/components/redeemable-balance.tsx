@@ -54,33 +54,32 @@ export function RedeemableBalance({ available, types }: Props) {
         />
         <Dialog.Popup
           className="fixed left-1/2 top-1/2 z-[95] w-80 -translate-x-1/2 -translate-y-1/2
-            rounded-2xl border border-gray-200 bg-white p-6 shadow-xl outline-none
+            rounded-2xl border border-border bg-popover p-6 shadow-xl outline-none
             transition-all duration-150
             data-[ending-style]:scale-95 data-[ending-style]:opacity-0
-            data-[starting-style]:scale-95 data-[starting-style]:opacity-0
-            dark:border-gray-700 dark:bg-gray-900"
+            data-[starting-style]:scale-95 data-[starting-style]:opacity-0"
         >
           <div className="flex items-start justify-between gap-2">
-            <Dialog.Title className="text-base font-semibold text-gray-900 dark:text-gray-100">
+            <Dialog.Title className="text-base font-semibold text-foreground">
               Redeem coins
             </Dialog.Title>
             <Dialog.Close
-              className="grid size-7 shrink-0 place-items-center rounded-md text-gray-400
-                transition hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+              className="grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground
+                transition hover:bg-muted hover:text-foreground"
               aria-label="Close"
             >
               <X className="size-4" />
             </Dialog.Close>
           </div>
 
-          <Dialog.Description className="mt-1 text-sm text-gray-500">
-            You have <span className="font-semibold text-gray-900 dark:text-gray-100">{available}</span> coins available.
+          <Dialog.Description className="mt-1 text-sm text-muted-foreground">
+            You have <span className="font-semibold text-foreground">{available}</span> coins available.
           </Dialog.Description>
 
           <div className="mt-5 space-y-3">
             {types.length >= 2 && (
               <div>
-                <p className="mb-2 text-xs font-medium text-gray-700 dark:text-gray-300">Redeem for</p>
+                <p className="mb-2 text-xs font-medium text-foreground">Redeem for</p>
                 <div className="space-y-1.5">
                   {types.map((t) => (
                     <label
@@ -88,7 +87,7 @@ export function RedeemableBalance({ available, types }: Props) {
                       className={`flex cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 transition ${
                         selectedTypeId === t.id
                           ? "border-emerald-400 bg-emerald-50 dark:border-emerald-600 dark:bg-emerald-900/20"
-                          : "border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                          : "border-border hover:bg-muted"
                       }`}
                     >
                       <input
@@ -100,9 +99,9 @@ export function RedeemableBalance({ available, types }: Props) {
                         className="accent-emerald-600"
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{t.label}</p>
+                        <p className="text-sm font-medium text-foreground">{t.label}</p>
                         {t.rateLabel && (
-                          <p className="text-xs text-gray-400">{t.rateLabel}</p>
+                          <p className="text-xs text-muted-foreground">{t.rateLabel}</p>
                         )}
                       </div>
                     </label>
@@ -112,13 +111,13 @@ export function RedeemableBalance({ available, types }: Props) {
             )}
 
             {types.length === 1 && (
-              <p className="text-xs text-gray-500">
-                Redeem for: <span className="font-medium text-gray-700 dark:text-gray-200">{types[0].label}</span>
+              <p className="text-xs text-muted-foreground">
+                Redeem for: <span className="font-medium text-foreground">{types[0].label}</span>
               </p>
             )}
 
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">Amount</label>
+              <label className="mb-1.5 block text-xs font-medium text-foreground">Amount</label>
               <input
                 type="number"
                 min={1}
@@ -127,17 +126,15 @@ export function RedeemableBalance({ available, types }: Props) {
                 onChange={(e) =>
                   setAmount(Math.max(1, Math.min(available, parseInt(e.target.value) || 1)))
                 }
-                className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm text-gray-900
-                  focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20
-                  dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                className="h-9 w-full rounded-lg border border-border px-3 text-sm text-foreground
+                  focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
               />
             </div>
 
             <div className="flex justify-end gap-2">
               <Dialog.Close
-                className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium
-                  text-gray-700 transition hover:bg-gray-50
-                  dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium
+                  text-foreground transition hover:bg-muted"
               >
                 Cancel
               </Dialog.Close>

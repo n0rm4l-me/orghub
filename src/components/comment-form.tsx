@@ -48,7 +48,7 @@ export function CommentForm({ articleId, parentId, replyingTo, onCancel, onSucce
             <button
               type="button"
               onClick={onCancel}
-              className="rounded p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="rounded p-0.5 text-muted-foreground hover:text-muted-foreground"
               aria-label="Cancel reply"
             >
               <X className="size-3.5" aria-hidden />
@@ -63,20 +63,18 @@ export function CommentForm({ articleId, parentId, replyingTo, onCancel, onSucce
         placeholder={replyingTo ? `Reply to ${replyingTo}…` : "Write a comment…"}
         rows={replyingTo ? 2 : 3}
         maxLength={2000}
-        className="w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm
-          text-gray-900 placeholder:text-gray-400 focus:border-brand focus:outline-none focus:ring-2
-          focus:ring-brand/20 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100
-          dark:placeholder:text-gray-500"
+        className="w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-sm
+          text-foreground placeholder:text-muted-foreground focus:border-brand focus:outline-none focus:ring-2
+          focus:ring-brand/20"
       />
       <div className="flex items-center justify-between">
-        <span className="text-xs text-gray-400">{body.length}/2000</span>
+        <span className="text-xs text-muted-foreground">{body.length}/2000</span>
         <div className="flex gap-2">
           {onCancel && (
             <button
               type="button"
               onClick={onCancel}
-              className="rounded-lg px-3 py-2 text-sm text-gray-500 transition hover:text-gray-800
-                dark:hover:text-gray-200"
+              className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:text-foreground"
             >
               Cancel
             </button>

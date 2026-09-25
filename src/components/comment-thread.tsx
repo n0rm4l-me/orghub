@@ -57,17 +57,17 @@ function ReplyItem({
         {(reply.author.avatarUrl || gravatarsEnabled) && (
           <AvatarImage src={reply.author.avatarUrl ?? gravatarUrl(reply.author.email, 28)} alt="" />
         )}
-        <AvatarFallback className="bg-gray-100 text-[10px] font-bold text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+        <AvatarFallback className="bg-muted text-[10px] font-bold text-muted-foreground">
           {initials(reply.author.name)}
         </AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{reply.author.name}</span>
-          <span className="text-xs text-gray-400 dark:text-gray-500">{formatDate(reply.createdAt)}</span>
+          <span className="text-sm font-medium text-foreground">{reply.author.name}</span>
+          <span className="text-xs text-muted-foreground">{formatDate(reply.createdAt)}</span>
           {canDelete && <DeleteCommentButton id={reply.id} />}
         </div>
-        <p className="mt-0.5 text-sm leading-relaxed whitespace-pre-line text-gray-700 dark:text-gray-300">
+        <p className="mt-0.5 text-sm leading-relaxed whitespace-pre-line text-foreground">
           {reply.body}
         </p>
       </div>
@@ -89,7 +89,7 @@ export function CommentThread({ comment, userId, canModerate, gravatarsEnabled }
         {(comment.author.avatarUrl || gravatarsEnabled) && (
           <AvatarImage src={comment.author.avatarUrl ?? gravatarUrl(comment.author.email, 32)} alt="" />
         )}
-        <AvatarFallback className="bg-gray-100 text-[11px] font-bold text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+        <AvatarFallback className="bg-muted text-[11px] font-bold text-muted-foreground">
           {initials(comment.author.name)}
         </AvatarFallback>
       </Avatar>
@@ -97,13 +97,13 @@ export function CommentThread({ comment, userId, canModerate, gravatarsEnabled }
       <div className="min-w-0 flex-1">
         {/* Header */}
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{comment.author.name}</span>
-          <span className="text-xs text-gray-400 dark:text-gray-500">{formatDate(comment.createdAt)}</span>
+          <span className="text-sm font-medium text-foreground">{comment.author.name}</span>
+          <span className="text-xs text-muted-foreground">{formatDate(comment.createdAt)}</span>
           {canDelete && <DeleteCommentButton id={comment.id} />}
         </div>
 
         {/* Body */}
-        <p className="mt-1 text-sm leading-relaxed whitespace-pre-line text-gray-700 dark:text-gray-300">
+        <p className="mt-1 text-sm leading-relaxed whitespace-pre-line text-foreground">
           {comment.body}
         </p>
 
@@ -113,8 +113,7 @@ export function CommentThread({ comment, userId, canModerate, gravatarsEnabled }
             <button
               type="button"
               onClick={() => setReplying((r) => !r)}
-              className="flex items-center gap-1 text-xs text-gray-400 transition hover:text-gray-700
-                dark:hover:text-gray-300"
+              className="flex items-center gap-1 text-xs text-muted-foreground transition hover:text-foreground"
             >
               <CornerDownRight className="size-3" aria-hidden />
               Reply
@@ -133,7 +132,7 @@ export function CommentThread({ comment, userId, canModerate, gravatarsEnabled }
             <button
               type="button"
               onClick={() => setShowReplies(false)}
-              className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="text-xs text-muted-foreground hover:text-muted-foreground"
             >
               Hide replies
             </button>
@@ -142,7 +141,7 @@ export function CommentThread({ comment, userId, canModerate, gravatarsEnabled }
 
         {/* Replies list */}
         {replyCount > 0 && showReplies && (
-          <ul className="mt-3 space-y-3 border-l-2 border-gray-100 pl-4 dark:border-gray-800">
+          <ul className="mt-3 space-y-3 border-l-2 border-border pl-4">
             {comment.replies.map((reply) => (
               <ReplyItem
                 key={reply.id}

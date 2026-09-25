@@ -147,43 +147,42 @@ export function NotificationBell() {
 
       {open && (
         <div className="fixed left-1/2 top-16 z-50 w-[calc(100vw-2rem)] max-w-80 -translate-x-1/2
-          rounded-xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900
+          rounded-xl border border-border bg-popover shadow-xl
           sm:absolute sm:left-auto sm:right-0 sm:top-11 sm:w-80 sm:max-w-none sm:translate-x-0">
-          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3
-            dark:border-gray-800">
-            <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <span className="text-sm font-semibold text-foreground">
               Notifications
             </span>
-            <Bell className="size-4 text-gray-400" />
+            <Bell className="size-4 text-muted-foreground" />
           </div>
 
           <div className="scrollbar-thin max-h-96 overflow-y-auto">
             {loading ? (
-              <div className="py-8 text-center text-xs text-gray-400">Loading…</div>
+              <div className="py-8 text-center text-xs text-muted-foreground">Loading…</div>
             ) : error ? (
-              <div className="py-8 text-center text-xs text-gray-400">Could not load notifications</div>
+              <div className="py-8 text-center text-xs text-muted-foreground">Could not load notifications</div>
             ) : items.length === 0 ? (
-              <div className="py-8 text-center text-xs text-gray-400">No notifications yet</div>
+              <div className="py-8 text-center text-xs text-muted-foreground">No notifications yet</div>
             ) : (
-              <ul className="divide-y divide-gray-50 dark:divide-gray-800">
+              <ul className="divide-y divide-border">
                 {items.map((n) => {
                   const inner = (
-                    <div className={`flex gap-3 px-4 py-3 transition hover:bg-gray-50
-                      dark:hover:bg-gray-800 ${!n.read ? "bg-brand/5 dark:bg-brand/10" : ""}`}>
+                    <div className={`flex gap-3 px-4 py-3 transition hover:bg-muted
+                      ${!n.read ? "bg-brand/5 dark:bg-brand/10" : ""}`}>
                       <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center
-                        rounded-full bg-gray-100 dark:bg-gray-800">
-                        {TYPE_ICON[n.type] ?? <Bell className="size-4 text-gray-400" />}
+                        rounded-full bg-muted">
+                        {TYPE_ICON[n.type] ?? <Bell className="size-4 text-muted-foreground" />}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 leading-snug">
+                        <p className="text-sm font-medium text-foreground leading-snug">
                           {n.title}
                         </p>
                         {n.body && (
-                          <p className="mt-0.5 line-clamp-2 text-xs text-gray-500 dark:text-gray-400">
+                          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
                             {n.body}
                           </p>
                         )}
-                        <p className="mt-1 text-[11px] text-gray-400 dark:text-gray-500">
+                        <p className="mt-1 text-[11px] text-muted-foreground">
                           {timeAgo(n.createdAt)}
                         </p>
                       </div>

@@ -88,25 +88,25 @@ export function PollCard({ poll, options, totalVotes, initialVotedOptionIds, com
   }
 
   return (
-    <div className={`rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900 ${compact ? "p-5" : "px-4 pb-4 pt-3"}`}>
+    <div className={`rounded-xl border border-border bg-card ${compact ? "p-5" : "px-4 pb-4 pt-3"}`}>
       {compact ? (
-        <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+        <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
           <BarChart2 className="size-4 text-brand" aria-hidden />
           Poll
         </h2>
       ) : (
-        <p className="mb-1 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+        <p className="mb-1 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           <BarChart2 className="size-3" aria-hidden />
           Poll
         </p>
       )}
-      <h3 className={`font-semibold text-gray-900 dark:text-gray-100 ${compact ? "text-sm" : "text-base"}`}>
+      <h3 className={`font-semibold text-foreground ${compact ? "text-sm" : "text-base"}`}>
         {poll.question}
       </h3>
 
       <div className="mb-2.5 mt-1.5 flex flex-wrap items-center gap-1.5">
         {isClosed ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+          <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
             <Lock className="size-2.5" aria-hidden />
             Closed
           </span>
@@ -118,7 +118,7 @@ export function PollCard({ poll, options, totalVotes, initialVotedOptionIds, com
         ) : null}
 
         {poll.anonymous ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+          <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
             <ShieldCheck className="size-3" aria-hidden />
             Anonymous
           </span>
@@ -144,19 +144,19 @@ export function PollCard({ poll, options, totalVotes, initialVotedOptionIds, com
                 className={`rounded-lg border px-3 py-2 ${
                   isVotedOption
                     ? "border-brand/30 bg-brand/5 dark:border-brand/20 dark:bg-brand/10"
-                    : "border-gray-200 dark:border-gray-700"
+                    : "border-border"
                 }`}
               >
                 <div className="mb-1.5 flex items-center justify-between gap-2">
-                  <span className={`${compact ? "text-xs" : "text-sm"} text-gray-700 dark:text-gray-300 flex items-center gap-1.5`}>
+                  <span className={`${compact ? "text-xs" : "text-sm"} text-foreground flex items-center gap-1.5`}>
                     {isVotedOption && <CheckCircle2 className="size-3.5 shrink-0 text-brand" aria-hidden />}
                     {option.text}
                   </span>
-                  <span className="shrink-0 text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <span className="shrink-0 text-xs font-medium text-muted-foreground">
                     {pct}%
                   </span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+                <div className="h-1.5 overflow-hidden rounded-full bg-muted">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${isVotedOption ? "bg-brand" : "bg-brand/40"}`}
                     style={{ width: `${pct}%` }}
@@ -175,7 +175,7 @@ export function PollCard({ poll, options, totalVotes, initialVotedOptionIds, com
               className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition
                 ${isSelected
                   ? "border-brand bg-brand/5 text-brand dark:border-brand dark:bg-brand/10"
-                  : "border-gray-200 text-gray-700 hover:border-brand/50 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:border-brand/40 dark:hover:bg-gray-800"
+                  : "border-border text-foreground hover:border-brand/50 hover:bg-muted dark:hover:border-brand/40"
                 }
                 disabled:cursor-not-allowed disabled:opacity-60`}
             >
@@ -192,17 +192,17 @@ export function PollCard({ poll, options, totalVotes, initialVotedOptionIds, com
 
       {showResultsPreview && (
         <div className="mt-3 space-y-1.5">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">Current results</p>
+          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Current results</p>
           {options.map((option) => {
             const count = localCounts[option.id] ?? 0
             const pct = localTotal > 0 ? Math.round((count / localTotal) * 100) : 0
             return (
-              <div key={option.id} className="rounded-lg border border-gray-200 px-3 py-2 dark:border-gray-700">
+              <div key={option.id} className="rounded-lg border border-border px-3 py-2">
                 <div className="mb-1 flex items-center justify-between gap-2">
-                  <span className="text-xs text-gray-600 dark:text-gray-400">{option.text}</span>
-                  <span className="shrink-0 text-xs font-medium text-gray-500">{pct}%</span>
+                  <span className="text-xs text-muted-foreground">{option.text}</span>
+                  <span className="shrink-0 text-xs font-medium text-muted-foreground">{pct}%</span>
                 </div>
-                <div className="h-1 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+                <div className="h-1 overflow-hidden rounded-full bg-muted">
                   <div className="h-full rounded-full bg-brand/40 transition-all duration-500" style={{ width: `${pct}%` }} />
                 </div>
               </div>
@@ -233,13 +233,13 @@ export function PollCard({ poll, options, totalVotes, initialVotedOptionIds, com
       ) : null}
 
       {poll.resultsVisibility === "NEVER" && !voted && !isClosed && (
-        <p className="mt-3 text-xs text-gray-400 dark:text-gray-500">Results are not public.</p>
+        <p className="mt-3 text-xs text-muted-foreground">Results are not public.</p>
       )}
       {(poll.resultsVisibility === "AFTER_CLOSE" || poll.resultsVisibility === "NEVER") && !isClosed && voted && (
-        <p className="mt-3 text-xs text-gray-400 dark:text-gray-500">Results visible after the poll closes.</p>
+        <p className="mt-3 text-xs text-muted-foreground">Results visible after the poll closes.</p>
       )}
 
-      <p className="mt-3 text-[11px] text-gray-400 dark:text-gray-500">
+      <p className="mt-3 text-[11px] text-muted-foreground">
         {localTotal} vote{localTotal === 1 ? "" : "s"}
         {poll.multiChoice && " · Multi-choice"}
       </p>

@@ -31,16 +31,16 @@ export function CustomizeMenu() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-11 z-50 w-56 rounded-xl border border-gray-200
-          bg-white p-3 shadow-2xl space-y-3 dark:border-white/10 dark:bg-gray-900">
+        <div className="absolute right-0 top-11 z-50 w-56 rounded-xl border border-border
+          bg-popover p-3 shadow-2xl space-y-3">
           <div>
-            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-white/50">
+            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               Theme
             </p>
             <ThemeToggle />
           </div>
           <div>
-            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-white/50">
+            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               Text size
             </p>
             <FontSizeToggle />

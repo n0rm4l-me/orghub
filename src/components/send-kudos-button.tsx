@@ -87,14 +87,14 @@ export function SendKudosButton({ values, monthlyBudget, remaining }: Props) {
           className="fixed inset-0 z-[200] flex items-center justify-center bg-black/25 backdrop-blur-[2px] p-4"
           onClick={(e) => { if (e.target === e.currentTarget) close() }}
         >
-          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 px-6 py-4">
-              <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Send kudos</h2>
+          <div className="w-full max-w-md rounded-2xl bg-popover shadow-xl">
+            <div className="flex items-center justify-between border-b border-border px-6 py-4">
+              <h2 className="text-base font-semibold text-foreground">Send kudos</h2>
               <button
                 type="button"
                 onClick={close}
                 aria-label="Close"
-                className="grid size-7 place-items-center rounded-md text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300"
+                className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <X className="size-4" />
               </button>
@@ -103,12 +103,12 @@ export function SendKudosButton({ values, monthlyBudget, remaining }: Props) {
             <form ref={formRef} onSubmit={submit} className="space-y-4 p-6">
               {/* Recipient */}
               <div>
-                <label id="kudos-to-label" className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label id="kudos-to-label" className="mb-1.5 block text-sm font-medium text-foreground">
                   To <span className="text-red-500" aria-hidden="true">*</span>
                 </label>
                 {selectedUser ? (
                   <div className="flex items-center justify-between rounded-lg border border-brand bg-brand/5 px-3 py-2">
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    <span className="text-sm font-medium text-foreground">
                       {selectedUser.name ?? selectedUser.email}
                     </span>
                     <button
@@ -121,30 +121,30 @@ export function SendKudosButton({ values, monthlyBudget, remaining }: Props) {
                   </div>
                 ) : (
                   <div className="relative">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+                    <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <input
                       type="text"
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
                       placeholder="Search colleagues…"
                       aria-labelledby="kudos-to-label"
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 py-2 pl-9 pr-3 text-base sm:text-sm
-                        text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                      className="w-full rounded-lg border border-border bg-card py-2 pl-9 pr-3 text-base sm:text-sm
+                        text-foreground placeholder:text-muted-foreground focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                     />
                     {query && (
                       <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-lg border
-                        border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md">
+                        border-border bg-popover shadow-md">
                         {results.length === 0 ? (
-                          <li className="px-3 py-2 text-sm text-gray-400 dark:text-gray-500">No results</li>
+                          <li className="px-3 py-2 text-sm text-muted-foreground">No results</li>
                         ) : results.map((u) => (
                           <li key={u.id}>
                             <button
                               type="button"
                               onClick={() => { setSelectedUser(u); setQuery("") }}
-                              className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+                              className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
                             >
                               {u.name && <span className="font-medium">{u.name}</span>}
-                              <span className="ml-1 text-gray-400 dark:text-gray-500">{u.email}</span>
+                              <span className="ml-1 text-muted-foreground">{u.email}</span>
                             </button>
                           </li>
                         ))}
@@ -157,10 +157,10 @@ export function SendKudosButton({ values, monthlyBudget, remaining }: Props) {
               {/* Amount */}
               {monthlyBudget > 0 && (
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">
                     Coins
                     {remaining !== null && (
-                      <span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-500">{remaining} left this month</span>
+                      <span className="ml-2 text-xs font-normal text-muted-foreground">{remaining} left this month</span>
                     )}
                   </label>
                   <input
@@ -169,8 +169,8 @@ export function SendKudosButton({ values, monthlyBudget, remaining }: Props) {
                     max={maxAmount}
                     value={amount}
                     onChange={(e) => setAmount(Math.max(1, Math.min(maxAmount, parseInt(e.target.value) || 1)))}
-                    className="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-base sm:text-sm
-                      text-gray-900 dark:text-gray-100 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                    className="w-full rounded-lg border border-border bg-card px-3 py-2 text-base sm:text-sm
+                      text-foreground focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                   />
                 </div>
               )}
@@ -178,13 +178,13 @@ export function SendKudosButton({ values, monthlyBudget, remaining }: Props) {
               {/* Value tag */}
               {values.length > 0 && (
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Value</label>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">Value</label>
                   <div className="flex flex-wrap gap-1.5">
                     <button
                       type="button"
                       onClick={() => setValue("")}
                       className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
-                        value === "" ? "bg-brand text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                        value === "" ? "bg-brand text-white" : "bg-muted text-muted-foreground hover:bg-border"
                       }`}
                     >
                       None
@@ -195,7 +195,7 @@ export function SendKudosButton({ values, monthlyBudget, remaining }: Props) {
                         type="button"
                         onClick={() => setValue(v)}
                         className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
-                          value === v ? "bg-brand text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                          value === v ? "bg-brand text-white" : "bg-muted text-muted-foreground hover:bg-border"
                         }`}
                       >
                         {v}
@@ -207,7 +207,7 @@ export function SendKudosButton({ values, monthlyBudget, remaining }: Props) {
 
               {/* Message */}
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="mb-1.5 block text-sm font-medium text-foreground">
                   Message <span className="text-red-500" aria-hidden="true">*</span>
                 </label>
                 <textarea
@@ -218,10 +218,10 @@ export function SendKudosButton({ values, monthlyBudget, remaining }: Props) {
                   maxLength={300}
                   rows={3}
                   placeholder="What did they do that made a difference?"
-                  className="w-full resize-none rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-base sm:text-sm
-                    text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                  className="w-full resize-none rounded-lg border border-border bg-card px-3 py-2 text-base sm:text-sm
+                    text-foreground placeholder:text-muted-foreground focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                 />
-                <p className="mt-1 text-right text-xs text-gray-400 dark:text-gray-500">{message.length}/300</p>
+                <p className="mt-1 text-right text-xs text-muted-foreground">{message.length}/300</p>
               </div>
 
               <button
