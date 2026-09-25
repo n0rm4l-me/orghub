@@ -15,7 +15,7 @@ function langLabel(code: string): string {
   }
 }
 
-const PROSE = "prose prose-gray max-w-none dark:prose-invert prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-p:text-gray-700 prose-p:leading-relaxed dark:prose-p:text-gray-300"
+const PROSE = "prose prose-gray max-w-none dark:prose-invert prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-p:leading-relaxed"
 
 function renderBlocks(blocks: TranslatedBlock[]) {
   const items = blocks.map((b, i) => {
@@ -100,7 +100,7 @@ export function ArticleTranslateBody({ articleId, title, bodyJson, enabledLangua
 
   return (
     <>
-      <h1 key={showTranslation ? `t-${shownTarget}` : "orig"} className="text-3xl font-bold text-gray-900 leading-tight mb-4 dark:text-gray-100 animate-in fade-in-0 duration-300">
+      <h1 key={showTranslation ? `t-${shownTarget}` : "orig"} className="text-3xl font-bold text-foreground leading-tight mb-4 animate-in fade-in-0 duration-300">
         {displayTitle}
       </h1>
 
@@ -111,7 +111,7 @@ export function ArticleTranslateBody({ articleId, title, bodyJson, enabledLangua
           <button
             type="button"
             onClick={() => setShowTranslation(false)}
-            className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-500 transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+            className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground transition hover:bg-muted"
           >
             <RotateCcw className="size-3" />
             Original
@@ -129,7 +129,7 @@ export function ArticleTranslateBody({ articleId, title, bodyJson, enabledLangua
               className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs transition disabled:opacity-60 ${
                 isActive
                   ? "border-brand bg-brand/10 font-medium text-brand"
-                  : "border-gray-200 text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
+                  : "border-border text-muted-foreground hover:bg-muted"
               }`}
             >
               {isLoading && <Loader2 className="size-3 animate-spin" />}

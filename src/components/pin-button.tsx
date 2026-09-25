@@ -33,7 +33,7 @@ export function PinButton({ initialPinned, onPin, compact, className }: Props) {
         className={`inline-flex items-center justify-center rounded p-0.5 transition-all disabled:opacity-40 ${
           pinned
             ? "text-brand"
-            : "text-gray-300 opacity-0 group-hover:opacity-100 hover:text-gray-400"
+            : "text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-muted-foreground"
         }`}
       >
         {pending ? (
@@ -52,7 +52,7 @@ export function PinButton({ initialPinned, onPin, compact, className }: Props) {
       disabled={pending}
       title={pinned ? "Unpin from feed" : "Pin as featured"}
       className={`transition-colors disabled:opacity-40 ${
-        pinned ? "text-brand" : "text-gray-300 hover:text-gray-500"
+        pinned ? "text-brand" : "text-muted-foreground hover:text-muted-foreground"
       } ${className ?? ""}`}
     >
       {pending ? (

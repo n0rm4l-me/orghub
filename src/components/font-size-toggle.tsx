@@ -30,7 +30,7 @@ export function FontSizeToggle() {
   }
 
   return (
-    <div className="flex gap-0.5 rounded-lg bg-gray-100 p-0.5 dark:bg-gray-700/60">
+    <div className="flex gap-0.5 rounded-lg bg-muted p-0.5">
       {options.map((opt) => (
         <button
           key={opt.value}
@@ -38,8 +38,8 @@ export function FontSizeToggle() {
           onClick={() => pick(opt.value)}
           className={`flex flex-1 flex-col items-center gap-0.5 rounded-md py-1.5 text-[10px] font-medium transition-colors
             ${size === opt.value
-              ? "bg-white text-gray-700 shadow-sm dark:bg-gray-600 dark:text-gray-100"
-              : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              ? "bg-card text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-muted-foreground"
             }`}
         >
           <span className={opt.cls}>A</span>

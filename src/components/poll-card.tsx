@@ -180,7 +180,7 @@ export function PollCard({ poll, options, totalVotes, initialVotedOptionIds, com
                 disabled:cursor-not-allowed disabled:opacity-60`}
             >
               <span className="flex items-center gap-2">
-                <span className={`flex size-4 shrink-0 items-center justify-center rounded-full border transition ${isSelected ? "border-brand bg-brand" : "border-gray-300 dark:border-gray-600"}`}>
+                <span className={`flex size-4 shrink-0 items-center justify-center rounded-full border transition ${isSelected ? "border-brand bg-brand" : "border-border"}`}>
                   {isSelected && <span className="size-1.5 rounded-full bg-white" />}
                 </span>
                 {option.text}

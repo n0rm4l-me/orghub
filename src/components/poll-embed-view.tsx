@@ -44,7 +44,7 @@ export function PollEmbedView({ node, deleteNode, editor }: NodeViewProps) {
   if (!pollId) {
     return (
       <NodeViewWrapper>
-        <div className="rounded-xl border border-dashed border-gray-300 p-4 text-sm text-gray-400">
+        <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
           Invalid poll embed.
         </div>
       </NodeViewWrapper>
@@ -66,16 +66,16 @@ export function PollEmbedView({ node, deleteNode, editor }: NodeViewProps) {
           </button>
         )}
         {loading ? (
-          <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-400 dark:border-gray-700 dark:bg-gray-800">
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-muted p-4 text-sm text-muted-foreground">
             <BarChart2 className="size-4 animate-pulse text-brand" />
             Loading poll...
           </div>
         ) : data === null ? (
-          <div className="rounded-xl border border-dashed border-gray-300 p-4 text-sm text-gray-400">
+          <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
             Poll not found.
           </div>
         ) : "disabled" in data ? (
-          <div className="rounded-xl border border-dashed border-gray-200 p-4 text-sm text-gray-400 dark:border-gray-700">
+          <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
             <BarChart2 className="mb-1 size-4" />
             Polls module is disabled.
           </div>

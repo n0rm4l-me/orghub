@@ -23,7 +23,7 @@ type Poll = {
 }
 
 const STATUS_STYLES: Record<Poll["status"], string> = {
-  DRAFT: "bg-gray-100 text-gray-600",
+  DRAFT: "bg-muted text-muted-foreground",
   ACTIVE: "bg-green-100 text-green-700",
   CLOSED: "bg-red-100 text-red-600",
 }
@@ -39,7 +39,7 @@ function CloseButton({ id }: { id: string }) {
       onClick={() => run()}
       disabled={pending}
       aria-label="Close poll"
-      className="grid size-7 place-items-center rounded-md text-gray-400 transition
+      className="grid size-7 place-items-center rounded-md text-muted-foreground transition
         hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
     >
       <Lock className="size-3.5" aria-hidden />
@@ -56,11 +56,11 @@ const columns: AdminTableCol<Poll>[] = [
       <>
         <Link
           href={`/admin/polls/${poll.id}`}
-          className="block truncate text-sm font-medium text-gray-900 hover:text-brand"
+          className="block truncate text-sm font-medium text-foreground hover:text-brand"
         >
           {poll.question}
         </Link>
-        <p className="mt-0.5 text-xs text-gray-400">
+        <p className="mt-0.5 text-xs text-muted-foreground">
           {poll.anonymous && "Anonymous · "}
           {poll.multiChoice && "Multi-choice · "}
           {new Date(poll.createdAt).toLocaleDateString("en-US", {
@@ -107,7 +107,7 @@ const columns: AdminTableCol<Poll>[] = [
           year: "numeric",
         })
       ) : (
-        <span className="text-gray-300">—</span>
+        <span className="text-muted-foreground">—</span>
       ),
   },
   {
@@ -121,8 +121,8 @@ const columns: AdminTableCol<Poll>[] = [
         <Link
           href={`/admin/polls/${poll.id}`}
           aria-label="Edit poll"
-          className="grid size-7 place-items-center rounded-md text-gray-400 transition
-            hover:bg-gray-100 hover:text-gray-700"
+          className="grid size-7 place-items-center rounded-md text-muted-foreground transition
+            hover:bg-muted hover:text-foreground"
         >
           <Pencil className="size-3.5" aria-hidden />
         </Link>

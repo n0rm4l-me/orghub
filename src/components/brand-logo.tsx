@@ -75,7 +75,7 @@ export function BrandLogo({
         <span
           className={cn(
             "text-[15px] font-semibold tracking-tight whitespace-nowrap",
-            tone === "light" ? "text-white" : "text-gray-900"
+            tone === "light" ? "text-white" : "text-foreground"
           )}
         >
           {siteName}
@@ -96,7 +96,7 @@ export function BrandLogo({
           aria-hidden
           className={cn(
             "absolute inset-0 animate-pulse rounded-md",
-            tone === "light" ? "bg-white/20" : "bg-gray-200/70"
+            tone === "light" ? "bg-white/20" : "bg-border/70"
           )}
         />
       )}

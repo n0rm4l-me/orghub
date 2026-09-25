@@ -13,7 +13,7 @@ export function DeleteCommentButton({ id }: { id: string }) {
       onClick={() => run()}
       disabled={pending}
       aria-label="Delete comment"
-      className="rounded p-1 text-gray-300 transition hover:text-red-400 disabled:opacity-40"
+      className="rounded p-1 text-muted-foreground transition hover:text-red-400 disabled:opacity-40"
     >
       <Trash2 className="size-3.5" aria-hidden />
     </button>

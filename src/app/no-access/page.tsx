@@ -37,15 +37,15 @@ export default async function NoAccessPage({
         <Icon className="size-6" />
       </span>
 
-      <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h1>
-      <p className="mt-2 text-sm leading-relaxed text-gray-500">{body}</p>
+      <h1 className="text-lg font-semibold text-foreground">{title}</h1>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p>
 
       {variant === "role" && need && (
-        <p className="mt-3 text-xs text-gray-400">
-          Required role: <span className="font-medium text-gray-600 capitalize">{need}</span>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Required role: <span className="font-medium text-muted-foreground capitalize">{need}</span>
           {user && (
             <>
-              {" · "}yours: <span className="font-medium text-gray-600 capitalize">
+              {" · "}yours: <span className="font-medium text-muted-foreground capitalize">
                 {user.role.toLowerCase()}
               </span>
             </>
@@ -69,8 +69,8 @@ export default async function NoAccessPage({
         >
           <button
             type="submit"
-            className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium
-              text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+            className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium
+              text-foreground transition hover:bg-muted"
           >
             Sign in as someone else
           </button>

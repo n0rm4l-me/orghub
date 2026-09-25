@@ -33,7 +33,7 @@ export function ImportantButton({ initialImportant, onMark, compact, className }
         className={`inline-flex items-center justify-center rounded p-0.5 transition-all disabled:opacity-40 ${
           important
             ? "text-amber-500"
-            : "text-gray-300 opacity-0 group-hover:opacity-100 hover:text-gray-400"
+            : "text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-muted-foreground"
         }`}
       >
         {pending ? (
@@ -52,7 +52,7 @@ export function ImportantButton({ initialImportant, onMark, compact, className }
       disabled={pending}
       title={important ? "Remove important flag" : "Mark as important"}
       className={`transition-colors disabled:opacity-40 ${
-        important ? "text-amber-500" : "text-gray-300 hover:text-gray-500"
+        important ? "text-amber-500" : "text-muted-foreground hover:text-muted-foreground"
       } ${className ?? ""}`}
     >
       {pending ? (
