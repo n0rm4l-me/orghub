@@ -94,13 +94,17 @@ module-enabled flag; the comment-reply notification call is now
   a scoped-out feature, not a correctness bug. Building the real order flow
   is a legitimate future roadmap item on its own, not a quick fix.
 
-- **OPEN. Admin "Auth providers" page is read-only.**
+- **RESOLVED 2026-09-25. Read-only by design, not an unfinished screen.**
   [src/app/admin/auth-providers/page.tsx](src/app/admin/auth-providers/page.tsx)
-  shows configured/not-configured status badges read from env vars, plus a
-  DB-backed local-auth toggle. There's no UI to add/edit LDAP or OIDC
-  configuration; that's still env-var only. Likely fine for a self-hosted
-  product where ops sets env vars, but worth an explicit decision rather than
-  leaving it looking like an unfinished CRUD screen.
+  already says so explicitly in its own `PageHeader` description
+  ("Configured through environment variables, not this screen"), redacts the
+  Okta secret and LDAP bind password rather than showing them, and has a
+  code comment explaining why: these are exactly the class of credential
+  (SSO client secrets, directory bind passwords) that shouldn't round-trip
+  through a browser form into the database when env-var injection at the
+  ops/infra layer is the more secure pattern. Re-read the page in full
+  before deciding: this isn't a gap, it's a deliberate, already-correct
+  design choice that just needed crediting as one.
 
 - **RESOLVED (2026-09-24). Mobile REST API's auth split is intentional, not a gap.**
   `getMobileUser` is enforced on `mobile-me` and `translate` only; feed,
