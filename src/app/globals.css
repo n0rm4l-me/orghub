@@ -141,6 +141,9 @@
   }
   html {
     @apply font-sans;
+    /* Reserve the scrollbar's width up front so pages that grow past the
+       fold don't shift their content sideways once it appears. */
+    scrollbar-gutter: stable;
   }
 
   /* Tailwind v4's preflight sets `cursor: default` on buttons to match the
