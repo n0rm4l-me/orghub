@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { Header } from "@/components/header"
 import { AnnouncementBanner } from "@/components/announcement-banner"
 import { PortalMain } from "@/components/portal-width"

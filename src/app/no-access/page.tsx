@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { signOut } from "@/auth"
 import Link from "next/link"
 import { ShieldOff, UserX } from "lucide-react"
