@@ -6,15 +6,14 @@ import { gravatarUrl } from "@/lib/gravatar"
 import { ArticleTranslateBody } from "@/components/article-translate-body"
 import Link from "next/link"
 import { ArrowLeft, CalendarDays, Eye, MapPin, MessageSquare } from "lucide-react"
-import { SidebarBlocks, type ActivePollData } from "@/components/sidebar-blocks"
 import { getCurrentUser, hasRole } from "@/lib/rbac"
 import { LikeButton } from "@/components/like-button"
 import { CommentForm } from "@/components/comment-form"
 import { CommentThread } from "@/components/comment-thread"
-import { getQuickLinks, getUpcomingEvents } from "@/lib/nav"
 import { getSettings } from "@/lib/settings"
 import { parseModules } from "@/lib/modules"
 import { recordView } from "@/lib/views"
+import { PortalPageLayout } from "@/components/portal-page-layout"
 
 interface Props {
   params: Promise<{ id: string }>
@@ -23,7 +22,7 @@ interface Props {
 export default async function ArticlePage({ params }: Props) {
   const { id } = await params
 
-  const [article, user, settings, quickLinks, upcomingEvents, categories] = await Promise.all([
+  const [article, user, settings] = await Promise.all([
     db.article.findFirst({
       where: { id, published: true },
       select: {
@@ -64,9 +63,6 @@ export default async function ArticlePage({ params }: Props) {
     }),
     getCurrentUser(),
     getSettings(),
-    getQuickLinks(),
-    getUpcomingEvents(),
-    db.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, slug: true } }),
   ])
 
   if (!article) notFound()
@@ -80,53 +76,13 @@ export default async function ArticlePage({ params }: Props) {
   const eventsEnabled = enabled.has("events")
   const translationEnabled = enabled.has("translation")
   const pollsEnabled = enabled.has("polls")
-  const rightBlocks = settings.sidebarOrder?.split(",").filter(Boolean) ?? ["quickLinks", "browseByTopic", "upcomingEvents"]
-  const leftBlocks  = settings.leftSidebarOrder?.split(",").filter(Boolean) ?? []
-  const showLeft  = articleLayout === "sidebar-left"  || articleLayout === "sidebar-both"
-  const showRight = articleLayout === "sidebar-right" || articleLayout === "sidebar-both"
-  const allBlocks = [...rightBlocks, ...leftBlocks]
+  const kudosEnabled = enabled.has("kudos")
 
-  async function loadActivePollData(): Promise<ActivePollData | null> {
-    const activePollRaw = await db.poll.findFirst({
-      where: { status: "ACTIVE" },
-      orderBy: { createdAt: "desc" },
-      include: {
-        options: { orderBy: { order: "asc" }, include: { _count: { select: { votes: true } } } },
-        _count: { select: { votes: true } },
-      },
-    })
-    if (!activePollRaw) return null
-
-    const userVotes = user
-      ? await db.pollVote.findMany({
-          where: { pollId: activePollRaw.id, userId: user.id },
-          select: { optionId: true },
-        })
-      : []
-    return {
-      poll: {
-        id: activePollRaw.id,
-        question: activePollRaw.question,
-        anonymous: activePollRaw.anonymous,
-        multiChoice: activePollRaw.multiChoice,
-        resultsVisibility: activePollRaw.resultsVisibility,
-        status: activePollRaw.status,
-        endsAt: activePollRaw.endsAt,
-      },
-      options: activePollRaw.options.map((o) => ({ id: o.id, text: o.text, voteCount: o._count.votes })),
-      totalVotes: activePollRaw._count.votes,
-      votedOptionIds: userVotes.map((v) => v.optionId),
-    }
-  }
-
-  const [likedReaction, activePollData] = await Promise.all([
-    user
-      ? db.articleReaction.findUnique({
-          where: { articleId_userId: { articleId: article.id, userId: user.id } },
-        })
-      : Promise.resolve(null),
-    pollsEnabled && allBlocks.includes("activePolls") ? loadActivePollData() : Promise.resolve(null),
-  ])
+  const likedReaction = user
+    ? await db.articleReaction.findUnique({
+        where: { articleId_userId: { articleId: article.id, userId: user.id } },
+      })
+    : null
   const liked = !!likedReaction
 
   const category = article.categories[0]?.category
@@ -285,23 +241,18 @@ export default async function ArticlePage({ params }: Props) {
     </div>
   )
 
-  if (!showLeft && !showRight) {
-    return <>{content}</>
-  }
-
   return (
-    <div className="flex items-start gap-8">
-      {showLeft && (
-        <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
-          <SidebarBlocks blocks={leftBlocks} eventsEnabled={eventsEnabled} quickLinks={quickLinks} categories={categories} upcomingEvents={upcomingEvents} activePoll={activePollData} />
-        </aside>
-      )}
-      <div className="min-w-0 flex-1">{content}</div>
-
-      {showRight && <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
-        <SidebarBlocks blocks={rightBlocks} eventsEnabled={eventsEnabled} quickLinks={quickLinks} categories={categories} upcomingEvents={upcomingEvents} activePoll={activePollData} />
-      </aside>}
-    </div>
+    <PortalPageLayout
+      layout={articleLayout}
+      sidebarOrder={settings.sidebarOrder}
+      leftSidebarOrder={settings.leftSidebarOrder}
+      eventsEnabled={eventsEnabled}
+      pollsEnabled={pollsEnabled}
+      kudosEnabled={kudosEnabled}
+      gravatarsEnabled={settings.gravatarsEnabled}
+    >
+      {content}
+    </PortalPageLayout>
   )
 }
 

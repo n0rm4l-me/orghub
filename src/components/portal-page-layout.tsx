@@ -10,8 +10,12 @@ interface Props {
   sidebarOrder?: string | null
   leftSidebarOrder?: string | null
   eventsEnabled: boolean
+  pollsEnabled: boolean
   kudosEnabled: boolean
   gravatarsEnabled: boolean
+  /** Pass true from the polls listing page: showing "here's an active poll"
+   * in its own sidebar is redundant there. */
+  hideActivePoll?: boolean
   children: React.ReactNode
 }
 
@@ -20,8 +24,10 @@ export function PortalPageLayout({
   sidebarOrder,
   leftSidebarOrder,
   eventsEnabled,
+  pollsEnabled,
   kudosEnabled,
   gravatarsEnabled,
+  hideActivePoll,
   children,
 }: Props) {
   const showLeft  = layout === "sidebar-left"  || layout === "sidebar-both"
@@ -31,7 +37,7 @@ export function PortalPageLayout({
 
   const rightBlocks = sidebarOrder?.split(",").filter(Boolean) ?? DEFAULT_RIGHT
   const leftBlocks  = leftSidebarOrder?.split(",").filter(Boolean) ?? []
-  const panelProps  = { eventsEnabled, kudosEnabled, gravatarsEnabled }
+  const panelProps  = { eventsEnabled, pollsEnabled, kudosEnabled, gravatarsEnabled, hideActivePoll }
 
   return (
     <div className="flex items-start gap-8">

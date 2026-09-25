@@ -40,6 +40,7 @@ export default async function SuggestionDetailPage({ params }: Props) {
       sidebarOrder={settings.sidebarOrder}
       leftSidebarOrder={settings.leftSidebarOrder}
       eventsEnabled={enabled.has("events")}
+      pollsEnabled={enabled.has("polls")}
       kudosEnabled={enabled.has("kudos")}
       gravatarsEnabled={settings.gravatarsEnabled}
     >

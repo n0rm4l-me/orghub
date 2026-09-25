@@ -4,10 +4,8 @@ import Link from "next/link"
 import { ChevronLeft, ChevronRight, CalendarDays, MapPin } from "lucide-react"
 import { getSettings } from "@/lib/settings"
 import { parseModules } from "@/lib/modules"
-import { getCurrentUser } from "@/lib/rbac"
-import { getQuickLinks, getUpcomingEvents } from "@/lib/nav"
-import { getTopKudosRecipients } from "@/lib/actions/kudos"
-import { SidebarBlocks, type ActivePollData, type TopKudosEntry } from "@/components/sidebar-blocks"
+import { PortalPageLayout } from "@/components/portal-page-layout"
+import { PageHeader } from "@/components/ui/page-header"
 
 interface Props {
   searchParams: Promise<{ month?: string }>
@@ -54,11 +52,6 @@ export default async function EventsPage({ searchParams }: Props) {
   const { year, month } = parseMonth(sp.month)
 
   const eventsLayout = settings.eventsLayout ?? "content"
-  const rightBlocks = settings.sidebarOrder?.split(",").filter(Boolean) ?? ["quickLinks", "browseByTopic", "upcomingEvents"]
-  const leftBlocks  = settings.leftSidebarOrder?.split(",").filter(Boolean) ?? []
-  const showLeft  = eventsLayout === "sidebar-left"  || eventsLayout === "sidebar-both"
-  const showRight = eventsLayout === "sidebar-right" || eventsLayout === "sidebar-both"
-  const allBlocks = [...rightBlocks, ...leftBlocks]
 
   const pollsEnabled = enabled.has("polls")
   const kudosEnabled = enabled.has("kudos")
@@ -66,41 +59,11 @@ export default async function EventsPage({ searchParams }: Props) {
   const monthStart = new Date(year, month - 1, 1)
   const monthEnd = new Date(year, month, 1)
 
-  const [user, events, quickLinks, upcomingEvents, categories] = await Promise.all([
-    getCurrentUser(),
-    db.article.findMany({
-      where: { published: true, eventDate: { gte: monthStart, lt: monthEnd } },
-      orderBy: { eventDate: "asc" },
-      select: { id: true, title: true, eventDate: true, eventEndDate: true, eventLocation: true },
-    }),
-    getQuickLinks(),
-    getUpcomingEvents(),
-    db.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, slug: true } }),
-  ])
-
-  let activePollData: ActivePollData | null = null
-  if (pollsEnabled && allBlocks.includes("activePolls")) {
-    const activePollRaw = await db.poll.findFirst({
-      where: { status: "ACTIVE" },
-      include: { options: { include: { _count: { select: { votes: true } } }, orderBy: { order: "asc" } }, _count: { select: { votes: true } } },
-    })
-    if (activePollRaw) {
-      const votedOptionIds = user
-        ? (await db.pollVote.findMany({ where: { pollId: activePollRaw.id, userId: user.id }, select: { optionId: true } })).map((v) => v.optionId)
-        : []
-      activePollData = {
-        poll: { id: activePollRaw.id, question: activePollRaw.question, anonymous: activePollRaw.anonymous, multiChoice: activePollRaw.multiChoice, resultsVisibility: activePollRaw.resultsVisibility, status: activePollRaw.status, endsAt: activePollRaw.endsAt },
-        options: activePollRaw.options.map((o) => ({ id: o.id, text: o.text, voteCount: o._count.votes })),
-        totalVotes: activePollRaw._count.votes,
-        votedOptionIds,
-      }
-    }
-  }
-
-  let topKudosData: TopKudosEntry[] = []
-  if (kudosEnabled && allBlocks.includes("topKudos")) {
-    topKudosData = await getTopKudosRecipients(5)
-  }
+  const events = await db.article.findMany({
+    where: { published: true, eventDate: { gte: monthStart, lt: monthEnd } },
+    orderBy: { eventDate: "asc" },
+    select: { id: true, title: true, eventDate: true, eventEndDate: true, eventLocation: true },
+  })
 
   // Calendar grid
   const firstDow = monthStart.getDay()
@@ -121,46 +84,34 @@ export default async function EventsPage({ searchParams }: Props) {
   const today = new Date()
   const isCurrentMonth = today.getFullYear() === year && today.getMonth() + 1 === month
 
-  const sidebarProps = {
-    eventsEnabled: true,
-    kudosEnabled,
-    quickLinks,
-    categories,
-    upcomingEvents,
-    activePoll: activePollData,
-    topKudos: topKudosData,
-    gravatarsEnabled: settings.gravatarsEnabled,
-  }
-
   const content = (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Calendar</h1>
-        <div className="flex items-center gap-2">
-          <Link
-            href={`/events?month=${monthKey(prev.year, prev.month)}`}
-            className="grid size-8 place-items-center rounded-lg border border-gray-200 bg-white
-              text-gray-500 transition hover:bg-gray-50 hover:text-gray-800
-              dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
-            aria-label="Previous month"
-          >
-            <ChevronLeft className="size-4" />
-          </Link>
-          <span className="min-w-[10rem] text-center text-sm font-semibold text-gray-900 dark:text-gray-100">
-            {MONTH_NAMES[month - 1]} {year}
-          </span>
-          <Link
-            href={`/events?month=${monthKey(next.year, next.month)}`}
-            className="grid size-8 place-items-center rounded-lg border border-gray-200 bg-white
-              text-gray-500 transition hover:bg-gray-50 hover:text-gray-800
-              dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
-            aria-label="Next month"
-          >
-            <ChevronRight className="size-4" />
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Calendar"
+        action={
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/events?month=${monthKey(prev.year, prev.month)}`}
+              className="grid size-8 place-items-center rounded-lg border border-border bg-card
+                text-muted-foreground transition hover:bg-muted hover:text-foreground"
+              aria-label="Previous month"
+            >
+              <ChevronLeft className="size-4" />
+            </Link>
+            <span className="min-w-[10rem] text-center text-sm font-semibold text-foreground">
+              {MONTH_NAMES[month - 1]} {year}
+            </span>
+            <Link
+              href={`/events?month=${monthKey(next.year, next.month)}`}
+              className="grid size-8 place-items-center rounded-lg border border-border bg-card
+                text-muted-foreground transition hover:bg-muted hover:text-foreground"
+              aria-label="Next month"
+            >
+              <ChevronRight className="size-4" />
+            </Link>
+          </div>
+        }
+      />
 
       {/* Calendar grid */}
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
@@ -282,23 +233,17 @@ export default async function EventsPage({ searchParams }: Props) {
     </div>
   )
 
-  if (!showLeft && !showRight) {
-    return content
-  }
-
   return (
-    <div className="flex items-start gap-8">
-      {showLeft && (
-        <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
-          <SidebarBlocks blocks={leftBlocks} {...sidebarProps} />
-        </aside>
-      )}
-      <div className="min-w-0 flex-1">{content}</div>
-      {showRight && (
-        <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
-          <SidebarBlocks blocks={rightBlocks} {...sidebarProps} />
-        </aside>
-      )}
-    </div>
+    <PortalPageLayout
+      layout={eventsLayout}
+      sidebarOrder={settings.sidebarOrder}
+      leftSidebarOrder={settings.leftSidebarOrder}
+      eventsEnabled={true}
+      pollsEnabled={pollsEnabled}
+      kudosEnabled={kudosEnabled}
+      gravatarsEnabled={settings.gravatarsEnabled}
+    >
+      {content}
+    </PortalPageLayout>
   )
 }

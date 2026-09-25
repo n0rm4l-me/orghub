@@ -5,6 +5,7 @@ import { db } from "@/lib/db"
 import { getSettings } from "@/lib/settings"
 import { parseModules } from "@/lib/modules"
 import { PortalPageLayout } from "@/components/portal-page-layout"
+import { PageHeader } from "@/components/ui/page-header"
 
 export const metadata = { title: "Dining" }
 
@@ -34,11 +35,12 @@ export default async function DiningIndexPage() {
       sidebarOrder={settings.sidebarOrder}
       leftSidebarOrder={settings.leftSidebarOrder}
       eventsEnabled={enabled.has("events")}
+      pollsEnabled={enabled.has("polls")}
       kudosEnabled={enabled.has("kudos")}
       gravatarsEnabled={settings.gravatarsEnabled}
     >
       <div>
-        <h1 className="mb-6 text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">Dining</h1>
+        <PageHeader title="Dining" />
 
         {venues.length === 0 ? (
           <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-gray-200 py-16 text-center dark:border-gray-700">

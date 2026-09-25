@@ -6,14 +6,14 @@ import { getSettings } from "@/lib/settings"
 import { parseModules } from "@/lib/modules"
 import { getCurrentUser } from "@/lib/rbac"
 import { gravatarUrl } from "@/lib/gravatar"
-import { getQuickLinks, getUpcomingEvents } from "@/lib/nav"
-import { getKudosWall, getMyKudosBalance, getTopKudosRecipients, getMyRedemptions, getRedeemTypes } from "@/lib/actions/kudos"
+import { getKudosWall, getMyKudosBalance, getMyRedemptions, getRedeemTypes } from "@/lib/actions/kudos"
 import { createNotification } from "@/lib/notifications"
 import { SendKudosButton } from "@/components/send-kudos-button"
 import { TablePagination } from "@/components/ui/table-pagination"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { SidebarBlocks, type ActivePollData, type TopKudosEntry } from "@/components/sidebar-blocks"
 import { RedeemableBalance } from "@/components/redeemable-balance"
+import { PortalPageLayout } from "@/components/portal-page-layout"
+import { PageHeader } from "@/components/ui/page-header"
 
 export const metadata = { title: "Kudos" }
 
@@ -36,22 +36,14 @@ export default async function KudosPage({ searchParams }: Props) {
   const rpage = Math.max(1, Number(params.rpage) || 1)
 
   const kudosLayout = settings.kudosLayout ?? "content"
-  const rightBlocks = settings.sidebarOrder?.split(",").filter(Boolean) ?? ["quickLinks", "browseByTopic", "upcomingEvents"]
-  const leftBlocks  = settings.leftSidebarOrder?.split(",").filter(Boolean) ?? []
-  const showLeft  = kudosLayout === "sidebar-left"  || kudosLayout === "sidebar-both"
-  const showRight = kudosLayout === "sidebar-right" || kudosLayout === "sidebar-both"
-  const allBlocks = [...rightBlocks, ...leftBlocks]
 
   const eventsEnabled = enabled.has("events")
   const pollsEnabled  = enabled.has("polls")
 
-  const [user, { rows, total }, balance, quickLinks, upcomingEvents, categories, { rows: redemptions, total: redemptionsTotal }, redeemTypes] = await Promise.all([
+  const [user, { rows, total }, balance, { rows: redemptions, total: redemptionsTotal }, redeemTypes] = await Promise.all([
     getCurrentUser(),
     getKudosWall(page, WALL_PER_PAGE),
     getMyKudosBalance(),
-    getQuickLinks(),
-    getUpcomingEvents(),
-    db.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, slug: true } }),
     getMyRedemptions(rpage, REDEMPTIONS_PER_PAGE),
     getRedeemTypes(true),
   ])
@@ -81,52 +73,28 @@ export default async function KudosPage({ searchParams }: Props) {
 
   const kudosValues = settings.kudosValues.split(",").map((v) => v.trim()).filter(Boolean)
 
-  async function loadActivePollData(): Promise<ActivePollData | null> {
-    const activePollRaw = await db.poll.findFirst({
-      where: { status: "ACTIVE" },
-      include: { options: { include: { _count: { select: { votes: true } } }, orderBy: { order: "asc" } }, _count: { select: { votes: true } } },
-    })
-    if (!activePollRaw) return null
-
-    const votedOptionIds = user
-      ? (await db.pollVote.findMany({ where: { pollId: activePollRaw.id, userId: user.id }, select: { optionId: true } })).map((v) => v.optionId)
-      : []
-    return {
-      poll: { id: activePollRaw.id, question: activePollRaw.question, anonymous: activePollRaw.anonymous, multiChoice: activePollRaw.multiChoice, resultsVisibility: activePollRaw.resultsVisibility, status: activePollRaw.status, endsAt: activePollRaw.endsAt },
-      options: activePollRaw.options.map((o) => ({ id: o.id, text: o.text, voteCount: o._count.votes })),
-      totalVotes: activePollRaw._count.votes,
-      votedOptionIds,
-    }
-  }
-
-  const [activePollData, topKudosData] = await Promise.all([
-    pollsEnabled && allBlocks.includes("activePolls") ? loadActivePollData() : Promise.resolve(null),
-    allBlocks.includes("topKudos") ? getTopKudosRecipients(5) : Promise.resolve([] as TopKudosEntry[]),
-  ])
-
   const content = (
     <>
-      {/* Header */}
-      <div className="mb-8 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Kudos wall</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Recognise your colleagues for their contributions.</p>
-        </div>
-        {user && balance && (
-          <div className="flex flex-col items-end gap-2">
-            <SendKudosButton
-              values={kudosValues}
-              monthlyBudget={balance.budget}
-              remaining={balance.remaining}
-            />
-            <p className="text-xs text-gray-400">
-              {balance.budget > 0
-                ? `${balance.remaining ?? 0} of ${balance.budget} coins left this month`
-                : "Unlimited coins"}
-            </p>
-          </div>
-        )}
-      </div>
+      <PageHeader
+        title="Kudos wall"
+        description="Recognise your colleagues for their contributions."
+        action={
+          user && balance && (
+            <div className="flex flex-col items-end gap-2">
+              <SendKudosButton
+                values={kudosValues}
+                monthlyBudget={balance.budget}
+                remaining={balance.remaining}
+              />
+              <p className="text-xs text-muted-foreground">
+                {balance.budget > 0
+                  ? `${balance.remaining ?? 0} of ${balance.budget} coins left this month`
+                  : "Unlimited coins"}
+              </p>
+            </div>
+          )
+        }
+      />
 
       {/* Balance card */}
       {user && balance && (
@@ -266,35 +234,18 @@ export default async function KudosPage({ searchParams }: Props) {
     </>
   )
 
-  const sidebarProps = {
-    eventsEnabled,
-    kudosEnabled: true,
-    quickLinks,
-    categories,
-    upcomingEvents,
-    activePoll: activePollData,
-    topKudos: topKudosData,
-    gravatarsEnabled: settings.gravatarsEnabled,
-  }
-
-  if (!showLeft && !showRight) {
-    return <div className="max-w-2xl mx-auto">{content}</div>
-  }
-
   return (
-    <div className="flex items-start gap-8">
-      {showLeft && (
-        <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
-          <SidebarBlocks blocks={leftBlocks} {...sidebarProps} />
-        </aside>
-      )}
-      <div className="min-w-0 flex-1">{content}</div>
-      {showRight && (
-        <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
-          <SidebarBlocks blocks={rightBlocks} {...sidebarProps} />
-        </aside>
-      )}
-    </div>
+    <PortalPageLayout
+      layout={kudosLayout}
+      sidebarOrder={settings.sidebarOrder}
+      leftSidebarOrder={settings.leftSidebarOrder}
+      eventsEnabled={eventsEnabled}
+      pollsEnabled={pollsEnabled}
+      kudosEnabled={true}
+      gravatarsEnabled={settings.gravatarsEnabled}
+    >
+      <div className="max-w-2xl mx-auto">{content}</div>
+    </PortalPageLayout>
   )
 }
 

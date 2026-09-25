@@ -1,10 +1,7 @@
-import { Suspense } from "react"
 import { notFound } from "next/navigation"
 import { db } from "@/lib/db"
 import { getSettings } from "@/lib/settings"
 import { parseModules } from "@/lib/modules"
-import { SidebarBlocks } from "@/components/sidebar-blocks"
-import { getQuickLinks, getUpcomingEvents } from "@/lib/nav"
 import { getMealStatus } from "@/lib/dining-hours"
 import { MealStatusBadge } from "@/components/dining/meal-status-badge"
 import { CollapsibleMealSlot } from "@/components/dining/collapsible-meal-slot"
@@ -12,6 +9,7 @@ import { MobileWeekMenu, type MobileDay } from "@/components/dining/mobile-week-
 import { FixedMenuView } from "@/components/dining/fixed-menu-view"
 import { CartProvider } from "@/lib/cart"
 import { CartWidget } from "@/components/dining/cart-widget"
+import { PortalPageLayout } from "@/components/portal-page-layout"
 
 interface Props {
   params: Promise<{ id: string }>
@@ -102,9 +100,6 @@ export default async function DiningVenuePage({ params, searchParams }: Props) {
   const layout = settings.diningLayout ?? "content"
   const showLeft  = layout === "sidebar-left"  || layout === "sidebar-both"
   const showRight = layout === "sidebar-right" || layout === "sidebar-both"
-
-  const rightBlocks = settings.sidebarOrder?.split(",").filter(Boolean) ?? ["quickLinks", "browseByTopic", "upcomingEvents"]
-  const leftBlocks  = settings.leftSidebarOrder?.split(",").filter(Boolean) ?? []
 
   const closedSlots = new Set(
     menu?.closedDays ? menu.closedDays.split(",").filter(Boolean) : []
@@ -309,70 +304,18 @@ export default async function DiningVenuePage({ params, searchParams }: Props) {
 
   return (
     <CartProvider>
-      <div className="flex items-start gap-8">
-        {showLeft && (
-          <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
-            <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800" />}>
-              <DiningSidebar
-                blocks={leftBlocks}
-                eventsEnabled={enabled.has("events")}
-                kudosEnabled={enabled.has("kudos")}
-                gravatarsEnabled={settings.gravatarsEnabled}
-              />
-            </Suspense>
-          </aside>
-        )}
-        <main className="min-w-0 flex-1">{content}</main>
-        {showRight && (
-          <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
-            <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800" />}>
-              <DiningSidebar
-                blocks={rightBlocks}
-                eventsEnabled={enabled.has("events")}
-                kudosEnabled={enabled.has("kudos")}
-                gravatarsEnabled={settings.gravatarsEnabled}
-              />
-            </Suspense>
-          </aside>
-        )}
-        <CartWidget currency={settings.diningCurrency} />
-      </div>
+      <PortalPageLayout
+        layout={layout}
+        sidebarOrder={settings.sidebarOrder}
+        leftSidebarOrder={settings.leftSidebarOrder}
+        eventsEnabled={enabled.has("events")}
+        pollsEnabled={enabled.has("polls")}
+        kudosEnabled={enabled.has("kudos")}
+        gravatarsEnabled={settings.gravatarsEnabled}
+      >
+        {content}
+      </PortalPageLayout>
+      <CartWidget currency={settings.diningCurrency} />
     </CartProvider>
-  )
-}
-
-/**
- * Sidebar data is fetched here rather than in the page so its three queries sit
- * behind a Suspense boundary. Previously they ran after the menu queries had
- * resolved and gated the whole grid on a second round trip; now the grid streams
- * first and the sidebar fills in.
- */
-async function DiningSidebar({
-  blocks,
-  eventsEnabled,
-  kudosEnabled,
-  gravatarsEnabled,
-}: {
-  blocks: string[]
-  eventsEnabled: boolean
-  kudosEnabled: boolean
-  gravatarsEnabled: boolean
-}) {
-  const [quickLinks, upcomingEvents, categories] = await Promise.all([
-    getQuickLinks(),
-    getUpcomingEvents(),
-    db.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, slug: true } }),
-  ])
-
-  return (
-    <SidebarBlocks
-      blocks={blocks}
-      eventsEnabled={eventsEnabled}
-      kudosEnabled={kudosEnabled}
-      quickLinks={quickLinks}
-      categories={categories}
-      upcomingEvents={upcomingEvents}
-      gravatarsEnabled={gravatarsEnabled}
-    />
   )
 }

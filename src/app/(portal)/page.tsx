@@ -11,6 +11,7 @@ import { getSettings } from "@/lib/settings"
 import { parseModules } from "@/lib/modules"
 import { getCurrentUser, can } from "@/lib/rbac"
 import { FeedSeenMarker } from "@/components/feed-seen-marker"
+import { PortalPageLayout } from "@/components/portal-page-layout"
 
 const WORDS_PER_MINUTE = 200
 
@@ -294,25 +295,15 @@ export default async function FeedPage({ searchParams }: Props) {
     <>
       <FeedSeenMarker />
       <CategoryFilter categories={categories} active={categorySlug} query={query} />
-      <div className="flex items-start gap-8">
-        {showLeft && (
-          <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
-            <SidebarBlocks
-              blocks={leftBlocks}
-              eventsEnabled={eventsEnabled}
-              quickLinks={quickLinks}
-              categories={categories}
-              upcomingEvents={upcomingEvents}
-              activeCategory={categorySlug}
-              activePoll={activePollData}
-              kudosEnabled={kudosEnabled}
-              topKudos={topKudosData}
-              gravatarsEnabled={settings.gravatarsEnabled}
-            />
-          </aside>
-        )}
-        <div className="min-w-0 flex-1">
-
+      <PortalPageLayout
+        layout={feedLayout}
+        sidebarOrder={settings.sidebarOrder}
+        leftSidebarOrder={settings.leftSidebarOrder}
+        eventsEnabled={eventsEnabled}
+        pollsEnabled={pollsEnabled}
+        kudosEnabled={kudosEnabled}
+        gravatarsEnabled={settings.gravatarsEnabled}
+      >
         {query && (
           <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
             {total} result{total === 1 ? "" : "s"} for{" "}
@@ -448,34 +439,7 @@ export default async function FeedPage({ searchParams }: Props) {
             />
           </section>
         )}
-      </div>
-
-        {showRight && (
-          <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
-            {rightBlocks.length === 0 && can.manageContent(user) && (
-              <p className="px-1 text-xs leading-relaxed text-gray-400">
-                Add sidebar shortcuts under{" "}
-                <Link href="/admin/navigation" className="font-medium text-brand hover:underline">
-                  Navigation
-                </Link>
-                .
-              </p>
-            )}
-            <SidebarBlocks
-              blocks={rightBlocks}
-              eventsEnabled={eventsEnabled}
-              quickLinks={quickLinks}
-              categories={categories}
-              upcomingEvents={upcomingEvents}
-              activeCategory={categorySlug}
-              activePoll={activePollData}
-              kudosEnabled={kudosEnabled}
-              topKudos={topKudosData}
-              gravatarsEnabled={settings.gravatarsEnabled}
-            />
-          </aside>
-        )}
-      </div>
+      </PortalPageLayout>
     </>
   )
 }

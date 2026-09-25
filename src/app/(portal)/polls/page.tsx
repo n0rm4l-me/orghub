@@ -3,43 +3,35 @@ import { db } from "@/lib/db"
 import { getSettings } from "@/lib/settings"
 import { parseModules } from "@/lib/modules"
 import { getCurrentUser } from "@/lib/rbac"
-import { getQuickLinks, getUpcomingEvents } from "@/lib/nav"
 import { PollCard } from "@/components/poll-card"
-import { SidebarBlocks } from "@/components/sidebar-blocks"
 import { EmptyState } from "@/components/ui/empty-state"
 import { BarChart2 } from "lucide-react"
+import { PortalPageLayout } from "@/components/portal-page-layout"
+import { PageHeader } from "@/components/ui/page-header"
 
 export const metadata = { title: "Polls" }
 
 export default async function PollsPage() {
   const [settings, user] = await Promise.all([getSettings(), getCurrentUser()])
-  if (!parseModules(settings.enabledModules).has("polls")) notFound()
-
   const enabled = parseModules(settings.enabledModules)
+  if (!enabled.has("polls")) notFound()
+
   const eventsEnabled = enabled.has("events")
+  const kudosEnabled = enabled.has("kudos")
   const articleLayout = settings.articleLayout ?? "sidebar-right"
-  const rightBlocks = settings.sidebarOrder?.split(",").filter(Boolean) ?? ["quickLinks", "browseByTopic", "upcomingEvents"]
-  const leftBlocks = settings.leftSidebarOrder?.split(",").filter(Boolean) ?? []
-  const showLeft = articleLayout === "sidebar-left" || articleLayout === "sidebar-both"
-  const showRight = articleLayout === "sidebar-right" || articleLayout === "sidebar-both"
 
   const now = new Date()
-  const [polls, quickLinks, upcomingEvents, categories] = await Promise.all([
-    db.poll.findMany({
-      where: { status: "ACTIVE" },
-      orderBy: { createdAt: "desc" },
-      include: {
-        options: {
-          orderBy: { order: "asc" },
-          include: { _count: { select: { votes: true } } },
-        },
-        _count: { select: { votes: true } },
+  const polls = await db.poll.findMany({
+    where: { status: "ACTIVE" },
+    orderBy: { createdAt: "desc" },
+    include: {
+      options: {
+        orderBy: { order: "asc" },
+        include: { _count: { select: { votes: true } } },
       },
-    }),
-    getQuickLinks(),
-    getUpcomingEvents(),
-    db.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, slug: true } }),
-  ])
+      _count: { select: { votes: true } },
+    },
+  })
 
   const votedMap: Record<string, string[]> = {}
   if (user) {
@@ -55,7 +47,7 @@ export default async function PollsPage() {
 
   const content = (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-gray-900 dark:text-gray-100">Polls</h1>
+      <PageHeader title="Polls" />
 
       {polls.length === 0 ? (
         <EmptyState
@@ -90,37 +82,18 @@ export default async function PollsPage() {
     </div>
   )
 
-  if (!showLeft && !showRight) {
-    return <div className="mx-auto max-w-2xl">{content}</div>
-  }
-
   return (
-    <div className="flex items-start gap-8">
-      {showLeft && (
-        <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
-          <SidebarBlocks
-            blocks={leftBlocks}
-            eventsEnabled={eventsEnabled}
-            quickLinks={quickLinks}
-            categories={categories}
-            upcomingEvents={upcomingEvents}
-            activePoll={null}
-          />
-        </aside>
-      )}
-      <div className="min-w-0 flex-1">{content}</div>
-      {showRight && (
-        <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
-          <SidebarBlocks
-            blocks={rightBlocks}
-            eventsEnabled={eventsEnabled}
-            quickLinks={quickLinks}
-            categories={categories}
-            upcomingEvents={upcomingEvents}
-            activePoll={null}
-          />
-        </aside>
-      )}
-    </div>
+    <PortalPageLayout
+      layout={articleLayout}
+      sidebarOrder={settings.sidebarOrder}
+      leftSidebarOrder={settings.leftSidebarOrder}
+      eventsEnabled={eventsEnabled}
+      pollsEnabled={true}
+      kudosEnabled={kudosEnabled}
+      gravatarsEnabled={settings.gravatarsEnabled}
+      hideActivePoll
+    >
+      <div className="mx-auto max-w-2xl">{content}</div>
+    </PortalPageLayout>
   )
 }

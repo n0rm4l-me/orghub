@@ -10,6 +10,7 @@ import { STATUS_LABEL, STATUS_COLOR } from "@/lib/suggestion-constants"
 import { TablePagination } from "@/components/ui/table-pagination"
 import { EmptyState } from "@/components/ui/empty-state"
 import { PortalPageLayout } from "@/components/portal-page-layout"
+import { PageHeader } from "@/components/ui/page-header"
 import { SubmitSuggestionButton } from "./_submit-form"
 import { VoteButton } from "./_vote-button"
 import type { SuggestionStatus } from "@prisma/client"
@@ -52,20 +53,16 @@ export default async function SuggestionsPage({ searchParams }: Props) {
       sidebarOrder={settings.sidebarOrder}
       leftSidebarOrder={settings.leftSidebarOrder}
       eventsEnabled={enabled.has("events")}
+      pollsEnabled={enabled.has("polls")}
       kudosEnabled={enabled.has("kudos")}
       gravatarsEnabled={settings.gravatarsEnabled}
     >
     <div className={showSidebar ? undefined : "mx-auto max-w-3xl"}>
-      {/* Header */}
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Suggestions</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Share ideas, vote on what matters most, and track progress.
-          </p>
-        </div>
-        {user && <SubmitSuggestionButton categories={categories} />}
-      </div>
+      <PageHeader
+        title="Suggestions"
+        description="Share ideas, vote on what matters most, and track progress."
+        action={user && <SubmitSuggestionButton categories={categories} />}
+      />
 
       {/* Status filter tabs */}
       <div className="mb-5 flex flex-wrap gap-1.5">
