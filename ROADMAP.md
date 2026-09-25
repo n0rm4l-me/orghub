@@ -535,6 +535,24 @@ Smaller items, independent of the design-unification phases above:
   test suite, and `npx next build` at every step; the color fix and the
   scrollbar-gutter revert are both still only confirmed by reasoning about
   the code, not by seeing them, same `preview_start` limitation.
+  **Missed on the first pass, caught by the user afterward, fixed same
+  day:** [src/components/portal-page-layout.tsx](src/components/portal-page-layout.tsx)
+  had the exact same bug in a different shape. Its sidebar panel was
+  wrapped in `<Suspense fallback={<Skeleton className="h-64 rounded-xl" />}>`,
+  one generic block standing in for widgets (quick links, events, polls,
+  kudos) that render as several differently-sized blocks. The original
+  search for this bug was scoped to the literal complaint ("loading.tsx
+  doesn't match the layout") and only ever ran `find -name loading.tsx`;
+  it never re-ran as a search for the general pattern this section's own
+  first paragraph describes (a fallback whose shape doesn't match its real
+  content), even though that pattern was already written down by the time
+  this file's copy shipped. Removed the Suspense boundary the same way as
+  the route-level ones; the panel now renders as part of the page instead
+  of streaming in separately. Also removed `SkeletonText`, orphaned by
+  this change with no other callers. The lesson, not just the fix: once a
+  bug generalizes to a named pattern, grep the whole tree for that pattern
+  before calling the fix done, not just for the specific file convention
+  that happened to surface it.
 - **OPEN.** `Field` (the accessible-label wrapper in
   [src/components/ui/field.tsx](src/components/ui/field.tsx)) is used in
   exactly one file. Six dining/admin files each define their own local `lbl`
