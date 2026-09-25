@@ -887,7 +887,47 @@ Smaller items, independent of the design-unification phases above:
   tests: `addComment`'s anonymous/empty-body/unpublished-article/
   cross-article-parent-spoofing/nested-reply rejections plus valid cases,
   `deleteComment`'s ownership and moderation-role-bypass rules); `media.ts`
-  is no longer zero-coverage. The matrix now covers 9 of ~21 action files.
+  is no longer zero-coverage.
+  **DONE 2026-09-26: every remaining action file now has dedicated
+  coverage.** Added
+  [actions.announcements.test.ts](src/__tests__/actions.announcements.test.ts)
+  (11 tests, including the "only one announcement active at a time"
+  invariant on both `createAnnouncement` and `toggleAnnouncementActive`),
+  [actions.categories.test.ts](src/__tests__/actions.categories.test.ts) (8,
+  case-insensitive duplicate rejection, join-table cleanup before delete),
+  [actions.nav.test.ts](src/__tests__/actions.nav.test.ts) (14, `movePage`/
+  `moveQuickLink` boundary no-ops at the ends of the list, sibling-scoped
+  reordering),
+  [actions.pages.test.ts](src/__tests__/actions.pages.test.ts) (12, slug
+  regen only on title change, malformed body JSON rejected instead of
+  crashing),
+  [actions.translation-settings.test.ts](src/__tests__/actions.translation-settings.test.ts)
+  (5, preset+extra language merge/dedup, invalid extra codes silently
+  dropped),
+  [actions.suggestion-categories.test.ts](src/__tests__/actions.suggestion-categories.test.ts)
+  (8),
+  [actions.feed.test.ts](src/__tests__/actions.feed.test.ts) (2),
+  [actions.ldap-sync.test.ts](src/__tests__/actions.ldap-sync.test.ts) (10,
+  including a security-relevant one: the LDAP search filter is built from a
+  user's email, and the test asserts the metacharacter-stripping regex
+  actually runs before the value reaches the filter string, not just that
+  the sync completes),
+  [actions.media-migrate.test.ts](src/__tests__/actions.media-migrate.test.ts)
+  (11, context-classification and the skip-if-already-correct branch),
+  [actions.reactions.test.ts](src/__tests__/actions.reactions.test.ts) (4),
+  and [actions.articles.test.ts](src/__tests__/actions.articles.test.ts) (17,
+  publishedAt preserved across re-saves vs. freshly set on first publish,
+  translation cache cleared on every edit, pin refused on an unpublished
+  article). The matrix now covers 20 of ~21 action files (everything except
+  `types.ts`, which has no logic to test). One real mock-isolation bug
+  caught while writing these: an early `createCategory` duplicate-name test
+  used `mockResolvedValue` instead of `mockResolvedValueOnce`, so the mocked
+  "duplicate exists" response leaked into the next test and made it fail;
+  `vi.clearAllMocks()` (used in every `beforeEach` here) resets call counts,
+  not resolved-value implementations, so a `mockResolvedValue` from one test
+  silently answers the next one unless a later test overrides it again.
+  Verified with `tsc`, `eslint`, and a full `npx next build`; 212 tests
+  total, all passing.
 - **AUDIT COMPLETE 2026-09-25. One HIGH-severity finding, fixed same day.**
   Read every file in `src/lib/actions/` (20 files), both upload routes,
   `rbac.ts`, `dining-scope.ts`, `storage.ts`, and the schema. Full findings
@@ -1088,31 +1128,39 @@ FIXED is a documented decision, not an oversight.
 
 ### Unused Prisma schema fields
 
-- **OPEN, needs a product decision, not a refactor.** 6 fields have zero
-  reads or writes anywhere in `src/` (verified against `prisma/seed.ts` and
-  migrations too; there's no raw SQL in this codebase to hide a usage from
-  grep): `User.externalId`, `User.organizationId`, `Article.organizationId`
-  (+ its own index), `Page.organizationId`, `Venue.workingDays` (superseded
-  by the fully-wired `WeekMenu.closedDays`), and `SiteSettings.portalWidth`
-  (has a 3-preset doc comment and every sibling layout setting is wired
-  through `layout-form.tsx` → `saveLayout`; this one alone was never added to
-  that form). All five trace only to the `0000_baseline` migration, so
-  they've been dormant since the 2026-09-01 squash, not a recent regression.
+- **DECIDED 2026-09-26: leave the schema alone, revisit only if the
+  underlying feature gets picked up.** 6 fields have zero reads or writes
+  anywhere in `src/` (verified against `prisma/seed.ts` and migrations too;
+  there's no raw SQL in this codebase to hide a usage from grep):
+  `User.externalId`, `User.organizationId`, `Article.organizationId` (+ its
+  own index), `Page.organizationId`, `Venue.workingDays` (superseded by the
+  fully-wired `WeekMenu.closedDays`), and `SiteSettings.portalWidth` (has a
+  3-preset doc comment and every sibling layout setting is wired through
+  `layout-form.tsx` → `saveLayout`; this one alone was never added to that
+  form). All five trace only to the `0000_baseline` migration, so they've
+  been dormant since the 2026-09-01 squash, not a recent regression.
   Whoever stubbed in `organizationId` on 3 models was clearly heading toward
   multi-tenancy and never got further: no mention of it anywhere in this
-  file, the README, or docs/. Deleting these is a schema migration on a live
-  database; decide intent first (is multi-tenancy still wanted? is
-  `portalWidth` a real feature to finish or a leftover?) rather than dropping
-  columns to tidy up.
-- **`MonthlyTopicHighlight`** (whole model: `weekLabel`, `image`, `name`,
-  `description`, `order`) is reachable dead code, not just an unused field:
-  the backend fully supports it (`upsertTopic()` in dining.ts creates/
-  updates/deletes highlight rows) but its only caller,
-  `topics-list.tsx`'s `TopicForm`, hardcodes `highlights: []` on every save,
-  and no portal page renders `topic.highlights` (the actual "Announcements"
-  UI doesn't reference highlights at all; `/topics` routes now just redirect
-  there). No row can ever be created through the live UI. Same "decide
-  intent, then migrate" caveat as above applies before dropping the model.
+  file, the README, or docs/. No sign multi-tenancy is an active initiative,
+  and no sign `portalWidth` is being finished either. Deleting either is a
+  schema migration on a live database, an irreversible action for a
+  no-cost-to-leave-alone problem (an unused nullable column costs nothing at
+  runtime; a wrongly-dropped one that turns out to still be wanted costs a
+  re-migration and, if any external system or backup already assumed its
+  presence, worse). Given that asymmetry, the conservative call is to leave
+  every one of the 6 columns in place rather than guess at intent. Not
+  reopening this without an actual reason to (someone picks up multi-tenancy
+  or `portalWidth` as real work, or a future audit finds a 7th field and
+  it's worth batching one migration for all of them).
+- **Same decision, `MonthlyTopicHighlight`.** This one is reachable dead
+  code, not just an unused field: the backend fully supports it
+  (`upsertTopic()` in dining.ts creates/updates/deletes highlight rows) but
+  its only caller, `topics-list.tsx`'s `TopicForm`, hardcodes `highlights:
+  []` on every save, and no portal page renders `topic.highlights` (the
+  actual "Announcements" UI doesn't reference highlights at all; `/topics`
+  routes now just redirect there). No row can ever be created through the
+  live UI today. Same asymmetry as above (dropping a whole model is harder
+  to reverse than leaving unreachable code alone), same call: leave it.
 - **Needs a look, lower confidence:** `Venue.orderingEnabled` is unused but
   is almost certainly reserved for the dining-cart checkout feature this
   file's Feature Gaps section already documents as *decided-to-defer*, not
