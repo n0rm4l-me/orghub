@@ -5,19 +5,9 @@ import { requireRole } from "@/lib/rbac"
 import { logAudit } from "@/lib/audit"
 import { revalidatePath } from "next/cache"
 import { type ActionResult, ok, okWith, fail } from "@/lib/actions/types"
+import { validUrl } from "@/lib/actions/nav"
 
 const MESSAGE_MAX = 300
-
-function validUrl(raw: string): boolean {
-  // Site-relative paths are allowed so links can point at internal routes.
-  if (raw.startsWith("/")) return true
-  try {
-    const url = new URL(raw)
-    return url.protocol === "https:" || url.protocol === "http:"
-  } catch {
-    return false
-  }
-}
 
 function revalidateAll() {
   revalidatePath("/", "layout")

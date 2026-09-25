@@ -86,7 +86,7 @@ export async function movePage(pageId: string, direction: "up" | "down"): Promis
   return ok()
 }
 
-function validUrl(raw: string): boolean {
+export function validUrl(raw: string): boolean {
   // Site-relative paths are allowed so links can point at internal routes.
   if (raw.startsWith("/")) return true
   try {
