@@ -193,7 +193,7 @@ on a device.
 
 ---
 
-## Design unification (Phase 1 done, Phases 2-5 not started)
+## Design unification (Phases 1-2 done, Phase 3 structural work done, Phase 3 page colors / Phase 4 / Phase 5 not started)
 
 Full plan at `/Users/petr.petrenko/.claude/plans/zesty-sprouting-frost.md`,
 written earlier this session assuming zero phases were done. **That
@@ -337,6 +337,38 @@ Phase 2 (admin) is done per the plan's own file list. Remaining counts are
 almost entirely Phase 3 (portal, 12 pages + components) and Phase 4 (dining
 editors, 12 files) territory; read the plan for both file lists before
 starting either.
+
+**Phase 3, structural half done, color half not (2026-09-25).** All 12
+portal pages now use `PageHeader` and/or `PortalPageLayout` where the plan
+called for it (the feed and `polls/page.tsx` intentionally excluded, see
+the plan file for why); `PortalPageLayout` itself was extended to fetch
+`activePolls`/`topKudos` so pages migrating to it don't silently lose those
+sidebar blocks. 13 portal components converted to tokens
+(`sidebar-blocks.tsx`, `poll-card.tsx`, `like-button.tsx`,
+`comment-thread.tsx`, `comment-form.tsx`, `article-body.tsx`,
+`redeemable-balance.tsx`, `send-kudos-button.tsx`, `user-menu.tsx`,
+`notification-bell.tsx`, `category-filter.tsx`, `customize-menu.tsx`, and
+`skeletons.tsx` before it was later deleted entirely as part of the
+navigation-loading work above). What's explicitly still open: the 12
+pages' own remaining inline classes were deferred in favor of finishing
+the structural migration first, and nobody has picked that back up since.
+Current count, `src/app/(portal)` only:
+
+```
+bg-white                   18
+text-gray-[0-9]           203
+border-gray-[0-9]          76
+dark:bg-gray-[0-9]         29
+dark:text-gray-[0-9]       82
+dark:border-gray-[0-9]     32
+```
+
+Phase 4 (dining editors, 12 files under `src/components/dining/`) is
+completely untouched, confirmed with the same audit scoped to that
+directory: `bg-white` 38, `text-gray-[0-9]` 355, `border-gray-[0-9]` 169,
+`dark:bg-gray-[0-9]` 67, `dark:text-gray-[0-9]` 134,
+`dark:border-gray-[0-9]` 72. Phase 5 (final cleanup/audit) can't start
+until both are done.
 
 ---
 
