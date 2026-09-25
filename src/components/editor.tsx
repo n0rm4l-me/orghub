@@ -6,6 +6,7 @@ import Placeholder from "@tiptap/extension-placeholder"
 import { EDITOR_EXTENSIONS } from "@/lib/editor-extensions"
 import { getActivePollsForInsert } from "@/lib/actions/polls"
 import { getMediaList } from "@/lib/actions/media"
+import { toast } from "@/components/ui/toaster"
 import {
   Bold, Italic, UnderlineIcon, Strikethrough,
   Heading1, Heading2, Heading3,
@@ -161,7 +162,11 @@ function InsertImageButton({ editor, folder }: { editor: ReturnType<typeof useEd
       if (res.ok) {
         insert(data.url)
         setMedia(null) // reset cache so next open re-fetches
+      } else {
+        toast.error(data.error ?? "Upload failed")
       }
+    } catch {
+      toast.error("Upload failed")
     } finally {
       setUploading(false)
     }

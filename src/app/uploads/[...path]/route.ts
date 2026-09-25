@@ -45,13 +45,24 @@ export async function GET(
       const img = sharp(body, { failOn: "none" })
       const meta = await img.metadata()
       if (meta.width && meta.width > w) {
-        body = await img.rotate().resize({ width: w }).jpeg({ quality: 80, mozjpeg: true }).toBuffer()
-        contentType = "image/jpeg"
-        const derivedKey = `_derived/w${w}/${pathStr}`
-        uploadToStorage(derivedKey, body, "image/jpeg").catch(() => {})
+        if (meta.hasAlpha) {
+          // Re-encoding to JPEG below would silently flatten transparency
+          // (a resized logo/icon PNG would gain a black or white background
+          // depending on the viewer). Resize but keep the source's own
+          // format instead. Deliberately not written to the _derived/ cache:
+          // every cache-hit response above hardcodes Content-Type:
+          // image/jpeg, so a non-JPEG entry there would serve with the
+          // wrong header on the next request.
+          body = await img.rotate().resize({ width: w }).toFormat(meta.format ?? "png").toBuffer()
+        } else {
+          body = await img.rotate().resize({ width: w }).jpeg({ quality: 80, mozjpeg: true }).toBuffer()
+          contentType = "image/jpeg"
+          const derivedKey = `_derived/w${w}/${pathStr}`
+          uploadToStorage(derivedKey, body, "image/jpeg").catch(() => {})
+        }
       }
     } catch {
-      // sharp unavailable or failed — serve original
+      // sharp unavailable or failed: serve original
     }
   }
 

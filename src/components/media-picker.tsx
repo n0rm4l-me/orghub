@@ -187,6 +187,9 @@ export function MediaPickerField({ value, onChange, tone, folder }: { value: str
       const res = await fetch("/api/upload", { method: "POST", body: fd })
       const data = await res.json()
       if (res.ok) onChange(data.url)
+      else toast.error(data.error ?? "Upload failed")
+    } catch {
+      toast.error("Upload failed")
     } finally {
       setUploading(false)
     }
