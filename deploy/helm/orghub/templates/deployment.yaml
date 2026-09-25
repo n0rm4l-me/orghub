@@ -44,6 +44,7 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+      terminationGracePeriodSeconds: 45
       containers:
         - name: orghub
           image: {{ include "orghub.image" . }}
@@ -109,7 +110,6 @@ spec:
               # actual SIGTERM long enough for that check cycle to run at least once.
               exec:
                 command: ["sleep", "20"]
-          terminationGracePeriodSeconds: 45
           startupProbe:
             httpGet:
               path: /api/health/live
