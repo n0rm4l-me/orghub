@@ -31,13 +31,13 @@ export function CartWidget({ currency }: { currency: string }) {
 
       {open && (
         <div
-          className="fixed inset-0 z-[49] bg-black/25 backdrop-blur-[2px]"
+          className="fixed inset-0 z-[90] bg-black/25 backdrop-blur-[2px]"
           onClick={() => setOpen(false)}
         />
       )}
 
       <div
-        className={`fixed bottom-0 left-1/2 z-50 flex w-full max-w-xl -translate-x-1/2 flex-col rounded-t-2xl bg-white shadow-2xl transition-transform duration-300 dark:bg-gray-900 ${
+        className={`fixed bottom-0 left-1/2 z-[95] flex w-full max-w-xl -translate-x-1/2 flex-col rounded-t-2xl bg-white shadow-2xl transition-transform duration-300 dark:bg-gray-900 ${
           open ? "translate-y-0" : "translate-y-full"
         }`}
         style={{ maxHeight: "85dvh" }}

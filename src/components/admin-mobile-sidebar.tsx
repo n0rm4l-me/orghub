@@ -75,7 +75,7 @@ export function AdminMobileSidebar({
       </div>
 
       {open && typeof document !== "undefined" && createPortal(
-        <div className="fixed inset-0 z-[200] flex md:hidden">
+        <div className="fixed inset-0 z-[100] flex md:hidden">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50"

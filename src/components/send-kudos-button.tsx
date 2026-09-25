@@ -84,7 +84,7 @@ export function SendKudosButton({ values, monthlyBudget, remaining }: Props) {
 
       {open && typeof document !== "undefined" && createPortal(
         <div
-          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/25 backdrop-blur-[2px] p-4"
+          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/25 backdrop-blur-[2px] p-4"
           onClick={(e) => { if (e.target === e.currentTarget) close() }}
         >
           <div className="w-full max-w-md rounded-2xl bg-popover shadow-xl">
