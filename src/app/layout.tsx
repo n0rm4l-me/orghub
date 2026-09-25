@@ -35,9 +35,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en" className="h-full bg-background" suppressHydrationWarning>
       <head>
         <style>{`:root { --brand: ${settings.primaryColor}; }`}</style>
-        {/* Blocking script: applies portal theme/fontSize before first paint to prevent FOUC.
-            Skips /admin paths — the admin always uses light mode at default font size. */}
-        <script dangerouslySetInnerHTML={{ __html: `(function(){if(location.pathname.startsWith('/admin'))return;var t=localStorage.getItem('theme'),d=window.matchMedia('(prefers-color-scheme:dark)').matches;if(t==='dark'||(t!=='light'&&d))document.documentElement.classList.add('dark');var f=localStorage.getItem('fontSize');if(f==='sm')document.documentElement.classList.add('font-sm');else if(f==='lg')document.documentElement.classList.add('font-lg')})()` }} />
+        {/* Deliberately blocking (no async/defer): applies portal theme/fontSize
+            before first paint to prevent FOUC (see public/theme-init.js). Loaded by
+            src, not inlined, so script-src in next.config.ts's CSP can stay 'self'
+            with no 'unsafe-inline'. */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script src="/theme-init.js" />
       </head>
       <body className={`${geist.className} min-h-full bg-background text-foreground antialiased`}>
         <TopLoader />

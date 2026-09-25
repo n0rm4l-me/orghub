@@ -419,29 +419,47 @@ noted above, which were never in either plan's file list to begin with.
 
 Root-cause item first, the rest multiply in impact once it's fixed:
 
-- **OPEN, harder than it looks: do not just delete the line.**
-  [src/app/layout.tsx:1](src/app/layout.tsx#L1) sets
-  `export const dynamic = "force-dynamic"`. `getSettings()`
-  ([src/lib/settings.ts:17](src/lib/settings.ts#L17)) is already wrapped in
-  `unstable_cache` with a `"settings"` tag and a comment saying this was done
-  specifically "so the root layout no longer forces the entire app to be
-  dynamic", but nobody removed the export after adding the cache. **Tried
-  removing it 2026-09-25: it breaks the production build itself, not just a
-  runtime cache-hit-rate concern.** Without `force-dynamic`, Next.js attempts
-  to statically prerender pages (starting with `/_not-found`) at build time,
-  which executes the root layout's `await getSettings()`, which needs a live
-  DB connection, one that doesn't exist in the Cloud Build/Docker build
-  environment (only the deployed pod can reach `orghub-postgres`). Confirmed
-  with a real `npx next build`: `PrismaClientKnownRequestError: Can't reach
-  database server at orghub-postgres`, build exits 1. This would have broken
-  every future deploy if pushed. Reverted; diff came back to exactly the
-  original file. A real fix needs to address the build-time DB dependency
-  itself (give Cloud Build network access to a throwaway/read replica DB, or
-  restructure so the root layout doesn't need a DB read to render, e.g. move
-  the brand-color `<style>` injection to a client component that fetches it,
-  or accept a build-time fallback color when the DB is unreachable) before
-  touching the `force-dynamic` export again. Verify any future attempt with
-  `npx next build` locally, not just `tsc`, before pushing.
+- **FIXED 2026-09-25.** [src/app/layout.tsx:1](src/app/layout.tsx#L1)'s
+  `export const dynamic = "force-dynamic"` was global; removing it outright
+  (tried first) breaks the production build, confirmed with a real
+  `npx next build`: the build stage has zero DB access by design
+  (`cloudbuild.yaml` runs plain `docker build`, no DB/VPC connector; Postgres
+  only exists as a runtime k8s Secret), so anything that tries to statically
+  prerender and touches the DB (the root layout's `getSettings()` call, and
+  separately the feed's `AnnouncementBanner`) fails at build time. The actual
+  fix was scoping, not deleting: moved the flag to
+  [src/app/(portal)/layout.tsx](<src/app/(portal)/layout.tsx>) (mirrors
+  `admin/layout.tsx`, which already had its own copy) plus `login/page.tsx`,
+  `no-access/page.tsx`, and the root `not-found.tsx`, found by iterating on
+  the actual `next build` failures one at a time rather than reasoning about
+  it from the outside. **Verified honestly, not just "it builds now":** every
+  route in the build output is still marked dynamic (ƒ), same as before this
+  change. Nothing became static, so this wasn't a measured performance win by
+  itself, mainly a correctness/architecture fix (the global flag was quietly
+  covering pages that don't actually need it, which would have bitten the
+  next person who added a genuinely static page). A real caching win here
+  needs Partial Prerendering, a much bigger change: `dynamic-rendering.md` in
+  `node_modules/next/dist/docs/` describes it if this gets revisited.
+- **OPEN, and the visible fix isn't the real one.**
+  [src/components/article-body.tsx](src/components/article-body.tsx) still
+  instantiates a live client-side Tiptap/ProseMirror editor (`useEditor` +
+  `EditorContent`, `editable: false`) for every public article view, shipping
+  the whole editor runtime just to display static text. The obvious-looking
+  fix, server-side `@tiptap/html` `generateHTML` with no client Tiptap at
+  all, is blocked: [src/components/poll-embed-extension.ts](src/components/poll-embed-extension.ts)
+  renders live, interactive voting inside articles via a client NodeView, and
+  `generateHTML` has no way to keep that interactive after a switch to
+  static HTML, that needs a small client "island" component mounted into the
+  static HTML in the poll's place, not a drop-in swap. Also,
+  [src/components/image-embed-extension.ts](src/components/image-embed-extension.ts)
+  defines a NodeView but no `renderHTML`, so `generateHTML` would silently
+  drop every embedded image in every article until that's added. Given the
+  real fix is "add renderHTML to ImageEmbed, then build a poll island, then
+  switch the rendering path" across a component that's live on every public
+  article page, and this session's `preview_start` couldn't reach the DB to
+  functionally verify a poll still votes correctly afterward, didn't attempt
+  it. `next/dynamic({ssr:false})` isn't an option either way: it would kill
+  SSR of the article body itself.
 
 Everything else, roughly ordered by blast radius:
 
@@ -688,12 +706,35 @@ Smaller items, independent of the design-unification phases above:
   this note no longer applies; the "several dining buttons hand-roll their
   own padding instead of using `<SubmitButton>`" half is still worth
   someone's time regardless.
-- **NEEDS A DECISION, not urgent.** `text-gray-400 dark:text-gray-500` (58
-  occurrences) may be backwards for contrast: `gray-500` is dimmer than
-  `gray-400`, so it reduces contrast on a dark background where more contrast
-  is usually wanted. Check against WCAG AA before propagating the pattern
-  further; this mostly gets superseded by the design-unification plan's move
-  to `text-muted-foreground` anyway.
+- **RESOLVED, turned out to already be gone.** The `text-gray-400
+  dark:text-gray-500` pairing flagged above (58 occurrences at the time,
+  contrast backwards for dark mode) is now zero in the tree: superseded by
+  the design-unification pass exactly as predicted, not by anyone chasing
+  this specific note. The remaining bare `text-gray-400`/`text-gray-500`
+  instances (11, all in `admin/layout.tsx`, `admin-nav.tsx`,
+  `admin-mobile-sidebar.tsx`) are the admin sidebar's own, deliberately
+  separate palette (see "Design unification" above: the sidebar is
+  always-dark regardless of site theme, calibrated against its own
+  `bg-gray-900`, not against the light/dark token pair), not a leftover.
+- **NOT FIXED, architecturally doesn't fit `<SubmitButton>`.** Checked the
+  "several dining buttons hand-roll their own padding instead of using
+  `<SubmitButton>`" note above against the actual code (11 files:
+  `new-venue-form.tsx`, `dish-list.tsx`, `nutrition-params-editor.tsx`,
+  `venue-settings-form.tsx`, `dining-settings-form.tsx`,
+  `week-picker-create.tsx`, `venue-tags-editor.tsx`,
+  `meal-structure-editor.tsx`, `topics-list.tsx`, `location-form.tsx`,
+  `add-venue-dialog.tsx`). `SubmitButton` reads `useFormStatus()`, which only
+  reflects a native `<form action={serverAction}>` submission; every one of
+  these 11 saves through `useAction`'s `useTransition`-backed `pending` with
+  an explicit `onClick` handler, a different mechanism `useFormStatus` can't
+  see into. Making `SubmitButton` fit both would mean adding a `pending`
+  override and switching its hardcoded `type="submit"` to also accept
+  `type="button"` with `onClick`, at which point it's a different, more
+  general component, not a drop-in replacement. The 11 buttons themselves
+  aren't copy-pasted carelessly either: their padding/text-size genuinely
+  differs by context (a compact dialog's inline "Create" vs. a full-width
+  form's "Save"), so forcing one shared size would be a real, unverifiable
+  visual change, not just deduplication. Left alone.
 
 ---
 
@@ -1024,19 +1065,45 @@ standard, intentional Gravatar technique (`d=404` means "tell me if there's
 no avatar so I can show initials instead"); Lighthouse flags any console
 404 regardless of intent, this one isn't a bug.
 
-**Deferred, not implemented:** no CSP header (`csp-xss` audit, severity
-"High", but it's an informative check, not a score-blocking one) and no
-COOP header (`origin-isolation`, same severity/scoring shape). Given this
-session's own stored-XSS finding on `/api/upload` (see "Dead-code and
-duplication audits" below), a real CSP would be meaningful defense in
-depth, but doing it correctly for Next.js 16 (nonces for its own inline
-bootstrap script, Tailwind's inline `style` attributes, Turbopack's chunk
-loading) is a substantial, easy-to-get-subtly-wrong change that deserves
-its own pass with real testing, not a rushed addition here. Also noted:
-`legacy-javascript-insight` flags ~13KB of unneeded polyfills (`Array.at`,
-`Object.hasOwn`, `String.trimStart`/`trimEnd`, etc.) baked into our own
-bundle by whatever `browserslist`/build target Next.js 16 defaults to;
-small potential win, not investigated further this pass.
+**Fixed, later the same day.** CSP and COOP headers, both added in
+[next.config.ts](next.config.ts). Read `node_modules/next/dist/docs/`'s CSP
+guide first, per this repo's own AGENTS.md rule. Went with a static header
+(`headers()`, no nonce) rather than the nonce approach the doc leads with:
+this app's `<script dangerouslySetInnerHTML>` FOUC-prevention script was the
+only inline script (moved to [public/theme-init.js](public/theme-init.js),
+loaded by `src` instead, specifically so `script-src` could be `'self'` with
+no `'unsafe-inline'` and no nonce machinery needed at all), but `style-src`
+still needs `'unsafe-inline'`: dynamic per-row colors (tag swatches, poll
+bars, and similar) are set via React's `style` prop across many components,
+which a nonce cannot reach at all (nonces only cover `<style>`/`<script>`
+elements, never arbitrary `style=""` attributes on ordinary elements), and
+rewriting every one of those to avoid it is a much larger, visually-risky
+change on its own that a security header doesn't justify forcing through
+blind. `img-src` allows the S3 host dynamically read from
+`NEXT_PUBLIC_S3_PUBLIC_URL` when set, plus Gravatar; audited every `fetch()`,
+`<img>`, font, and script source in the tree first (grep, not guessing) to
+build the allow-list, found nothing else external. Verified the header's
+actual shape in both dev and a locally-run production standalone build
+(`'unsafe-eval'` and `upgrade-insecure-requests` correctly differ between
+them), but couldn't verify it doesn't break anything in a real browser
+session, same `preview_start`-can't-reach-the-DB limitation as everywhere
+else in this file; worth someone opening devtools and checking the console
+for CSP violations on next look, especially anywhere with an embedded image
+or poll inside an article. `Cross-Origin-Opener-Policy: same-origin` is safe
+for this app specifically because both Okta and LDAP sign-in redirect the
+top-level page rather than relying on a popup's `window.opener`.
+
+**Investigated, left alone.** `legacy-javascript-insight`'s ~13KB of
+polyfills (`Array.at`, `Object.hasOwn`, `String.trimStart`/`trimEnd`, etc.)
+trace to Next.js's own built-in default browser-support target, not to this
+repo's `tsconfig.json` `target: "ES2017"` (SWC/Turbopack compiles the actual
+client bundles and ignores that field; it only affects type-checking). No
+`browserslist` is set in `package.json` to override the default. Narrowing
+it is a real product decision, not a technical one: it trades support for
+older browsers for a small (~13KB) bundle-size win, and this session has no
+data on what browsers this portal's actual userbase runs. Left the default
+in place rather than guess; revisit if real user-agent analytics ever
+becomes available.
 
 ---
 
