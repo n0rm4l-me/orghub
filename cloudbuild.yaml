@@ -21,5 +21,5 @@ images:
   - $_IMAGE:$_TAG
 
 substitutions:
-  _IMAGE: asia-docker.pkg.dev/onepoint-paas-tardis-4492/docker-paas-tardis-asia-1/orghub
+  _IMAGE: REPLACE_WITH_YOUR_REGISTRY_PATH/orghub
   _TAG: dev
