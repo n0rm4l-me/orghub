@@ -1065,33 +1065,47 @@ standard, intentional Gravatar technique (`d=404` means "tell me if there's
 no avatar so I can show initials instead"); Lighthouse flags any console
 404 regardless of intent, this one isn't a bug.
 
-**Fixed, later the same day.** CSP and COOP headers, both added in
+**Fixed, later the same day, after briefly breaking production in
+between.** CSP and COOP headers, both added in
 [next.config.ts](next.config.ts). Read `node_modules/next/dist/docs/`'s CSP
-guide first, per this repo's own AGENTS.md rule. Went with a static header
-(`headers()`, no nonce) rather than the nonce approach the doc leads with:
-this app's `<script dangerouslySetInnerHTML>` FOUC-prevention script was the
-only inline script (moved to [public/theme-init.js](public/theme-init.js),
-loaded by `src` instead, specifically so `script-src` could be `'self'` with
-no `'unsafe-inline'` and no nonce machinery needed at all), but `style-src`
-still needs `'unsafe-inline'`: dynamic per-row colors (tag swatches, poll
-bars, and similar) are set via React's `style` prop across many components,
-which a nonce cannot reach at all (nonces only cover `<style>`/`<script>`
-elements, never arbitrary `style=""` attributes on ordinary elements), and
-rewriting every one of those to avoid it is a much larger, visually-risky
-change on its own that a security header doesn't justify forcing through
-blind. `img-src` allows the S3 host dynamically read from
-`NEXT_PUBLIC_S3_PUBLIC_URL` when set, plus Gravatar; audited every `fetch()`,
-`<img>`, font, and script source in the tree first (grep, not guessing) to
-build the allow-list, found nothing else external. Verified the header's
-actual shape in both dev and a locally-run production standalone build
-(`'unsafe-eval'` and `upgrade-insecure-requests` correctly differ between
-them), but couldn't verify it doesn't break anything in a real browser
-session, same `preview_start`-can't-reach-the-DB limitation as everywhere
-else in this file; worth someone opening devtools and checking the console
-for CSP violations on next look, especially anywhere with an embedded image
-or poll inside an article. `Cross-Origin-Opener-Policy: same-origin` is safe
-for this app specifically because both Okta and LDAP sign-in redirect the
-top-level page rather than relying on a popup's `window.opener`.
+guide first, per this repo's own AGENTS.md rule, and went with a static
+header (`headers()`, no nonce) rather than the nonce approach the doc leads
+with, on the reasoning that this app's `<script dangerouslySetInnerHTML>`
+FOUC-prevention script was the only inline script, so moving it to
+[public/theme-init.js](public/theme-init.js) (loaded by `src` instead) would
+let `script-src` be `'self'` with no `'unsafe-inline'` and no nonce needed at
+all. **That reasoning was wrong and shipped broken to the live site**: it
+missed that Next.js's own App Router emits its own inline
+`<script>self.__next_f.push(...)</script>` tags on every single page to
+stream RSC payload/hydration data, completely unrelated to this app's own
+code. Without `'unsafe-inline'` or a nonce, the browser blocks those too,
+which doesn't just break "this one script": it stops the page from
+hydrating at all, so nothing becomes interactive (no menu, no click
+handlers) and anything gated behind client-side state after an async load
+(the logo's fade-in, which waits for `onLoad` to fire and `setState` to
+re-render) stays stuck in its initial state forever. User caught it within
+minutes of the deploy ("меню не открывается, лого не грузится, текст тоже
+не грузится"). Hotfixed by adding `'unsafe-inline'` back to `script-src`,
+verified this time by actually reloading the live site rather than trusting
+a header shape or a build log, confirmed working. **The doc said this
+explicitly** ("you must use dynamic rendering to add nonces" and the
+whole "Static vs Dynamic Rendering with CSP" section exists because the
+non-nonce path needs `'unsafe-inline'` for exactly this reason) and it was
+still missed on first read; if `script-src` ever gets revisited to drop
+`'unsafe-inline'`, it needs the full nonce approach from that guide
+(`proxy.ts` generating a nonce per request, which this app's proxy.ts
+doesn't currently do and which forces dynamic rendering everywhere), not a
+half-measure. `style-src` needs `'unsafe-inline'` for an unrelated, still
+valid reason: dynamic per-row colors (tag swatches, poll bars, and similar)
+are set via React's `style` prop across many components, which a nonce
+can't reach either way (nonces only cover `<style>`/`<script>` elements,
+never arbitrary `style=""` attributes). `img-src` allows the S3 host
+dynamically read from `NEXT_PUBLIC_S3_PUBLIC_URL` when set, plus Gravatar;
+audited every `fetch()`, `<img>`, font, and script source in the tree first
+(grep, not guessing) to build the allow-list. `Cross-Origin-Opener-Policy:
+same-origin` is unaffected by any of the above and is safe for this app
+specifically because both Okta and LDAP sign-in redirect the top-level page
+rather than relying on a popup's `window.opener`.
 
 **Investigated, left alone.** `legacy-javascript-insight`'s ~13KB of
 polyfills (`Array.at`, `Object.hasOwn`, `String.trimStart`/`trimEnd`, etc.)
@@ -1133,4 +1147,9 @@ across the dining module and elsewhere (see commits `f2866ea`, `cbf4e95`,
 container instead of the pod spec in the Helm chart (a same-day regression,
 caught by `helm upgrade` itself rejecting the schema, not by the earlier
 `helm template` check, which doesn't validate against the live API); the
-zero-downtime `preStop` delay this was part of is confirmed live and working.
+zero-downtime `preStop` delay this was part of is confirmed live and working;
+a strict CSP `script-src` with no `unsafe-inline` shipped broken the same
+day (blocked Next.js's own hydration scripts, not just this app's code, so
+no page had any client-side interactivity until the hotfix; see "Lighthouse
+audit" above for the full story), caught by the user within minutes and
+fixed the same way.
