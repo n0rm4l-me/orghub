@@ -55,15 +55,15 @@ once, 2026-09-25:
   general advice alone, without a concrete symptom, isn't a great trade.
   Worth trying `updateTag` if an admin ever reports settings appearing to lag
   after saving.
-- **Not checked yet, flagging for whoever picks this up:** the same docs
-  cover React 19.2 (View Transitions, `useEffectEvent`, `Activity`), stable
-  `cacheLife`/`cacheTag` (drop the `unstable_` prefix if used anywhere, grep
-  turned up none in `src/`), `next/image` default changes
-  (`minimumCacheTTL` 60s→4h, `qualities` now `[75]` only, local
-  query-string images need `localPatterns.search`), and Cache Components
-  (`cacheComponents` config, opt-in). None of these came up as an active
-  problem in this pass, but nobody has gone through this app's `next/image`
-  usage or Server Component structure specifically checking for them.
+- **Checked 2026-09-26, see "Feature audits" below.** React 19.2 and Cache
+  Components were both looked at concretely (not just flagged) and are
+  correctly out of scope for now. `next/image`'s default changes turned out
+  moot for a different reason than expected: next/image isn't used anywhere
+  in this codebase at all, so there are no defaults to be affected by.
+  Stable `cacheLife`/`cacheTag` remain unchecked (still `unstable_` prefixed
+  where used, grep still turns up none needing the drop) but this is a
+  one-line rename with no behavior change if it ever comes up, not worth its
+  own pass.
 
 ---
 
@@ -211,12 +211,15 @@ knows how to check were left pointing at a URL that now 404s forever:
 each, verified end to end against the live demo DB (created a throwaway
 `Media` row, pointed `User.avatarUrl` at it, ran the transaction directly,
 confirmed both `avatarUrl` and the `Media` row were correctly cleared).
-**Not covered by this fix, still a real gap:** images embedded inside
-Article/Page rich-text body content. `findOrphanedObjects` walks that JSON
-to find broken-image candidates but nothing rewrites the JSON on delete, so
-a media file that's embedded in an article body (not just used as a cover
-image) still breaks silently. Fixing that needs a Tiptap-JSON-aware
-node-replacement step, not a simple `updateMany`.
+**FIXED 2026-09-25 (was open when this note was first written).** Images
+embedded inside Article/Page rich-text body content are now handled too:
+`deleteMediaBulk` walks each affected Article/Page's Tiptap JSON (same tree
+`findOrphanedObjects` already walked read-only) and strips any `image` node
+whose `src` matches a deleted URL, in the same transaction as the simple-field
+cleanup above. Tiptap's image node is always a leaf (never has its own
+content children), so removing it from its parent's `content` array can't
+orphan anything else. Covered by
+[actions.media.test.ts](src/__tests__/actions.media.test.ts).
 
 Assessed via code review (not hands-on, see the testing-tool limitation
 above extends to any admin form; these five don't use content-form.tsx
@@ -227,9 +230,10 @@ all well-validated (enum membership checked, XSS-safe URL validation on
 logo/brand fields, a real guard against disabling local auth with no other
 provider configured, audit logging on every mutation). No further findings.
 
-Not yet assessed at all: Media upload and the "browse uploaded"/insert-
-into-editor flow, Translation (any provider), orghub-mobile's actual screens
-on a device.
+Media upload/insert-into-editor and Translation were both assessed
+2026-09-26, see "Feature audits" below (each had real bugs, now fixed). Still
+not assessed at all: `orghub-mobile`'s actual screens on a device (this
+session never had an Expo runtime to run it in, only `tsc` on the code).
 
 ---
 
