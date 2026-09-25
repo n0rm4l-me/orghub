@@ -114,10 +114,10 @@ export default async function EventsPage({ searchParams }: Props) {
       />
 
       {/* Calendar grid */}
-      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-        <div className="grid grid-cols-7 border-b border-gray-100 dark:border-gray-700">
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="grid grid-cols-7 border-b border-border">
           {DAY_LABELS.map((d) => (
-            <div key={d} className="py-2 text-center text-xs font-semibold uppercase tracking-wide text-gray-400">
+            <div key={d} className="py-2 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {d}
             </div>
           ))}
@@ -130,15 +130,15 @@ export default async function EventsPage({ searchParams }: Props) {
             return (
               <div
                 key={idx}
-                className={`min-h-[80px] border-b border-r border-gray-100 p-1.5 dark:border-gray-700
+                className={`min-h-[80px] border-b border-r border-border p-1.5
                   ${isLast ? "border-b-0" : ""}
                   ${idx % 7 === 6 ? "border-r-0" : ""}
-                  ${!day ? "bg-gray-50/50 dark:bg-gray-800/50" : ""}`}
+                  ${!day ? "bg-muted/50" : ""}`}
               >
                 {day && (
                   <>
                     <div className={`mb-1 flex size-6 items-center justify-center rounded-full text-xs font-medium
-                      ${isToday ? "bg-brand text-white" : "text-gray-700 dark:text-gray-300"}`}>
+                      ${isToday ? "bg-brand text-white" : "text-foreground"}`}>
                       {day}
                     </div>
                     <div className="space-y-0.5">
@@ -154,7 +154,7 @@ export default async function EventsPage({ searchParams }: Props) {
                         </Link>
                       ))}
                       {dayEvents.length > 3 && (
-                        <p className="px-1 text-[11px] text-gray-400">+{dayEvents.length - 3} more</p>
+                        <p className="px-1 text-[11px] text-muted-foreground">+{dayEvents.length - 3} more</p>
                       )}
                     </div>
                   </>
@@ -167,15 +167,15 @@ export default async function EventsPage({ searchParams }: Props) {
 
       {/* Event list */}
       <div>
-        <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">
+        <h2 className="mb-4 text-base font-semibold text-foreground">
           {events.length > 0
             ? `${events.length} event${events.length === 1 ? "" : "s"} in ${MONTH_NAMES[month - 1]}`
             : `No events in ${MONTH_NAMES[month - 1]}`}
         </h2>
         {events.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-200 py-16 text-center dark:border-gray-700">
-            <CalendarDays className="mx-auto mb-3 size-8 text-gray-300 dark:text-gray-600" />
-            <p className="text-sm text-gray-400">No events scheduled this month.</p>
+          <div className="rounded-2xl border border-dashed border-border py-16 text-center">
+            <CalendarDays className="mx-auto mb-3 size-8 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">No events scheduled this month.</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -193,23 +193,23 @@ export default async function EventsPage({ searchParams }: Props) {
                 <Link
                   key={ev.id}
                   href={`/articles/${ev.id}`}
-                  className="group flex items-start gap-4 rounded-xl border border-gray-200 bg-white px-5 py-4
+                  className="group flex items-start gap-4 rounded-xl border border-border bg-card px-5 py-4
                     transition hover:border-brand/30 hover:bg-brand/5
-                    dark:border-gray-700 dark:bg-gray-900 dark:hover:border-brand/40"
+                    dark:hover:border-brand/40"
                 >
                   <div className="shrink-0 w-12 text-center">
                     <p className="text-[10px] font-semibold uppercase tracking-wide text-brand">
                       {start.toLocaleDateString("en-US", { month: "short" })}
                     </p>
-                    <p className="text-2xl font-bold leading-none text-gray-900 dark:text-gray-100">
+                    <p className="text-2xl font-bold leading-none text-foreground">
                       {start.getDate()}
                     </p>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-gray-900 group-hover:text-brand transition dark:text-gray-100">
+                    <p className="font-medium text-foreground group-hover:text-brand transition">
                       {ev.title}
                     </p>
-                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-gray-500">
+                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <CalendarDays className="size-3 shrink-0" aria-hidden />
                         {dateLabel} · {timeLabel}

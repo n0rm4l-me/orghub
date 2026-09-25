@@ -87,13 +87,12 @@ export function SidebarBlocks({
                         href={link.url}
                         {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                         className="group flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm
-                          text-muted-foreground transition hover:bg-muted hover:text-brand
-                          dark:hover:text-brand"
+                          text-muted-foreground transition hover:bg-muted hover:text-brand"
                       >
                         <span className="truncate">{link.label}</span>
                         {external && (
                           <ExternalLink
-                            className="ml-auto size-3 shrink-0 text-gray-300 transition
+                            className="ml-auto size-3 shrink-0 text-muted-foreground transition
                               group-hover:text-brand"
                             aria-hidden
                           />

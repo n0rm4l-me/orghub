@@ -43,9 +43,9 @@ export default async function DiningIndexPage() {
         <PageHeader title="Dining" />
 
         {venues.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-gray-200 py-16 text-center dark:border-gray-700">
-            <Utensils className="size-8 text-gray-300 dark:text-gray-600" aria-hidden />
-            <p className="text-sm text-gray-500 dark:text-gray-400">No dining venues available.</p>
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
+            <Utensils className="size-8 text-muted-foreground" aria-hidden />
+            <p className="text-sm text-muted-foreground">No dining venues available.</p>
           </div>
         ) : (() => {
           // Group by location, preserving sort order
@@ -60,7 +60,7 @@ export default async function DiningIndexPage() {
             <div className="space-y-8">
               {groups.map(({ locationName, venues: group }) => (
                 <div key={locationName}>
-                  <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                  <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {locationName}
                   </h2>
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -70,13 +70,13 @@ export default async function DiningIndexPage() {
                         <Link
                           key={v.id}
                           href={`/dining/${v.id}`}
-                          className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-white p-5 transition hover:border-gray-300 hover:shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-600"
+                          className="flex flex-col gap-2 rounded-xl border border-border bg-card p-5 transition hover:border-border hover:shadow-sm"
                         >
                           <div className="grid size-10 place-items-center rounded-lg bg-brand/10">
                             <Icon className="size-5 text-brand" aria-hidden />
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900 dark:text-gray-100">{v.name}</p>
+                            <p className="font-medium text-foreground">{v.name}</p>
                           </div>
                         </Link>
                       )

@@ -42,7 +42,7 @@ export function VoteButton({ suggestionId, initialCount, initialVoted, loggedIn 
         transition-colors w-[52px] ${
           voted
             ? "border-brand bg-brand/10 text-brand"
-            : "border-gray-200 text-gray-500 hover:border-brand/40 hover:text-brand dark:border-gray-700 dark:text-gray-400"
+            : "border-border text-muted-foreground hover:border-brand/40 hover:text-brand"
         } disabled:cursor-not-allowed disabled:opacity-60`}
     >
       <ChevronUp className="size-4" aria-hidden />

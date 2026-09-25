@@ -172,9 +172,9 @@ export default async function DiningVenuePage({ params, searchParams }: Props) {
     <div className="space-y-5 pb-20">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{venue.name}</h1>
+        <h1 className="text-xl font-semibold text-foreground">{venue.name}</h1>
         {menu?.name && (
-          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{menu.name}</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">{menu.name}</p>
         )}
       </div>
 
@@ -188,7 +188,7 @@ export default async function DiningVenuePage({ params, searchParams }: Props) {
               className={`rounded-full border px-3 py-1 text-sm font-medium transition ${
                 m.id === menu?.id
                   ? "border-brand bg-brand/10 text-brand"
-                  : "border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-gray-800"
+                  : "border-border text-muted-foreground hover:border-border hover:bg-muted"
               }`}
             >
               {m.name ?? "Menu"}
@@ -199,7 +199,7 @@ export default async function DiningVenuePage({ params, searchParams }: Props) {
 
       {/* Topic hero banner */}
       {currentTopic && (
-        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+        <div className="overflow-hidden rounded-2xl border border-border bg-card">
           {currentTopic.bannerImage && (
             <div className="relative h-48 overflow-hidden">
               <img
@@ -212,9 +212,9 @@ export default async function DiningVenuePage({ params, searchParams }: Props) {
           )}
           <div className="h-1.5 w-full bg-brand" />
           <div className="px-4 pb-4 pt-3">
-            <p className="font-semibold text-gray-900 dark:text-gray-100">{currentTopic.title}</p>
+            <p className="font-semibold text-foreground">{currentTopic.title}</p>
             {currentTopic.body && (
-              <p className="mt-0.5 line-clamp-2 text-sm text-gray-500 dark:text-gray-400">{currentTopic.body}</p>
+              <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{currentTopic.body}</p>
             )}
             {venue.topicsEnabled && (
               <a href={`/dining/${id}/announcements`} className="mt-2 inline-block text-xs font-medium text-brand hover:underline">
@@ -226,8 +226,8 @@ export default async function DiningVenuePage({ params, searchParams }: Props) {
       )}
 
       {!menu ? (
-        <div className="overflow-hidden rounded-2xl border border-dashed border-gray-200 py-16 text-center dark:border-gray-700">
-          <p className="text-sm text-gray-400">No menu available yet.</p>
+        <div className="overflow-hidden rounded-2xl border border-dashed border-border py-16 text-center">
+          <p className="text-sm text-muted-foreground">No menu available yet.</p>
         </div>
       ) : menu.menuType === "FIXED" ? (
         <FixedMenuView

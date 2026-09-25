@@ -50,7 +50,7 @@ function DeleteBtn({ id }: { id: string }) {
       onClick={() => run()}
       disabled={pending}
       aria-label="Delete comment"
-      className="rounded p-1 text-gray-300 transition hover:text-red-400 disabled:opacity-40"
+      className="rounded p-1 text-muted-foreground transition hover:text-red-400 disabled:opacity-40"
     >
       <Trash2 className="size-3.5" aria-hidden />
     </button>
@@ -74,14 +74,14 @@ export function SuggestionCommentList({ comments, currentUserId, isAdmin, gravat
                   alt=""
                 />
               )}
-              <AvatarFallback className="bg-gray-100 text-[11px] font-bold text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+              <AvatarFallback className="bg-muted text-[11px] font-bold text-muted-foreground">
                 {initials(author?.name ?? null)}
               </AvatarFallback>
             </Avatar>
 
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                <span className="text-sm font-medium text-foreground">
                   {author?.name ?? "Deleted user"}
                 </span>
                 {c.isAdminReply && (
@@ -89,10 +89,10 @@ export function SuggestionCommentList({ comments, currentUserId, isAdmin, gravat
                     Admin
                   </span>
                 )}
-                <span className="text-xs text-gray-400 dark:text-gray-500">{fmt(c.createdAt)}</span>
+                <span className="text-xs text-muted-foreground">{fmt(c.createdAt)}</span>
                 {canDelete && <DeleteBtn id={c.id} />}
               </div>
-              <p className="mt-1 text-sm leading-relaxed whitespace-pre-line text-gray-700 dark:text-gray-300">
+              <p className="mt-1 text-sm leading-relaxed whitespace-pre-line text-foreground">
                 {c.body}
               </p>
             </div>

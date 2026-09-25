@@ -104,7 +104,7 @@ export default async function ArticlePage({ params }: Props) {
       <div className="mb-4 flex items-center gap-3">
         <Link
           href="/"
-          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition dark:text-gray-400 dark:hover:text-gray-200"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to feed
@@ -123,7 +123,7 @@ export default async function ArticlePage({ params }: Props) {
         </div>
       )}
 
-      <div className="rounded-2xl border border-gray-100 bg-white p-8 dark:border-gray-700 dark:bg-gray-900">
+      <div className="rounded-2xl border border-border bg-card p-8">
         <ArticleTranslateBody
           articleId={id}
           title={article.title}
@@ -132,7 +132,7 @@ export default async function ArticlePage({ params }: Props) {
         >
           {eventStart && (
             <div className="mb-8 flex flex-wrap items-center gap-x-5 gap-y-1.5 rounded-xl bg-brand/5
-              border border-brand/20 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 dark:bg-brand/10">
+              border border-brand/20 px-4 py-3 text-sm text-foreground dark:bg-brand/10">
               <span className="flex items-center gap-1.5">
                 <CalendarDays className="size-4 text-brand shrink-0" aria-hidden />
                 <span className="font-medium text-brand">
@@ -151,7 +151,7 @@ export default async function ArticlePage({ params }: Props) {
                 )}
               </span>
               {article.eventLocation && (
-                <span className="flex items-center gap-1.5 text-gray-500">
+                <span className="flex items-center gap-1.5 text-muted-foreground">
                   <MapPin className="size-4 shrink-0" aria-hidden />
                   {article.eventLocation}
                 </span>
@@ -160,19 +160,19 @@ export default async function ArticlePage({ params }: Props) {
           )}
         </ArticleTranslateBody>
 
-        <div className="mt-8 flex items-center justify-between border-t border-gray-100 pt-6 dark:border-gray-700">
+        <div className="mt-8 flex items-center justify-between border-t border-border pt-6">
           <div className="flex items-center gap-3">
             <Avatar className="size-9">
               {(article.author.avatarUrl || settings.gravatarsEnabled) && (
                 <AvatarImage src={article.author.avatarUrl ?? gravatarUrl(article.author.email, 36)} alt="" />
               )}
-              <AvatarFallback className="bg-gray-100 text-gray-600 font-semibold text-sm dark:bg-gray-700 dark:text-gray-300">
+              <AvatarFallback className="bg-muted text-muted-foreground font-semibold text-sm">
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{article.author.name}</p>
-              <p className="text-xs text-gray-400 dark:text-gray-500">
+              <p className="text-sm font-medium text-foreground">{article.author.name}</p>
+              <p className="text-xs text-muted-foreground">
                 {article.publishedAt
                   ? new Date(article.publishedAt).toLocaleDateString("en-US", {
                       month: "short",
@@ -184,7 +184,7 @@ export default async function ArticlePage({ params }: Props) {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium text-gray-400">
+            <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium text-muted-foreground">
               <Eye className="size-3.5" aria-hidden />
               {article._count.views}
             </span>
@@ -199,12 +199,12 @@ export default async function ArticlePage({ params }: Props) {
       </div>
 
       {article.commentsEnabled && (
-        <div className="mt-4 rounded-2xl border border-gray-100 bg-white p-8 dark:border-gray-700 dark:bg-gray-900">
-          <h2 className="mb-5 flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-gray-100">
-            <MessageSquare className="size-4 text-gray-400 dark:text-gray-500" aria-hidden />
+        <div className="mt-4 rounded-2xl border border-border bg-card p-8">
+          <h2 className="mb-5 flex items-center gap-2 text-base font-semibold text-foreground">
+            <MessageSquare className="size-4 text-muted-foreground" aria-hidden />
             Comments
             {article._count.comments > 0 && (
-              <span className="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+              <span className="ml-1 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                 {article._count.comments}
               </span>
             )}
@@ -223,13 +223,13 @@ export default async function ArticlePage({ params }: Props) {
               ))}
             </ul>
           ) : (
-            <p className="mb-6 text-sm text-gray-400 dark:text-gray-500">No comments yet.</p>
+            <p className="mb-6 text-sm text-muted-foreground">No comments yet.</p>
           )}
 
           {user ? (
             <CommentForm articleId={article.id} />
           ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground">
               <Link href="/login" className="font-medium text-brand hover:underline">
                 Sign in
               </Link>{" "}

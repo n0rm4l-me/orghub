@@ -48,8 +48,7 @@ export default async function SuggestionDetailPage({ params }: Props) {
         {/* Back */}
         <Link
           href="/suggestions"
-          className="mb-5 inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700
-            dark:text-gray-400 dark:hover:text-gray-200"
+          className="mb-5 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" aria-hidden />
           Back to suggestions
@@ -67,14 +66,14 @@ export default async function SuggestionDetailPage({ params }: Props) {
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{suggestion.title}</h1>
+              <h1 className="text-xl font-bold text-foreground">{suggestion.title}</h1>
               <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLOR[suggestion.status]}`}>
                 {STATUS_LABEL[suggestion.status]}
               </span>
             </div>
-            <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-gray-400">
+            <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               {suggestion.category && (
-                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-500 dark:bg-gray-800">
+                <span className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">
                   {suggestion.category}
                 </span>
               )}
@@ -85,8 +84,8 @@ export default async function SuggestionDetailPage({ params }: Props) {
         </div>
 
         {/* Body */}
-        <div className="mt-6 rounded-xl border border-gray-200 bg-white p-5 text-sm leading-relaxed
-          text-gray-800 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200 whitespace-pre-wrap">
+        <div className="mt-6 rounded-xl border border-border bg-card p-5 text-sm leading-relaxed
+          text-foreground whitespace-pre-wrap">
           {suggestion.body}
         </div>
 
@@ -94,17 +93,17 @@ export default async function SuggestionDetailPage({ params }: Props) {
         {suggestion.adminNote && (
           <div className="mt-4 rounded-lg border border-brand/20 bg-brand/5 px-4 py-3">
             <p className="text-xs font-medium text-brand">Admin note</p>
-            <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{suggestion.adminNote}</p>
+            <p className="mt-1 text-sm text-foreground">{suggestion.adminNote}</p>
           </div>
         )}
 
         {/* Comments */}
-        <div className="mt-4 rounded-2xl border border-gray-100 bg-white p-8 dark:border-gray-700 dark:bg-gray-900">
-          <h2 className="mb-5 flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-gray-100">
-            <MessageSquare className="size-4 text-gray-400 dark:text-gray-500" aria-hidden />
+        <div className="mt-4 rounded-2xl border border-border bg-card p-8">
+          <h2 className="mb-5 flex items-center gap-2 text-base font-semibold text-foreground">
+            <MessageSquare className="size-4 text-muted-foreground" aria-hidden />
             Comments
             {suggestion.comments.length > 0 && (
-              <span className="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+              <span className="ml-1 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                 {suggestion.comments.length}
               </span>
             )}
@@ -120,13 +119,13 @@ export default async function SuggestionDetailPage({ params }: Props) {
               />
             </div>
           ) : (
-            <p className="mb-6 text-sm text-gray-400 dark:text-gray-500">No comments yet.</p>
+            <p className="mb-6 text-sm text-muted-foreground">No comments yet.</p>
           )}
 
           {user ? (
             <SuggestionCommentForm suggestionId={suggestion.id} />
           ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground">
               <Link href="/login" className="font-medium text-brand hover:underline">Sign in</Link>{" "}
               to leave a comment.
             </p>

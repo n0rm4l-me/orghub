@@ -30,13 +30,12 @@ export function SuggestionCommentForm({ suggestionId }: { suggestionId: string }
         placeholder="Write a comment…"
         rows={3}
         maxLength={2000}
-        className="w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm
-          text-gray-900 placeholder:text-gray-400 focus:border-brand focus:outline-none focus:ring-2
-          focus:ring-brand/20 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100
-          dark:placeholder:text-gray-500"
+        className="w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-sm
+          text-foreground placeholder:text-muted-foreground focus:border-brand focus:outline-none focus:ring-2
+          focus:ring-brand/20"
       />
       <div className="flex items-center justify-between">
-        <span className="text-xs text-gray-400">{body.length}/2000</span>
+        <span className="text-xs text-muted-foreground">{body.length}/2000</span>
         <button
           type="submit"
           disabled={pending || !body.trim()}

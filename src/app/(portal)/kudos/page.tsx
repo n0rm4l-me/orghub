@@ -98,25 +98,25 @@ export default async function KudosPage({ searchParams }: Props) {
 
       {/* Balance card */}
       {user && balance && (
-        <div className="mb-6 flex gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+        <div className="mb-6 flex gap-3 rounded-xl border border-border bg-card p-4">
           <div className="flex-1 py-2 text-center">
             <p className="text-2xl font-bold text-brand">{balance.totalReceived}</p>
-            <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Received</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">Received</p>
           </div>
-          <div className="w-px bg-gray-100 dark:bg-gray-700" />
+          <div className="w-px bg-border" />
           <div className="flex-1 py-2 text-center">
-            <p className="text-2xl font-bold text-gray-700 dark:text-gray-200">{balance.spentThisMonth}</p>
-            <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Sent this month</p>
+            <p className="text-2xl font-bold text-foreground">{balance.spentThisMonth}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">Sent this month</p>
           </div>
           {balance.redeemEnabled && (
             <>
-              <div className="w-px bg-gray-100 dark:bg-gray-700" />
+              <div className="w-px bg-border" />
               {balance.available > 0 ? (
                 <RedeemableBalance available={balance.available} types={redeemTypes} />
               ) : (
                 <div className="flex-1 py-2 text-center">
-                  <p className="text-2xl font-bold text-gray-700 dark:text-gray-200">0</p>
-                  <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Available to redeem</p>
+                  <p className="text-2xl font-bold text-foreground">0</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">Available to redeem</p>
                 </div>
               )}
             </>
@@ -127,32 +127,32 @@ export default async function KudosPage({ searchParams }: Props) {
       {/* Redemption history */}
       {redemptions.length > 0 && (
         <div className="mb-6">
-          <h2 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Redemption history</h2>
-          <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <h2 className="mb-3 text-sm font-semibold text-foreground">Redemption history</h2>
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
             <table className="w-full table-fixed text-sm">
               <thead>
-                <tr className="border-b border-gray-100 dark:border-gray-700 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                <tr className="border-b border-border text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   <th className="w-32 px-4 py-2.5 text-left">Date</th>
                   <th className="px-4 py-2.5 text-center">Type</th>
                   <th className="w-20 px-4 py-2.5 text-center">Coins</th>
                   <th className="w-28 px-4 py-2.5 text-center">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
+              <tbody className="divide-y divide-border">
                 {redemptions.map((r) => (
                   <tr key={r.id} className="align-middle">
-                    <td className="w-32 whitespace-nowrap px-4 py-2.5 text-xs text-gray-500 dark:text-gray-400">
+                    <td className="w-32 whitespace-nowrap px-4 py-2.5 text-xs text-muted-foreground">
                       {new Date(r.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     </td>
-                    <td className="px-4 py-2.5 text-center text-xs font-medium text-gray-700 dark:text-gray-300">
-                      {r.redeemType?.label ?? <span className="text-gray-300 dark:text-gray-600">—</span>}
+                    <td className="px-4 py-2.5 text-center text-xs font-medium text-foreground">
+                      {r.redeemType?.label ?? <span className="text-muted-foreground">—</span>}
                     </td>
                     <td className="w-20 px-4 py-2.5 text-center text-sm font-semibold text-brand">{r.amount}</td>
                     <td className="px-4 py-2.5 text-center">
                       <span className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${
                         r.status === "DONE"     ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400" :
                         r.status === "FAILED"   ? "bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400" :
-                        r.status === "REJECTED" ? "bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500" :
+                        r.status === "REJECTED" ? "bg-muted text-muted-foreground" :
                                                    "bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400"
                       }`}>
                         {r.status === "DONE" ? "Done" : r.status === "FAILED" ? "Failed" : r.status === "REJECTED" ? "Rejected" : "Pending"}
@@ -176,12 +176,12 @@ export default async function KudosPage({ searchParams }: Props) {
       )}
 
       {/* Wall */}
-      <h2 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Recent kudos</h2>
+      <h2 className="mb-3 text-sm font-semibold text-foreground">Recent kudos</h2>
       {rows.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-200 dark:border-gray-700 py-16 text-center">
-          <Award className="mx-auto mb-3 size-10 text-gray-300 dark:text-gray-600" aria-hidden />
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No kudos yet</p>
-          <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">Be the first to recognise a colleague.</p>
+        <div className="rounded-xl border border-dashed border-border py-16 text-center">
+          <Award className="mx-auto mb-3 size-10 text-muted-foreground" aria-hidden />
+          <p className="text-sm font-medium text-muted-foreground">No kudos yet</p>
+          <p className="mt-1 text-xs text-muted-foreground">Be the first to recognise a colleague.</p>
         </div>
       ) : (
         <ul className="space-y-3">
@@ -191,7 +191,7 @@ export default async function KudosPage({ searchParams }: Props) {
             const fromInitials = initialsOf(k.from.name ?? k.from.email)
             const toInitials   = initialsOf(k.to.name   ?? k.to.email)
             return (
-              <li key={k.id} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+              <li key={k.id} className="rounded-xl border border-border bg-card p-4">
                 <div className="flex items-start gap-3">
                   <Avatar className="mt-0.5 size-9 shrink-0">
                     {toSrc && <AvatarImage src={toSrc} alt="" />}
@@ -199,7 +199,7 @@ export default async function KudosPage({ searchParams }: Props) {
                   </Avatar>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-gray-900 dark:text-gray-100">
+                      <span className="font-semibold text-foreground">
                         {k.to.name ?? k.to.email.split("@")[0]}
                       </span>
                       <span className="font-semibold text-brand">+{k.amount} {k.amount === 1 ? "coin" : "coins"}</span>
@@ -209,8 +209,8 @@ export default async function KudosPage({ searchParams }: Props) {
                         </span>
                       )}
                     </div>
-                    <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{k.message}</p>
-                    <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">
+                    <p className="mt-1 text-sm text-foreground">{k.message}</p>
+                    <p className="mt-1.5 text-xs text-muted-foreground">
                       {new Date(k.createdAt).toLocaleDateString("en-US", DATE_FMT)}
                       {" · from "}
                       {k.from.name ?? k.from.email.split("@")[0]}

@@ -39,7 +39,7 @@ export default async function DiningAnnouncementsPage({ params }: Props) {
       <div className="mb-8">
         <Link
           href={`/dining/${id}`}
-          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" aria-hidden />
           {venue.name}
@@ -47,7 +47,7 @@ export default async function DiningAnnouncementsPage({ params }: Props) {
       </div>
 
       {topics.length === 0 ? (
-        <p className="text-sm text-gray-400 dark:text-gray-500">No announcements published yet.</p>
+        <p className="text-sm text-muted-foreground">No announcements published yet.</p>
       ) : (
         <div className="space-y-14">
           {topics.map((topic, index) => (
@@ -69,16 +69,16 @@ export default async function DiningAnnouncementsPage({ params }: Props) {
               </div>
 
               <div className="mb-6 space-y-2">
-                <h2 className={`font-semibold text-gray-900 dark:text-gray-100 ${index === 0 ? "text-2xl" : "text-lg"}`}>
+                <h2 className={`font-semibold text-foreground ${index === 0 ? "text-2xl" : "text-lg"}`}>
                   {topic.title}
                 </h2>
                 {topic.body && (
-                  <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-300">{topic.body}</p>
+                  <p className="text-sm leading-relaxed text-muted-foreground">{topic.body}</p>
                 )}
               </div>
 
               {index < topics.length - 1 && (
-                <div className="mt-14 border-t border-gray-100 dark:border-gray-700" />
+                <div className="mt-14 border-t border-border" />
               )}
             </article>
           ))}

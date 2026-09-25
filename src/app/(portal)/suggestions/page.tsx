@@ -71,7 +71,7 @@ export default async function SuggestionsPage({ searchParams }: Props) {
           className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
             !status
               ? "border-brand bg-brand/10 text-brand"
-              : "border-gray-200 text-gray-500 hover:border-gray-300 dark:border-gray-700 dark:text-gray-400"
+              : "border-border text-muted-foreground hover:border-muted-foreground/40"
           }`}
         >
           All
@@ -83,7 +83,7 @@ export default async function SuggestionsPage({ searchParams }: Props) {
             className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
               status === s
                 ? "border-brand bg-brand/10 text-brand"
-                : "border-gray-200 text-gray-500 hover:border-gray-300 dark:border-gray-700 dark:text-gray-400"
+                : "border-border text-muted-foreground hover:border-muted-foreground/40"
             }`}
           >
             {STATUS_LABEL[s]}
@@ -104,8 +104,7 @@ export default async function SuggestionsPage({ searchParams }: Props) {
           {rows.map((s) => (
             <div
               key={s.id}
-              className="flex gap-4 rounded-xl border border-gray-200 bg-white p-4 transition hover:shadow-sm
-                dark:border-gray-800 dark:bg-gray-900"
+              className="flex gap-4 rounded-xl border border-border bg-card p-4 transition hover:shadow-sm"
             >
               {/* Vote column */}
               <div className="shrink-0 pt-0.5">
@@ -122,8 +121,8 @@ export default async function SuggestionsPage({ searchParams }: Props) {
                 <div className="flex flex-wrap items-start gap-2">
                   <Link
                     href={`/suggestions/${s.id}`}
-                    className="flex-1 text-base font-semibold leading-snug text-gray-900 hover:text-brand
-                      dark:text-gray-100 dark:hover:text-brand"
+                    className="flex-1 text-base font-semibold leading-snug text-foreground hover:text-brand
+                      dark:hover:text-brand"
                   >
                     {s.title}
                   </Link>
@@ -132,20 +131,20 @@ export default async function SuggestionsPage({ searchParams }: Props) {
                   </span>
                 </div>
 
-                <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
+                <p className="mt-1.5 text-sm text-muted-foreground line-clamp-3">
                   {s.body}
                 </p>
 
                 {s.adminNote && (
                   <div className="mt-2 rounded-lg border border-brand/20 bg-brand/5 px-3 py-2">
                     <p className="text-xs font-medium text-brand">Admin note</p>
-                    <p className="mt-0.5 text-sm text-gray-700 dark:text-gray-300">{s.adminNote}</p>
+                    <p className="mt-0.5 text-sm text-foreground">{s.adminNote}</p>
                   </div>
                 )}
 
-                <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-400">
+                <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                   {s.category && (
-                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-500 dark:bg-gray-800">
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">
                       {s.category}
                     </span>
                   )}

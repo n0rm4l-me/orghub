@@ -24,10 +24,27 @@ Tailwind color via `@theme inline` so the usual utilities work
 | Card, panel, table, input surface | `bg-card` | `bg-white` |
 | Dropdown, popover, dialog surface | `bg-popover` | `bg-white` |
 | Nested block inside a card, panel footer | `bg-muted` | `bg-gray-50`, `bg-gray-100` |
-| Divider, track | `bg-border` / `border-border` | `bg-gray-200`, `border-gray-200` |
+| Divider, track, `divide-*` between rows | `bg-border` / `border-border` / `divide-border` | `bg-gray-200`, `border-gray-200`, `divide-gray-100` |
 | Heading, primary text | `text-foreground` | `text-gray-900/800/700` |
-| Secondary text, captions, placeholders | `text-muted-foreground` | `text-gray-600/500/400` |
+| Secondary text, captions, placeholders, disabled/empty-state text | `text-muted-foreground` | `text-gray-600/500/400/300` |
 | Hover surface | `hover:bg-muted` | `hover:bg-gray-50/100` |
+| Hover border | `hover:border-border` | `hover:border-gray-300` (yes, this can mean the resting and hover border end up the same token; that's correct, not a bug in the conversion) |
+| Hover text | `hover:text-foreground` / `hover:text-muted-foreground` | `hover:text-gray-800` etc, same bucket as the unprefixed rule |
+
+`text-gray-300`/`border-gray-300` are covered by the muted-foreground /
+border buckets above, same as every other shade in the 900-300 range; there
+is no separate "leave 300 alone" rule. (This was a real, live disagreement
+between two automated conversion passes on 2026-09-25: one correctly
+converted it by reading the actual precedent commits, the other left it
+because a *different*, not-yet-fully-converted file still had a stray
+instance and was mistaken for a deliberate exception. Checked the real
+history before writing this row: it converts.)
+
+A gray/neutral status pill (e.g. a "Rejected" or "N/A" badge sitting in the
+same `switch`/ternary as real status colors like `emerald`/`red`/`amber`)
+still converts to `bg-muted text-muted-foreground`. The "don't touch status
+colors" rule below is about hues that carry meaning; gray in that position
+means "no status", which is exactly what the neutral token is for.
 
 Do **not** add a paired `dark:` class next to a token class. The token
 already has a `.dark` value in `globals.css`; a `dark:bg-gray-900` sitting

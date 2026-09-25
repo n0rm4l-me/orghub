@@ -40,7 +40,7 @@ const dateFormat: Intl.DateTimeFormatOptions = {
 
 function Byline({ date, readTime }: { date: string; readTime: string }) {
   return (
-    <div className="flex items-center gap-2 text-xs text-gray-400">
+    <div className="flex items-center gap-2 text-xs text-muted-foreground">
       <span>{date}</span>
       <span aria-hidden>·</span>
       <span>{readTime}</span>
@@ -72,7 +72,7 @@ function FeaturedCard({
   pinned?: boolean
 }) {
   return (
-    <article className={`group mb-3 overflow-hidden rounded-2xl border transition-shadow hover:shadow-md ${article.important ? "border-amber-200 bg-amber-50/40 dark:border-amber-900/50 dark:bg-amber-950/20" : "border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900"}`}>
+    <article className={`group mb-3 overflow-hidden rounded-2xl border transition-shadow hover:shadow-md ${article.important ? "border-amber-200 bg-amber-50/40 dark:border-amber-900/50 dark:bg-amber-950/20" : "border-border bg-card"}`}>
       <Link href={`/articles/${article.id}`} className="block">
         {article.coverImage ? (
           <div className="relative h-48 overflow-hidden">
@@ -114,11 +114,11 @@ function FeaturedCard({
               </span>
             )}
           </div>
-          <h2 className="mb-2 text-2xl leading-snug font-bold text-gray-900 transition-colors group-hover:text-brand dark:text-gray-100">
+          <h2 className="mb-2 text-2xl leading-snug font-bold text-foreground transition-colors group-hover:text-brand">
             {article.title}
           </h2>
           {article.excerpt && (
-            <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+            <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
               {article.excerpt}
             </p>
           )}
@@ -127,7 +127,7 @@ function FeaturedCard({
       <div className="flex items-center justify-between px-6 pb-4">
         <Byline {...article} />
         {article.reactionCount > 0 && (
-          <span className="flex items-center gap-1 text-xs text-gray-400">
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
             <Heart className="size-3" aria-hidden />
             {article.reactionCount}
           </span>
@@ -305,9 +305,9 @@ export default async function FeedPage({ searchParams }: Props) {
         gravatarsEnabled={settings.gravatarsEnabled}
       >
         {query && (
-          <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mb-4 text-sm text-muted-foreground">
             {total} result{total === 1 ? "" : "s"} for{" "}
-            <span className="font-medium text-gray-900 dark:text-gray-100">&quot;{query}&quot;</span>
+            <span className="font-medium text-foreground">&quot;{query}&quot;</span>
             {" · "}
             <Link href="/" className="font-medium text-brand hover:underline">
               Clear
@@ -352,7 +352,7 @@ export default async function FeedPage({ searchParams }: Props) {
                   className={`group overflow-hidden rounded-xl border transition hover:shadow-sm ${
                     article.important
                       ? "border-amber-200 bg-amber-50/40 hover:border-amber-300 dark:border-amber-900/50 dark:bg-amber-950/20 dark:hover:border-amber-800/60"
-                      : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-600"
+                      : "border-border bg-card hover:border-border"
                   }`}
                 >
                   <Link
@@ -376,19 +376,19 @@ export default async function FeedPage({ searchParams }: Props) {
                             NEW
                           </span>
                         )}
-                        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-gray-900 transition-colors group-hover:text-brand dark:text-gray-100">
+                        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-brand">
                           {article.title}
                         </h3>
                       </div>
                       {cardStyle === "preview" && article.snippet && (
-                        <p className="line-clamp-1 text-xs text-gray-400">{article.snippet}</p>
+                        <p className="line-clamp-1 text-xs text-muted-foreground">{article.snippet}</p>
                       )}
                       {cardStyle === "default" && article.excerpt && (
-                        <p className="line-clamp-1 text-xs text-gray-400">{article.excerpt}</p>
+                        <p className="line-clamp-1 text-xs text-muted-foreground">{article.excerpt}</p>
                       )}
                     </div>
                   </Link>
-                  <div className="flex items-center gap-2 px-4 pb-3 text-[11px] text-gray-400 dark:text-gray-500">
+                  <div className="flex items-center gap-2 px-4 pb-3 text-[11px] text-muted-foreground">
                     {article.category && (
                       <span className="rounded-full border border-brand/30 px-2 py-0.5 font-medium text-brand">
                         {article.category.name}
@@ -401,11 +401,11 @@ export default async function FeedPage({ searchParams }: Props) {
                     )}
                     <span className="flex-1" />
                     <span>{article.date}</span>
-                    <span aria-hidden className="text-gray-300">·</span>
+                    <span aria-hidden className="text-muted-foreground">·</span>
                     <span>{article.readTime}</span>
                     {article.reactionCount > 0 && (
                       <>
-                        <span aria-hidden className="text-gray-300">·</span>
+                        <span aria-hidden className="text-muted-foreground">·</span>
                         <span className="flex items-center gap-1">
                           <Heart className="size-3" aria-hidden />
                           {article.reactionCount}
@@ -464,32 +464,31 @@ function Pagination({
   }
 
   const base =
-    "rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium transition " +
-    "hover:border-gray-300 hover:bg-gray-50 " +
-    "dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-600 dark:hover:bg-gray-800"
+    "rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-medium transition " +
+    "hover:border-border hover:bg-muted"
 
   return (
     <nav className="mt-6 flex items-center justify-between" aria-label="Pagination">
       {page > 1 ? (
-        <Link href={href(page - 1)} className={`${base} text-gray-700 dark:text-gray-300`} rel="prev">
+        <Link href={href(page - 1)} className={`${base} text-foreground`} rel="prev">
           ← Previous
         </Link>
       ) : (
-        <span className={`${base} cursor-not-allowed text-gray-300`} aria-disabled>
+        <span className={`${base} cursor-not-allowed text-muted-foreground`} aria-disabled>
           ← Previous
         </span>
       )}
 
-      <span className="text-xs text-gray-400">
+      <span className="text-xs text-muted-foreground">
         Page {page} of {totalPages}
       </span>
 
       {page < totalPages ? (
-        <Link href={href(page + 1)} className={`${base} text-gray-700 dark:text-gray-300`} rel="next">
+        <Link href={href(page + 1)} className={`${base} text-foreground`} rel="next">
           Next →
         </Link>
       ) : (
-        <span className={`${base} cursor-not-allowed text-gray-300`} aria-disabled>
+        <span className={`${base} cursor-not-allowed text-muted-foreground`} aria-disabled>
           Next →
         </span>
       )}
