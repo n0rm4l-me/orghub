@@ -42,12 +42,14 @@ const mockDb = {
   },
   suggestion: {
     delete: vi.fn().mockResolvedValue({}),
+    findUnique: vi.fn().mockResolvedValue({ id: "sugg-1", title: "Idea", authorId: null }),
   },
   suggestionComment: {
     findUnique: vi.fn((args: { where: { id: string } }) =>
       Promise.resolve(args.where.id === OWNED_COMMENT.id ? OWNED_COMMENT : null)
     ),
     delete: vi.fn().mockResolvedValue({}),
+    create: vi.fn().mockResolvedValue({}),
   },
 }
 
@@ -96,5 +98,23 @@ describe("suggestions authorization", () => {
     const result = await deleteComment(OWNED_COMMENT.id)
     expect(result).toMatchObject({ ok: true })
     expect(mockDb.suggestionComment.delete).toHaveBeenCalledWith({ where: { id: OWNED_COMMENT.id } })
+  })
+
+  it("a VIEWER's comment is not flagged as an admin reply", async () => {
+    signInAs(USERS.viewer)
+    const { addComment } = await import("@/lib/actions/suggestions")
+    await expect(addComment("sugg-1", "just a thought")).resolves.toMatchObject({ ok: true })
+    expect(mockDb.suggestionComment.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ isAdminReply: false }),
+    })
+  })
+
+  it("an EDITOR's comment is flagged as an admin reply", async () => {
+    signInAs(USERS.editor)
+    const { addComment } = await import("@/lib/actions/suggestions")
+    await expect(addComment("sugg-1", "official response")).resolves.toMatchObject({ ok: true })
+    expect(mockDb.suggestionComment.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ isAdminReply: true }),
+    })
   })
 })

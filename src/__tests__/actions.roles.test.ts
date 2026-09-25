@@ -48,6 +48,14 @@ const mockDb = {
   location: { create: vi.fn().mockResolvedValue({ id: "loc-new" }) },
   mealSlot: { findMany: vi.fn().mockResolvedValue([]) },
   kudos: { delete: vi.fn().mockResolvedValue({ id: "kudos-1" }) },
+  kudosRedeemType: {
+    aggregate: vi.fn().mockResolvedValue({ _max: { order: 0 } }),
+    create: vi.fn().mockResolvedValue({ id: "type-1" }),
+  },
+  kudosRedemption: {
+    findUnique: vi.fn().mockResolvedValue({ id: "redemption-1", status: "PENDING" }),
+    update: vi.fn().mockResolvedValue({ id: "redemption-1", status: "REJECTED" }),
+  },
   auditLog: { create: vi.fn().mockResolvedValue({}) },
   $transaction: vi.fn((cb: (tx: unknown) => unknown) => cb(mockTx)),
 }
@@ -90,6 +98,41 @@ describe("authorization matrix", () => {
     const { deleteKudos } = await import("@/lib/actions/kudos")
     await expect(deleteKudos("kudos-1")).resolves.toMatchObject({ ok: true })
     expect(mockDb.kudos.delete).toHaveBeenCalledWith({ where: { id: "kudos-1" } })
+  })
+
+  it("VIEWER is rejected from creating a kudos redeem type", async () => {
+    signInAs(USERS.viewer)
+    const { createRedeemType } = await import("@/lib/actions/kudos")
+    const fd = new FormData()
+    fd.set("label", "Coffee voucher")
+    await expect(createRedeemType(fd)).rejects.toThrow(/REDIRECT/)
+    expect(mockDb.kudosRedeemType.create).not.toHaveBeenCalled()
+  })
+
+  it("ADMIN can create a kudos redeem type", async () => {
+    signInAs(USERS.admin)
+    const { createRedeemType } = await import("@/lib/actions/kudos")
+    const fd = new FormData()
+    fd.set("label", "Coffee voucher")
+    await expect(createRedeemType(fd)).resolves.toMatchObject({ ok: true })
+    expect(mockDb.kudosRedeemType.create).toHaveBeenCalledTimes(1)
+  })
+
+  it("VIEWER is rejected from rejecting a redemption", async () => {
+    signInAs(USERS.viewer)
+    const { rejectRedemption } = await import("@/lib/actions/kudos")
+    await expect(rejectRedemption("redemption-1")).rejects.toThrow(/REDIRECT/)
+    expect(mockDb.kudosRedemption.update).not.toHaveBeenCalled()
+  })
+
+  it("ADMIN can reject a pending redemption", async () => {
+    signInAs(USERS.admin)
+    const { rejectRedemption } = await import("@/lib/actions/kudos")
+    await expect(rejectRedemption("redemption-1")).resolves.toMatchObject({ ok: true })
+    expect(mockDb.kudosRedemption.update).toHaveBeenCalledWith({
+      where: { id: "redemption-1" },
+      data: { status: "REJECTED" },
+    })
   })
 
   it("EDITOR out of scope is rejected from a venue under a different location", async () => {
