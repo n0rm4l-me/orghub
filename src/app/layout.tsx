@@ -2,10 +2,10 @@ export const dynamic = "force-dynamic"
 
 import type { Metadata, Viewport } from "next"
 import { GeistSans } from "geist/font/sans"
-import NextTopLoader from "nextjs-toploader"
 import "./globals.css"
 import { getSettings } from "@/lib/settings"
 import { ToastProvider } from "@/components/ui/toaster"
+import { TopLoader } from "@/components/top-loader"
 
 const geist = GeistSans
 
@@ -42,7 +42,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script dangerouslySetInnerHTML={{ __html: `(function(){if(location.pathname.startsWith('/admin'))return;var t=localStorage.getItem('theme'),d=window.matchMedia('(prefers-color-scheme:dark)').matches;if(t==='dark'||(t!=='light'&&d))document.documentElement.classList.add('dark');var f=localStorage.getItem('fontSize');if(f==='sm')document.documentElement.classList.add('font-sm');else if(f==='lg')document.documentElement.classList.add('font-lg')})()` }} />
       </head>
       <body className={`${geist.className} min-h-full bg-background text-foreground antialiased`}>
-        <NextTopLoader color="var(--brand)" height={3} shadow={false} showSpinner={false} />
+        <TopLoader />
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
