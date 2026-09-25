@@ -1,11 +1,9 @@
 "use client"
 
-import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Trash2, ChevronUp, ChevronDown, Loader2 } from "lucide-react"
 import { upsertVenueTags } from "@/lib/actions/dining"
-import { useAction } from "@/lib/use-action"
-import { toast } from "@/components/ui/toaster"
+import { useOrderedRows } from "@/lib/use-ordered-rows"
 
 type Tag = { id?: string; name: string; color: string; bgColor: string; order: number }
 
@@ -32,40 +30,13 @@ export function VenueTagsEditor({
   initialTags: { id: string; name: string; color: string; bgColor: string; order: number }[]
 }) {
   const router = useRouter()
-  const [tags, setTags] = useState<Tag[]>(initialTags)
-  const { run, pending } = useAction(
-    (t: Tag[]) => upsertVenueTags(venueId, t),
-    { onSuccess: () => router.refresh() }
+  const { rows: tags, update, addRow, removeRow, moveRow, handleSave, pending } = useOrderedRows<Tag>(
+    initialTags,
+    (t) => upsertVenueTags(venueId, t),
+    (order) => ({ name: "", color: PRESETS[0].color, bgColor: PRESETS[0].bgColor, order }),
+    "All tags need a name.",
+    () => router.refresh(),
   )
-
-  function update(i: number, patch: Partial<Tag>) {
-    setTags((ts) => ts.map((t, j) => (j === i ? { ...t, ...patch } : t)))
-  }
-
-  function addRow() {
-    setTags((ts) => [...ts, { name: "", color: PRESETS[0].color, bgColor: PRESETS[0].bgColor, order: ts.length }])
-  }
-
-  function removeRow(i: number) {
-    setTags((ts) => ts.filter((_, j) => j !== i).map((t, j) => ({ ...t, order: j })))
-  }
-
-  function moveRow(i: number, dir: "up" | "down") {
-    const j = dir === "up" ? i - 1 : i + 1
-    if (j < 0 || j >= tags.length) return
-    setTags((ts) => {
-      const next = [...ts]
-      ;[next[i], next[j]] = [next[j], next[i]]
-      return next.map((t, k) => ({ ...t, order: k }))
-    })
-  }
-
-  function handleSave() {
-    for (const t of tags) {
-      if (!t.name.trim()) { toast.error("All tags need a name."); return }
-    }
-    run(tags)
-  }
 
   return (
     <div className="rounded-xl border border-border bg-card px-5 py-5">

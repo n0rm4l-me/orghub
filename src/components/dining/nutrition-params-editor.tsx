@@ -1,11 +1,9 @@
 "use client"
 
-import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Trash2, ChevronUp, ChevronDown, Loader2 } from "lucide-react"
 import { upsertNutritionParams } from "@/lib/actions/dining"
-import { useAction } from "@/lib/use-action"
-import { toast } from "@/components/ui/toaster"
+import { useOrderedRows } from "@/lib/use-ordered-rows"
 
 type Param = { id?: string; name: string; unit: string; featured: boolean; order: number }
 
@@ -19,40 +17,13 @@ export function NutritionParamsEditor({
   initialParams: { id: string; name: string; unit: string; featured: boolean; order: number }[]
 }) {
   const router = useRouter()
-  const [params, setParams] = useState<Param[]>(initialParams)
-  const { run, pending } = useAction(
-    (p: Param[]) => upsertNutritionParams(venueId, p),
-    { onSuccess: () => router.refresh() }
+  const { rows: params, update, addRow, removeRow, moveRow, handleSave, pending } = useOrderedRows<Param>(
+    initialParams,
+    (p) => upsertNutritionParams(venueId, p),
+    (order) => ({ name: "", unit: "", featured: false, order }),
+    "All params need a name.",
+    () => router.refresh(),
   )
-
-  function update(i: number, patch: Partial<Param>) {
-    setParams((ps) => ps.map((p, j) => (j === i ? { ...p, ...patch } : p)))
-  }
-
-  function addRow() {
-    setParams((ps) => [...ps, { name: "", unit: "", featured: false, order: ps.length }])
-  }
-
-  function removeRow(i: number) {
-    setParams((ps) => ps.filter((_, j) => j !== i).map((p, j) => ({ ...p, order: j })))
-  }
-
-  function moveRow(i: number, dir: "up" | "down") {
-    const j = dir === "up" ? i - 1 : i + 1
-    if (j < 0 || j >= params.length) return
-    setParams((ps) => {
-      const next = [...ps]
-      ;[next[i], next[j]] = [next[j], next[i]]
-      return next.map((p, k) => ({ ...p, order: k }))
-    })
-  }
-
-  function handleSave() {
-    for (const p of params) {
-      if (!p.name.trim()) { toast.error("All params need a name."); return }
-    }
-    run(params)
-  }
 
   return (
     <div className="rounded-xl border border-border bg-card px-5 py-5">
