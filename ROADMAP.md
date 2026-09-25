@@ -193,7 +193,7 @@ on a device.
 
 ---
 
-## Design unification (Phases 1-2 done, Phase 3 structural work done, Phase 3 page colors / Phase 4 / Phase 5 not started)
+## Design unification (Phases 1-4 done, Phase 5 not started)
 
 Full plan at `/Users/petr.petrenko/.claude/plans/zesty-sprouting-frost.md`,
 written earlier this session assuming zero phases were done. **That
@@ -369,6 +369,23 @@ directory: `bg-white` 38, `text-gray-[0-9]` 355, `border-gray-[0-9]` 169,
 `dark:bg-gray-[0-9]` 67, `dark:text-gray-[0-9]` 134,
 `dark:border-gray-[0-9]` 72. Phase 5 (final cleanup/audit) can't start
 until both are done.
+
+**Update, 2026-09-25: Phase 3 page colors and all of Phase 4 are now done.**
+Re-ran the same audits directly against current code rather than trusting
+the paragraph above: `src/app/(portal)` is fully clean (all six counts
+zero). `src/components/dining/` has 7 lines left, all intentional and
+already documented in `docs/design-guidelines.md`'s "Known gap" note or
+matching its established exceptions, not missed conversions: the
+`text-gray-200`/`dark:text-gray-700` icon-only hover-reveal buttons
+(`cart-widget.tsx:80`, `fixed-menu-view.tsx:46`, `meal-structure-editor.tsx:190`),
+toggle-switch knobs and a badge overlay kept at literal `bg-white`/`bg-white/20`
+so they read the same in both themes (`new-venue-form.tsx:87,94`,
+`cart-widget.tsx:28`), and the tag-color-swatch active ring kept at neutral
+`border-gray-500` so it doesn't clash with arbitrary user-chosen tag colors
+(`venue-tags-editor.tsx:109`). Phase 5 can start now; whole-tree counts as of
+this date: `font-bold` 31, `rounded-2xl` 20, `rounded-md` 42, plus the
+leftover `bg-white`/`text-gray-*` outside `(portal)` and `dining/` (mostly
+admin components not yet covered by this plan's own file list).
 
 ---
 
@@ -950,6 +967,53 @@ FIXED is a documented decision, not an oversight.
 
 ---
 
+## Lighthouse audit (2026-09-25, staging, mobile)
+
+Performance 100, Accessibility 96, Best Practices 96, SEO 100. Ran once
+against `https://orghub.stg.inpd-tardis.dev/`; noise from the auditing
+browser's own extensions (an ad blocker, a Widevine helper) inflates the
+"3rd parties"/"unused JavaScript" numbers, not our code, ignored below.
+
+**Fixed:** the only real Accessibility failure, `color-contrast`, flagging
+the poll-result percentage (`poll-card.tsx`) and the category-filter pills
+(`sidebar-blocks.tsx`, "Browse by topic") at 4.35:1 against their light
+backgrounds, just under the 4.5:1 WCAG AA floor for normal text. Both use
+`text-muted-foreground`; fixed at the token (`--muted-foreground` oklch
+0.556 to 0.54, sRGB 115 to 111) rather than per-component, since it covers
+both at once and any other current or future use of the token on a light
+surface. Verified by computing the OKLCH-to-sRGB conversion and the WCAG
+contrast formula directly (new ratio 4.6-4.7:1), not by eyeballing it;
+could not screenshot-verify since local dev still can't reach the DB (see
+below), so if this reads as a visible color shift on next look, that's the
+one design change in this session's queue that never got an actual look.
+
+**Checked and left alone:** the logo's `unsized-images` warning (no
+explicit `width`, only `height`) is a false-positive-shaped case, not a
+real bug: the audit's own measured CLS is `0`, and `brand-logo.tsx`'s
+wrapper already reserves `minWidth: height * 2.5` specifically to prevent
+this, deliberately, per its own comment. Forcing a fixed `width` on a
+variable-aspect-ratio, user-uploaded logo would fight that, not help it.
+The Gravatar-avatar 404 tripping the `errors-in-console` audit is the
+standard, intentional Gravatar technique (`d=404` means "tell me if there's
+no avatar so I can show initials instead"); Lighthouse flags any console
+404 regardless of intent, this one isn't a bug.
+
+**Deferred, not implemented:** no CSP header (`csp-xss` audit, severity
+"High", but it's an informative check, not a score-blocking one) and no
+COOP header (`origin-isolation`, same severity/scoring shape). Given this
+session's own stored-XSS finding on `/api/upload` (see "Dead-code and
+duplication audits" below), a real CSP would be meaningful defense in
+depth, but doing it correctly for Next.js 16 (nonces for its own inline
+bootstrap script, Tailwind's inline `style` attributes, Turbopack's chunk
+loading) is a substantial, easy-to-get-subtly-wrong change that deserves
+its own pass with real testing, not a rushed addition here. Also noted:
+`legacy-javascript-insight` flags ~13KB of unneeded polyfills (`Array.at`,
+`Object.hasOwn`, `String.trimStart`/`trimEnd`, etc.) baked into our own
+bundle by whatever `browserslist`/build target Next.js 16 defaults to;
+small potential win, not investigated further this pass.
+
+---
+
 ## Recently fixed
 
 Confirmed fixed as of 2026-09-24, listed so nobody re-investigates them:
@@ -972,4 +1036,8 @@ schema, unused `@tiptap/extension-character-count` removed, misplaced deps
 moved to `devDependencies`); this same session's larger pass fixing loading
 states, mutation error handling, confirm dialogs, and accessibility gaps
 across the dining module and elsewhere (see commits `f2866ea`, `cbf4e95`,
-`9b0411e`).
+`9b0411e`); 2026-09-25: `terminationGracePeriodSeconds` was nested under the
+container instead of the pod spec in the Helm chart (a same-day regression,
+caught by `helm upgrade` itself rejecting the schema, not by the earlier
+`helm template` check, which doesn't validate against the live API); the
+zero-downtime `preStop` delay this was part of is confirmed live and working.
