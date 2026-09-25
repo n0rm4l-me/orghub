@@ -11,6 +11,12 @@ export const inputClass =
   "disabled:bg-muted disabled:text-muted-foreground " +
   "aria-[invalid=true]:border-destructive aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-destructive/20"
 
+/** Compact label for dense forms with many fields on screen at once (dining
+ *  editors, kudos redeem types): smaller than Field's own label, and applied
+ *  directly rather than through a wrapper since these forms lay fields out
+ *  in grids Field's own div/space-y structure doesn't fit. */
+export const compactLabelClass = "mb-1 block text-xs font-medium text-foreground"
+
 interface Props {
   label: string
   htmlFor: string

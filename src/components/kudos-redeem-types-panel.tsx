@@ -6,6 +6,7 @@ import { Plus, Pencil, Trash2, Loader2 } from "lucide-react"
 import { createRedeemType, updateRedeemType, deleteRedeemType } from "@/lib/actions/kudos"
 import { toast } from "@/components/ui/toaster"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { compactLabelClass as lbl } from "@/components/ui/field"
 
 type RedeemType = {
   id: string
@@ -23,7 +24,6 @@ interface Props {
 interface FormState { label: string; rateLabel: string; webhook: string }
 
 const inputCls = "w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground outline-none focus:border-brand focus:ring-1 focus:ring-brand"
-const lbl = "mb-1 block text-xs font-medium text-foreground"
 
 function TypeForm({
   initial,

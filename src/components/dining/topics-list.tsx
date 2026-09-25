@@ -6,13 +6,12 @@ import { Plus, Pencil, Trash2, Loader2, CheckCircle, Megaphone } from "lucide-re
 import { upsertTopic, deleteTopic, publishTopic, unpublishTopic } from "@/lib/actions/dining"
 import { useAction } from "@/lib/use-action"
 import { MediaPickerField } from "@/components/media-picker"
-import { inputClass } from "@/components/ui/field"
+import { inputClass, compactLabelClass as lbl } from "@/components/ui/field"
 import { EmptyState } from "@/components/ui/empty-state"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 
 type Topic = { id: string; venueId: string; title: string; bannerImage: string | null; body: string | null; publishedAt: Date | null }
 
-const lbl = "mb-1 block text-xs font-medium text-foreground"
 
 function TopicForm({ venueId, topic, onDone }: { venueId: string; topic?: Topic; onDone: () => void }) {
   const router = useRouter()

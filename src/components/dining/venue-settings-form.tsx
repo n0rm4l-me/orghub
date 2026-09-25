@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Loader2, Building2, Coffee, ChefHat, Trash2 } from "lucide-react"
 import { updateVenue, deleteVenue } from "@/lib/actions/dining"
 import { useAction } from "@/lib/use-action"
-import { inputClass } from "@/components/ui/field"
+import { inputClass, compactLabelClass as lbl } from "@/components/ui/field"
 
 type Venue = {
   id: string
@@ -41,7 +41,6 @@ const VENUE_TYPES: {
   },
 ]
 
-const lbl = "mb-1 block text-xs font-medium text-foreground"
 
 export function VenueSettingsForm({ venue }: { venue: Venue }) {
   const router = useRouter()

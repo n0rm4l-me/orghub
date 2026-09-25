@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { createLocation, updateLocation, deleteLocation } from "@/lib/actions/dining"
 import { useAction } from "@/lib/use-action"
-import { inputClass } from "@/components/ui/field"
+import { inputClass, compactLabelClass as lbl } from "@/components/ui/field"
 
 type Location = { id: string; name: string; timezone: string }
 
@@ -14,7 +14,6 @@ interface Props {
   trigger: ReactNode
 }
 
-const lbl = "mb-1 block text-xs font-medium text-foreground"
 
 const ALL_TIMEZONES: string[] = (() => {
   try {

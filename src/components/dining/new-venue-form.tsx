@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Loader2, Building2, Coffee, ChefHat } from "lucide-react"
 import { createVenue } from "@/lib/actions/dining"
 import { useAction } from "@/lib/use-action"
-import { inputClass } from "@/components/ui/field"
+import { inputClass, compactLabelClass as lbl } from "@/components/ui/field"
 
 type Location = { id: string; name: string }
 type VenueType = "CAFETERIA" | "CAFE" | "RESTAURANT"
@@ -16,7 +16,6 @@ const VENUE_TYPES: { key: VenueType; label: string; description: string; icon: R
   { key: "RESTAURANT",label: "Restaurant",  description: "Full à la carte, sections, premium UX",        icon: ChefHat   },
 ]
 
-const lbl = "mb-1 block text-xs font-medium text-foreground"
 
 export function NewVenueForm({ locations, defaultLocationId }: { locations: Location[]; defaultLocationId?: string }) {
   const router = useRouter()

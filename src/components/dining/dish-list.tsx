@@ -7,7 +7,7 @@ import { formatPrice, getCurrencySymbol } from "@/lib/format-price"
 import { createDish, updateDish, deleteDish, saveDishModifiers } from "@/lib/actions/dining"
 import { useAction } from "@/lib/use-action"
 import { MediaPickerField } from "@/components/media-picker"
-import { inputClass } from "@/components/ui/field"
+import { inputClass, compactLabelClass as lbl } from "@/components/ui/field"
 import { SafeImg } from "@/components/dining/safe-img"
 import { EmptyState } from "@/components/ui/empty-state"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -23,7 +23,6 @@ type Dish = {
   modifierGroups?: ModifierGroup[]
 }
 
-const lbl = "mb-1 block text-xs font-medium text-foreground"
 const numCls = inputClass + " max-w-[100px]"
 
 // ── Modifier group editor (reused from fixed-menu-editor) ──────────────────────
