@@ -259,6 +259,10 @@ export async function toggleHideSuggestion(id: string): Promise<void> {
 
 export async function deleteSuggestion(id: string): Promise<ActionResult> {
   await requireRole("ADMIN")
+
+  const suggestion = await db.suggestion.findUnique({ where: { id }, select: { id: true } })
+  if (!suggestion) return fail("Not found.")
+
   await db.suggestion.delete({ where: { id } })
   REVALIDATE()
   REVALIDATE_ADMIN()

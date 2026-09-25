@@ -76,6 +76,15 @@ describe("suggestions authorization", () => {
     expect(mockDb.suggestion.delete).toHaveBeenCalledWith({ where: { id: "sugg-1" } })
   })
 
+  it("deleting a suggestion that no longer exists fails gracefully instead of throwing", async () => {
+    signInAs(USERS.admin)
+    mockDb.suggestion.findUnique.mockResolvedValueOnce(null)
+    const { deleteSuggestion } = await import("@/lib/actions/suggestions")
+    const result = await deleteSuggestion("gone")
+    expect(result).toMatchObject({ ok: false })
+    expect(mockDb.suggestion.delete).not.toHaveBeenCalled()
+  })
+
   it("a VIEWER can delete their own comment", async () => {
     signInAs(USERS.viewer)
     const { deleteComment } = await import("@/lib/actions/suggestions")
