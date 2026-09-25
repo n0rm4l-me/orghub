@@ -47,7 +47,15 @@ const mockDb = {
     findMany: vi.fn().mockResolvedValue([MEDIA_ROW]),
     deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
   },
-  article: { updateMany: vi.fn().mockResolvedValue({ count: 0 }) },
+  article: {
+    findMany: vi.fn().mockResolvedValue([]),
+    updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+    update: vi.fn().mockResolvedValue({}),
+  },
+  page: {
+    findMany: vi.fn().mockResolvedValue([]),
+    update: vi.fn().mockResolvedValue({}),
+  },
   dish: { updateMany: vi.fn().mockResolvedValue({ count: 0 }) },
   fixedMenuEntry: { updateMany: vi.fn().mockResolvedValue({ count: 0 }) },
   weekMenuEntry: { updateMany: vi.fn().mockResolvedValue({ count: 0 }) },
@@ -99,6 +107,39 @@ describe("media actions", () => {
         data: { coverImage: null },
       })
       expect(mockDb.media.deleteMany).toHaveBeenCalledWith({ where: { id: { in: ["m1"] } } })
+    })
+
+    it("also strips matching image nodes out of Article/Page rich-text bodies", async () => {
+      signInAs(USERS.editor)
+      const paragraph = { type: "paragraph", content: [{ type: "text", text: "keep me" }] }
+      const bodyWithMatch = {
+        type: "doc",
+        content: [paragraph, { type: "image", attrs: { src: MEDIA_ROW.url } }],
+      }
+      mockDb.article.findMany.mockResolvedValueOnce([{ id: "a1", body: bodyWithMatch }])
+      mockDb.page.findMany.mockResolvedValueOnce([{ id: "p1", body: bodyWithMatch }])
+      const { deleteMediaBulk } = await import("@/lib/actions/media")
+      const result = await deleteMediaBulk(["m1"])
+      expect(result).toMatchObject({ ok: true })
+      expect(mockDb.article.update).toHaveBeenCalledWith({
+        where: { id: "a1" },
+        data: { body: { type: "doc", content: [paragraph] } },
+      })
+      expect(mockDb.page.update).toHaveBeenCalledWith({
+        where: { id: "p1" },
+        data: { body: { type: "doc", content: [paragraph] } },
+      })
+    })
+
+    it("leaves Article/Page bodies untouched when no image node references a deleted URL", async () => {
+      signInAs(USERS.editor)
+      const unrelatedBody = { type: "doc", content: [{ type: "image", attrs: { src: "/uploads/other.png" } }] }
+      mockDb.article.findMany.mockResolvedValueOnce([{ id: "a1", body: unrelatedBody }])
+      const { deleteMediaBulk } = await import("@/lib/actions/media")
+      const result = await deleteMediaBulk(["m1"])
+      expect(result).toMatchObject({ ok: true })
+      expect(mockDb.article.update).not.toHaveBeenCalled()
+      expect(mockDb.page.update).not.toHaveBeenCalled()
     })
   })
 

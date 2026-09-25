@@ -1,6 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
+import { Prisma } from "@prisma/client"
 import { requireRole } from "@/lib/rbac"
 import { deleteFromStorage, listStorageObjects } from "@/lib/storage"
 import { type ActionResult, ok, fail } from "@/lib/actions/types"
@@ -43,6 +44,31 @@ function collectBodyImages(node: unknown, out: Set<string>) {
   if (Array.isArray(obj.content)) {
     for (const child of obj.content) collectBodyImages(child, out)
   }
+}
+
+// Tiptap's image node is an atom (never has its own content children), so
+// dropping it from its parent's content array is always safe: no descendant
+// can be orphaned by removing one. Returns the original node unchanged
+// (same reference) when nothing matched, so callers can skip a write.
+function rewriteBodyImages(node: unknown, deletedUrls: Set<string>): { node: unknown; changed: boolean } {
+  if (!node || typeof node !== "object" || !Array.isArray((node as Record<string, unknown>).content)) {
+    return { node, changed: false }
+  }
+  const obj = node as Record<string, unknown>
+  let changed = false
+  const content: unknown[] = []
+  for (const child of obj.content as unknown[]) {
+    const c = child as Record<string, unknown> | null
+    const src = c && typeof c === "object" ? (c.attrs as Record<string, unknown> | undefined)?.src : undefined
+    if (c?.type === "image" && typeof src === "string" && deletedUrls.has(src)) {
+      changed = true
+      continue
+    }
+    const result = rewriteBodyImages(child, deletedUrls)
+    if (result.changed) changed = true
+    content.push(result.node)
+  }
+  return changed ? { node: { ...obj, content }, changed: true } : { node, changed: false }
 }
 
 export async function findOrphanedObjects(): Promise<OrphanedObject[]> {
@@ -107,10 +133,27 @@ export async function deleteMediaBulk(ids: string[]): Promise<ActionResult> {
   const rows = await db.media.findMany({ where: { id: { in: ids } }, select: { key: true, url: true } })
   await Promise.all(rows.map((r) => deleteFromStorage(r.key).catch(() => {})))
   const urls = rows.map((r) => r.url)
+  const urlSet = new Set(urls)
+
+  // Article/Page body content can also embed these URLs as Tiptap image
+  // nodes; find which rows actually reference one before writing anything.
+  // Same full-table-scan tradeoff findOrphanedObjects already makes below
+  // for the same reason: no raw SQL in this codebase to query inside a Json
+  // column, and this only runs on an admin's explicit bulk-delete click.
+  const [articleRows, pageRows] = await Promise.all([
+    db.article.findMany({ select: { id: true, body: true } }),
+    db.page.findMany({ select: { id: true, body: true } }),
+  ])
+  const articleUpdates = articleRows
+    .map((r) => ({ id: r.id, ...rewriteBodyImages(r.body, urlSet) }))
+    .filter((r) => r.changed)
+  const pageUpdates = pageRows
+    .map((r) => ({ id: r.id, ...rewriteBodyImages(r.body, urlSet) }))
+    .filter((r) => r.changed)
+
   // Clear every simple (non-rich-text) field that can point at one of these
-  // URLs, so a deleted file doesn't leave a permanently broken image behind.
-  // Article/Page body content can also embed these URLs but isn't handled
-  // here: rewriting Tiptap JSON is a separate, larger fix.
+  // URLs, plus the rich-text body rows just found above, so a deleted file
+  // doesn't leave a permanently broken image behind anywhere.
   await db.$transaction([
     db.article.updateMany({ where: { coverImage: { in: urls } }, data: { coverImage: null } }),
     db.dish.updateMany({ where: { photo: { in: urls } }, data: { photo: null } }),
@@ -121,6 +164,12 @@ export async function deleteMediaBulk(ids: string[]): Promise<ActionResult> {
     db.user.updateMany({ where: { avatarUrl: { in: urls } }, data: { avatarUrl: null } }),
     db.siteSettings.updateMany({ where: { logoUrl: { in: urls } }, data: { logoUrl: null } }),
     db.siteSettings.updateMany({ where: { logoOnLightUrl: { in: urls } }, data: { logoOnLightUrl: null } }),
+    ...articleUpdates.map((r) =>
+      db.article.update({ where: { id: r.id }, data: { body: r.node as Prisma.InputJsonValue } }),
+    ),
+    ...pageUpdates.map((r) =>
+      db.page.update({ where: { id: r.id }, data: { body: r.node as Prisma.InputJsonValue } }),
+    ),
     db.media.deleteMany({ where: { id: { in: ids } } }),
   ])
   await logAudit({ userId: user.id, action: "media.delete", metadata: { count: ids.length } })
