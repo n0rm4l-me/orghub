@@ -20,6 +20,13 @@ export function TopLoader() {
       height={3}
       shadow={false}
       showSpinner={false}
+      // Most navigations here resolve in well under the library's 200ms
+      // default transition, so the bar's own width change never gets to
+      // play out before start() and done() both fire: it reads as a flash
+      // rather than progress. Slower, gentler easing makes the same
+      // start-to-finish sequence read as a considered glide instead.
+      speed={500}
+      easing="ease-out"
     />
   )
 }
