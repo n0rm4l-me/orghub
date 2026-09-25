@@ -145,6 +145,22 @@ are captured here so they don't recur.
   what covers the slow case now, site-wide, instead of a per-route
   skeleton. This app no longer has any route-level `loading.tsx` at all,
   on purpose; don't add one back without re-reading this paragraph.
+  **This rule applies to every `<Suspense fallback={...}>` in the app, not
+  just `loading.tsx` files.** The first pass at this fix only searched for
+  the literal file convention (`find -name loading.tsx`) and missed
+  `PortalPageLayout`'s own inline Suspense boundary around its sidebar
+  widgets, a single generic block standing in for several
+  differently-shaped ones; a user had to catch that one live. Whenever
+  this rule is the reason for a change, verify with both of these, not
+  just one:
+  ```
+  find src/app -name "loading.tsx"
+  grep -rn "Suspense" src/app src/components --include="*.tsx"
+  ```
+  then read every `fallback=` at each hit and check it actually matches
+  what streams in. A dead end there (both commands return nothing) is
+  itself the confirmation to record, not a step to skip because the
+  literal file type you started from already came back empty.
 - **A full-viewport-width fixed element's color has to survive being drawn
   over every background it can land on, not just the one you tested
   against.** The top-loading bar spans `left: 0; width: 100%` at `y=0`
