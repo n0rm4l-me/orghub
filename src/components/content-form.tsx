@@ -1,13 +1,35 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
+import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
-import { Editor } from "@/components/editor"
 import { MediaPicker } from "@/components/media-picker"
 import { Loader2, Check, Circle, CircleDot } from "lucide-react"
 import { useAction } from "@/lib/use-action"
 import { toast } from "@/components/ui/toaster"
+import { Skeleton } from "@/components/ui/skeleton"
 import type { ActionResult } from "@/lib/actions/types"
+
+// Loaded on demand: the toolbar (icons, insert-image/insert-poll pickers)
+// has no reason to be in the bundle for anyone just reading an article.
+// The fallback matches this specific, fixed-shape widget exactly (unlike a
+// route-level skeleton, this one never has to guess a destination layout),
+// so it's safe to show one here.
+const Editor = dynamic(() => import("@/components/editor").then((m) => m.Editor), {
+  ssr: false,
+  loading: () => (
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="flex items-center gap-1.5 border-b border-border bg-muted/50 px-4 py-2.5">
+        {Array.from({ length: 14 }).map((_, i) => (
+          <Skeleton key={i} className="size-6" />
+        ))}
+      </div>
+      <div className="min-h-[400px] px-6 py-4">
+        <Skeleton className="h-4 w-2/3" />
+      </div>
+    </div>
+  ),
+})
 
 interface Category {
   id: string

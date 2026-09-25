@@ -2,14 +2,8 @@
 
 import { useState, useRef, useEffect } from "react"
 import { useEditor, EditorContent } from "@tiptap/react"
-import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
-import Underline from "@tiptap/extension-underline"
-import TextAlign from "@tiptap/extension-text-align"
-import Highlight from "@tiptap/extension-highlight"
-import Link from "@tiptap/extension-link"
-import { PollEmbed } from "@/components/poll-embed-extension"
-import { ImageEmbed } from "@/components/image-embed-extension"
+import { EDITOR_EXTENSIONS } from "@/lib/editor-extensions"
 import { getActivePollsForInsert } from "@/lib/actions/polls"
 import { getMediaList } from "@/lib/actions/media"
 import {
@@ -26,16 +20,6 @@ interface Props {
   onChange: (json: object) => void
   folder?: string
 }
-
-export const EDITOR_EXTENSIONS = [
-  StarterKit.configure({ link: false, underline: false }),
-  Underline,
-  Highlight,
-  TextAlign.configure({ types: ["heading", "paragraph"] }),
-  ImageEmbed,
-  Link.configure({ openOnClick: false }),
-  PollEmbed,
-]
 
 export function Editor({ initialContent, onChange, folder }: Props) {
   const editor = useEditor({

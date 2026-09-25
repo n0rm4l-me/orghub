@@ -1,7 +1,7 @@
 "use client"
 
 import { useEditor, EditorContent } from "@tiptap/react"
-import { EDITOR_EXTENSIONS } from "@/components/editor"
+import { EDITOR_EXTENSIONS } from "@/lib/editor-extensions"
 
 const PROSE =
   "prose prose-gray max-w-none dark:prose-invert " +
