@@ -5,7 +5,7 @@ import { requireRole } from "@/lib/rbac"
 import { logAudit } from "@/lib/audit"
 import { revalidatePath } from "next/cache"
 import { type ActionResult, ok, okWith, fail } from "@/lib/actions/types"
-import { validUrl } from "@/lib/actions/nav"
+import { validUrl } from "@/lib/url-validation"
 
 const MESSAGE_MAX = 300
 

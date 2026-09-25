@@ -5,6 +5,7 @@ import { requireRole } from "@/lib/rbac"
 import { logAudit } from "@/lib/audit"
 import { revalidatePath } from "next/cache"
 import { type ActionResult, ok, fail } from "@/lib/actions/types"
+import { validUrl } from "@/lib/url-validation"
 
 /** Nav changes affect the header, which renders inside the root layout. */
 function revalidateNav() {
@@ -84,17 +85,6 @@ export async function movePage(pageId: string, direction: "up" | "down"): Promis
 
   revalidateNav()
   return ok()
-}
-
-export function validUrl(raw: string): boolean {
-  // Site-relative paths are allowed so links can point at internal routes.
-  if (raw.startsWith("/")) return true
-  try {
-    const url = new URL(raw)
-    return url.protocol === "https:" || url.protocol === "http:"
-  } catch {
-    return false
-  }
 }
 
 export async function createQuickLink(formData: FormData): Promise<ActionResult> {
