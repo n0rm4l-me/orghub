@@ -576,26 +576,23 @@ Smaller items, independent of the design-unification phases above:
   with the shared one) that should be visually checked before shipping, not
   assumed safe from a code diff.
 - **CITATION DOESN'T HOLD UP, needs a human call, not a mechanical fix
-  2026-09-25.** Re-checked this against the current (local-only, not
+  2026-09-25.** Re-checked this against the then-current (local-only, not
   committed) `STYLE_GUIDE.md` before touching `submit-button.tsx`:
   `disabled:opacity-60` doesn't appear anywhere in it (only `opacity-40`,
   on unrelated Cancel/Delete examples); `px-3.5` does exist, but on the
   "Primary action (CTA in PageHeader)" `<Link>` pattern, a different button
   role with a different sizing approach (`py-2`-driven height, not
-  `submit-button.tsx`'s fixed `h-9`). Since `STYLE_GUIDE.md` isn't
-  version-controlled, either it was edited since this note was written, or
-  the citation was already approximate. Separately, this session's own
-  design-unification plan (`.claude/plans/zesty-sprouting-frost.md`) set
-  `h-9`/`px-4` as the target size for the primitive `Button` component,
-  which is what `submit-button.tsx` already matches: changing it to
-  `px-3.5` now would make it disagree with that plan instead of
-  `STYLE_GUIDE.md`. Not making an unverified change on a citation that
-  doesn't check out. Whoever picks this up next should reconcile
-  `STYLE_GUIDE.md` against the design-unification plan first (they may
-  simply be describing two different eras of the same button), then update
-  whichever one is stale. The "several dining buttons hand-roll their own
-  padding instead of using `<SubmitButton>`" half of this note is still
-  worth someone's time regardless of which target padding wins.
+  `submit-button.tsx`'s fixed `h-9`). This session's own design-unification
+  plan (`.claude/plans/zesty-sprouting-frost.md`) set `h-9`/`px-4` as the
+  target size for the primitive `Button` component, which is what
+  `submit-button.tsx` already matches. Not making an unverified change on a
+  citation that didn't check out. `STYLE_GUIDE.md` was deleted the same day
+  (superseded by the committed
+  [docs/design-guidelines.md](docs/design-guidelines.md), which documents
+  the same `h-9`/`px-4` target), so the "reconcile the two docs" half of
+  this note no longer applies; the "several dining buttons hand-roll their
+  own padding instead of using `<SubmitButton>`" half is still worth
+  someone's time regardless.
 - **NEEDS A DECISION, not urgent.** `text-gray-400 dark:text-gray-500` (58
   occurrences) may be backwards for contrast: `gray-500` is dimmer than
   `gray-400`, so it reduces contrast on a dark background where more contrast
@@ -730,6 +727,31 @@ Smaller items, independent of the design-unification phases above:
 
 ## Documentation
 
+- **FIXED 2026-09-25.** Added [docs/design-guidelines.md](docs/design-guidelines.md):
+  colors (the token table plus what stays hardcoded and why), the
+  admin-always-light-mode rule (previously only a code comment and a
+  `CONTRIBUTING.md` bullet), radius/padding/typography/icon conventions,
+  a z-index scale (didn't exist; documented the target scale plus every
+  current usage that doesn't conform yet, listed by name rather than
+  refactored blind), a layout-stability section written directly from two
+  incidents shipped the same day (the `loading.tsx`/layout-jump fix and its
+  own color-contrast bug, the `scrollbar-gutter: stable` tradeoff and
+  revert), and a primitives reference (`PageHeader`, `Panel`,
+  `ConfirmDialog`, `EmptyState`, `AdminTable`, `PortalPageLayout`,
+  `Button`/`Badge` with an honest 0-adoption note rather than implying
+  they're already in use). Requested by the user explicitly, for agents and
+  human contributors alike. Superseded and deleted the old
+  `STYLE_GUIDE.md`: it was local-only (gitignored), which can't serve human
+  contributors at all, and its color guidance predated the token system by
+  weeks. Folded its still-accurate sections (`AdminTable` column reference,
+  `EditorHeader`, `EmptyState`, icon sizes, admin page structure) into the
+  new file rather than losing them. Also fixed
+  [docs/adding-a-module.md](docs/adding-a-module.md)'s module-checklist
+  step that told new contributors to add `dark:bg-gray-800
+  dark:border-gray-700 dark:text-gray-*` to every card, directly
+  contradicting the migration this whole section documents, and its layout
+  step that still described the pre-`PortalPageLayout` manual
+  `showLeft`/`showRight` pattern.
 - **FIXED 2026-09-25.** Added [CONTRIBUTING.md](CONTRIBUTING.md) (setup
   pointer, the 3 checks to run before a PR, module-adding pointer,
   conventions), linked from README. Still no `CHANGELOG.md`; lower priority,

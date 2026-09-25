@@ -41,7 +41,11 @@ myModule: {
 - `prisma/schema.prisma`: add `myModuleLayout String @default("content")` to `SiteSettings`
 - `src/components/layout-form.tsx`: add prop + conditional `<LayoutPicker>` (guarded by `enabledModules.has("myModule")`)
 - `src/app/admin/appearance/page.tsx`: pass the new prop to `<LayoutForm>`
-- Module portal page: read `settings.myModuleLayout`, compute `showLeft`/`showRight`, render with `<SidebarBlocks>` and sidebar fetch (quickLinks, categories, upcomingEvents, activePoll, topKudos as needed)
+- Module portal page: read `settings.myModuleLayout`, wrap the page's content
+  in `<PortalPageLayout layout={settings.myModuleLayout} ...>` (see
+  `src/app/(portal)/dining/page.tsx`). It owns the sidebar split and fetching
+  its widgets; don't compute `showLeft`/`showRight` or fetch sidebar data by
+  hand.
 
 ## 5. Sidebar widget
 
@@ -68,8 +72,11 @@ myModule: {
 
 - Create `src/app/(portal)/myModule/page.tsx`
 - Guard with `if (!enabled.has("myModule")) notFound()`
-- Use `kudosLayout` pattern for sidebar support (see `src/app/(portal)/kudos/page.tsx`)
-- Add dark mode variants to all cards: `dark:bg-gray-800 dark:border-gray-700 dark:text-gray-*`
+- Use `PortalPageLayout` for sidebar support (see `src/app/(portal)/kudos/page.tsx`)
+- Use token classes (`bg-card`, `border-border`, `text-foreground`, ...) on
+  every card; see [design-guidelines.md](design-guidelines.md). Dark mode
+  comes from the token automatically. Do not add a `dark:` variant next to
+  it, that overrides the token and breaks dark mode instead of supporting it.
 
 ## 9. Audit log
 
