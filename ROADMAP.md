@@ -79,6 +79,48 @@ points at `/api/health/live` with a `startupProbe` added; `castVote`,
 module-enabled flag; the comment-reply notification call is now
 `.catch()`-wrapped. See commit history for specifics.
 
+- **FIXED, CRITICAL, 2026-09-26: two unauthenticated RCEs in the pinned
+  Next.js version.** Installing `jsdom` for an unrelated task (see
+  "Performance" below) surfaced `npm audit` findings that had nothing to do
+  with `jsdom` itself: `next@16.3.2` (the exact version this app had pinned)
+  carries two CRITICAL advisories, both fixed in `16.3.3`+:
+  [GHSA-p293-qw3h-jr36](https://github.com/advisories/GHSA-p293-qw3h-jr36)
+  (unauthenticated RCE, Windows-hosted servers only, so not directly
+  applicable to this app's Linux containers, but still in the same
+  vulnerable range) and
+  [GHSA-2xp9-vwfh-vxw4](https://github.com/advisories/GHSA-2xp9-vwfh-vxw4)
+  (unauthenticated RCE via `sharp`'s AVIF handling, triggered through
+  Next.js's built-in Image Optimization endpoint). The second one applies
+  here regardless of the fact that this codebase never calls `next/image`
+  anywhere (confirmed in "Feature audits" below): the built-in
+  `/_next/image` optimization route is registered by the framework whenever
+  `output` isn't a static export, which this app (`output: "standalone"`)
+  isn't, so the endpoint is live and reachable by an unauthenticated
+  attacker regardless of whether the app's own code ever uses the
+  component. Upgraded to `16.3.6` (latest `16.3.x` patch, same major/minor,
+  no breaking changes). Also found and fixed in the same pass: `@tiptap/core
+  <=3.30.4` carries a moderate prototype-pollution/XSS advisory
+  ([GHSA-cp6q-959q-f8rh](https://github.com/advisories/GHSA-cp6q-959q-f8rh),
+  fixed 3.30.4) and a high-severity ReDoS advisory in its Markdown-attribute
+  parser
+  ([GHSA-j95f-988m-3j2f](https://github.com/advisories/GHSA-j95f-988m-3j2f),
+  fixed 3.30.5; not reachable in this app anyway, since no Markdown-import
+  extension is registered in `EDITOR_EXTENSIONS`, but the fix version covers
+  both regardless). Bumped every `@tiptap/*` package to `^3.30.6`
+  (previously `^3.30.3`) and did a full clean reinstall (`rm -rf
+  node_modules package-lock.json && npm install`) after `npm audit fix`'s
+  automatic, non-holistic resolution left a genuinely broken, inconsistent
+  tree (`@tiptap/core@3.30.3` deduped against extensions that needed
+  `^3.31.x`, `npm ls` reporting `invalid`). Verified with `tsc`, `eslint`,
+  the full test suite, and a clean `npx next build` after the reinstall.
+  **Remaining `npm audit` findings (11) are all dev-only tooling**
+  (`prisma` CLI, `vitest`/`vite`/`esbuild` and their transitive deps),
+  confirmed against `package.json`'s own `devDependencies` list, none of
+  which ship into the production Docker image's runtime; fixing those needs
+  major-version bumps of the CLI/test tooling (flagged as breaking by `npm
+  audit fix --force`), lower urgency than a live, unauthenticated RCE, left
+  for a separate pass.
+
 ---
 
 ## Feature gaps
