@@ -12,7 +12,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 
 type Topic = { id: string; venueId: string; title: string; bannerImage: string | null; body: string | null; publishedAt: Date | null }
 
-const lbl = "mb-1 block text-xs font-medium text-gray-700"
+const lbl = "mb-1 block text-xs font-medium text-foreground"
 
 function TopicForm({ venueId, topic, onDone }: { venueId: string; topic?: Topic; onDone: () => void }) {
   const router = useRouter()
@@ -35,8 +35,8 @@ function TopicForm({ venueId, topic, onDone }: { venueId: string; topic?: Topic;
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-gray-200 bg-white px-5 py-5">
-      <h3 className="text-sm font-semibold text-gray-900">{topic ? "Edit announcement" : "New announcement"}</h3>
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-border bg-card px-5 py-5">
+      <h3 className="text-sm font-semibold text-foreground">{topic ? "Edit announcement" : "New announcement"}</h3>
       <div>
         <label className={lbl}>Title <span aria-hidden="true">*</span></label>
         <input name="title" defaultValue={topic?.title} required placeholder="August theme" className={inputClass} />
@@ -51,7 +51,7 @@ function TopicForm({ venueId, topic, onDone }: { venueId: string; topic?: Topic;
       </div>
       <div className="flex justify-end gap-3">
         <button type="button" onClick={onDone}
-          className="inline-flex items-center rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
+          className="inline-flex items-center rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted">
           Cancel
         </button>
         <button type="submit" disabled={pending}
@@ -105,11 +105,11 @@ export function TopicsList({ venueId, topics }: { venueId: string; topics: Topic
         editId === t.id ? (
           <TopicForm key={t.id} venueId={venueId} topic={t} onDone={() => setEditId(null)} />
         ) : (
-          <div key={t.id} className="rounded-xl border border-gray-200 bg-white px-5 py-4">
+          <div key={t.id} className="rounded-xl border border-border bg-card px-5 py-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-medium text-gray-900">{t.title}</p>
-                {t.body && <p className="mt-0.5 line-clamp-1 text-xs text-gray-400">{t.body}</p>}
+                <p className="text-sm font-medium text-foreground">{t.title}</p>
+                {t.body && <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{t.body}</p>}
               </div>
               <div className="flex items-center gap-2">
                 {t.publishedAt ? (
@@ -119,14 +119,14 @@ export function TopicsList({ venueId, topics }: { venueId: string; topics: Topic
                   </button>
                 ) : (
                   <button onClick={() => runPublish(t.id, false)} disabled={pending}
-                    className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 hover:bg-gray-200 disabled:opacity-60">
+                    className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground hover:bg-border disabled:opacity-60">
                     Set as current
                   </button>
                 )}
-                <button onClick={() => setEditId(t.id)} aria-label="Edit" className="grid size-7 place-items-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                <button onClick={() => setEditId(t.id)} aria-label="Edit" className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-muted-foreground">
                   <Pencil className="size-3.5" />
                 </button>
-                <button onClick={() => setConfirmDeleteId(t.id)} disabled={pending} aria-label="Delete" className="grid size-7 place-items-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-500">
+                <button onClick={() => setConfirmDeleteId(t.id)} disabled={pending} aria-label="Delete" className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-red-50 hover:text-red-500">
                   <Trash2 className="size-3.5" />
                 </button>
               </div>

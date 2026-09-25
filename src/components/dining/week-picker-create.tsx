@@ -9,8 +9,8 @@ import { useAction } from "@/lib/use-action"
 type MenuType = "WEEKLY" | "FIXED"
 
 const TYPES: { key: MenuType; label: string; description: string; icon: React.ElementType }[] = [
-  { key: "WEEKLY", label: "Weekly", description: "Changes every week — canteen, cafeteria", icon: CalendarDays },
-  { key: "FIXED", label: "Fixed", description: "Permanent — restaurant, café, kiosk", icon: UtensilsCrossed },
+  { key: "WEEKLY", label: "Weekly", description: "Changes every week, canteen or cafeteria", icon: CalendarDays },
+  { key: "FIXED", label: "Fixed", description: "Permanent, restaurant, café, or kiosk", icon: UtensilsCrossed },
 ]
 
 export function WeekPickerCreate({ venueId }: { venueId: string }) {
@@ -58,15 +58,15 @@ export function WeekPickerCreate({ venueId }: { venueId: string }) {
           onClick={() => !pending && setOpen(false)}
         >
           <div
-            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl text-left dark:bg-gray-900"
+            className="w-full max-w-md rounded-2xl bg-popover p-6 shadow-xl text-left"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
             <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">New menu</h2>
+              <h2 className="text-base font-semibold text-foreground">New menu</h2>
               <button
                 onClick={() => !pending && setOpen(false)}
-                className="grid size-7 place-items-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800"
+                className="grid size-7 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-muted-foreground"
               >
                 <X className="size-4" />
               </button>
@@ -75,7 +75,7 @@ export function WeekPickerCreate({ venueId }: { venueId: string }) {
             <div className="space-y-5">
               {/* Name */}
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="mb-1.5 block text-sm font-medium text-foreground">
                   Name <span className="text-red-400" aria-hidden="true">*</span>
                 </label>
                 <input
@@ -85,13 +85,13 @@ export function WeekPickerCreate({ venueId }: { venueId: string }) {
                   onKeyDown={(e) => e.key === "Enter" && handleCreate()}
                   placeholder="e.g. September menu, Lunch week 37…"
                   disabled={pending}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 outline-none focus:border-brand focus:ring-1 focus:ring-brand disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground outline-none focus:border-brand focus:ring-1 focus:ring-brand disabled:opacity-60"
                 />
               </div>
 
               {/* Type */}
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="mb-2 block text-sm font-medium text-foreground">
                   Type
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -107,14 +107,14 @@ export function WeekPickerCreate({ venueId }: { venueId: string }) {
                         className={`flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition disabled:opacity-60 ${
                           active
                             ? "border-brand bg-brand/5 dark:bg-brand/10"
-                            : "border-gray-200 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:border-gray-600 dark:hover:bg-gray-800/60"
+                            : "border-border hover:border-border hover:bg-muted"
                         }`}
                       >
-                        <Icon className={`size-5 ${active ? "text-brand" : "text-gray-400"}`} />
-                        <span className={`text-sm font-semibold ${active ? "text-brand" : "text-gray-700 dark:text-gray-200"}`}>
+                        <Icon className={`size-5 ${active ? "text-brand" : "text-muted-foreground"}`} />
+                        <span className={`text-sm font-semibold ${active ? "text-brand" : "text-foreground"}`}>
                           {t.label}
                         </span>
-                        <span className="text-[11px] leading-tight text-gray-400 dark:text-gray-500">
+                        <span className="text-[11px] leading-tight text-muted-foreground">
                           {t.description}
                         </span>
                       </button>
@@ -129,7 +129,7 @@ export function WeekPickerCreate({ venueId }: { venueId: string }) {
                   type="button"
                   onClick={() => setOpen(false)}
                   disabled={pending}
-                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-60 dark:border-gray-700 dark:text-gray-400"
+                  className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted disabled:opacity-60"
                 >
                   Cancel
                 </button>

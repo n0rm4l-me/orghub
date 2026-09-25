@@ -37,27 +37,27 @@ export function CartWidget({ currency }: { currency: string }) {
       )}
 
       <div
-        className={`fixed bottom-0 left-1/2 z-[95] flex w-full max-w-xl -translate-x-1/2 flex-col rounded-t-2xl bg-white shadow-2xl transition-transform duration-300 dark:bg-gray-900 ${
+        className={`fixed bottom-0 left-1/2 z-[95] flex w-full max-w-xl -translate-x-1/2 flex-col rounded-t-2xl bg-card shadow-2xl transition-transform duration-300 ${
           open ? "translate-y-0" : "translate-y-full"
         }`}
         style={{ maxHeight: "85dvh" }}
       >
         <div className="flex shrink-0 justify-center pt-3 pb-1">
-          <div className="h-1 w-10 rounded-full bg-gray-200 dark:bg-gray-700" />
+          <div className="h-1 w-10 rounded-full bg-border" />
         </div>
 
         <div className="flex shrink-0 items-center justify-between px-5 py-3">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white">
+          <h2 className="text-base font-semibold text-foreground">
             Your Order
             {count > 0 && (
-              <span className="ml-2 text-sm font-normal text-gray-400">({count} {count === 1 ? "item" : "items"})</span>
+              <span className="ml-2 text-sm font-normal text-muted-foreground">({count} {count === 1 ? "item" : "items"})</span>
             )}
           </h2>
           <div className="flex items-center gap-1">
             {items.length > 0 && (
               <button
                 onClick={() => { clear(); toast.success("Cart cleared") }}
-                className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/40"
+                className="rounded-lg p-1.5 text-muted-foreground hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/40"
                 aria-label="Clear cart"
                 title="Clear all"
               >
@@ -66,7 +66,7 @@ export function CartWidget({ currency }: { currency: string }) {
             )}
             <button
               onClick={() => setOpen(false)}
-              className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted"
               aria-label="Close cart"
             >
               <X className="size-5" />
@@ -78,22 +78,22 @@ export function CartWidget({ currency }: { currency: string }) {
           {items.length === 0 ? (
             <div className="flex flex-col items-center py-12 text-center">
               <ShoppingCart className="size-10 text-gray-200 dark:text-gray-700" />
-              <p className="mt-3 text-sm text-gray-400">Your cart is empty</p>
+              <p className="mt-3 text-sm text-muted-foreground">Your cart is empty</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            <div className="divide-y divide-border">
               {items.map((item) => (
                 <div key={item.id} className="flex items-center gap-3 px-5 py-3">
-                  <div className="size-12 shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+                  <div className="size-12 shrink-0 overflow-hidden rounded-lg bg-muted">
                     {item.photo ? (
                       <SafeImg src={item.photo} alt={item.name} className="h-full w-full object-cover" />
                     ) : null}
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-gray-900 dark:text-white">{item.name}</p>
+                    <p className="truncate text-sm font-medium text-foreground">{item.name}</p>
                     {item.modifiers.length > 0 && (
-                      <p className="mt-0.5 truncate text-xs text-gray-400">
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
                         {item.modifiers.map((m) => m.optionLabel).join(", ")}
                       </p>
                     )}
@@ -105,7 +105,7 @@ export function CartWidget({ currency }: { currency: string }) {
                   <div className="flex shrink-0 items-center gap-1.5">
                     <button
                       onClick={() => setQty(item.id, item.qty - 1)}
-                      className="flex size-7 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                      className="flex size-7 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-muted"
                       aria-label="Decrease quantity"
                     >
                       <Minus className="size-3.5" />
@@ -113,7 +113,7 @@ export function CartWidget({ currency }: { currency: string }) {
                     <span className="w-5 text-center text-sm font-medium tabular-nums">{item.qty}</span>
                     <button
                       onClick={() => setQty(item.id, item.qty + 1)}
-                      className="flex size-7 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                      className="flex size-7 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-muted"
                       aria-label="Increase quantity"
                     >
                       <Plus className="size-3.5" />
@@ -126,10 +126,10 @@ export function CartWidget({ currency }: { currency: string }) {
         </div>
 
         {items.length > 0 && (
-          <div className="shrink-0 border-t border-gray-100 px-5 py-4 dark:border-gray-800">
+          <div className="shrink-0 border-t border-border px-5 py-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">Subtotal</span>
-              <span className="text-base font-bold text-gray-900 dark:text-white">
+              <span className="text-sm text-muted-foreground">Subtotal</span>
+              <span className="text-base font-bold text-foreground">
                 {formatPrice(subtotal, currency)}
               </span>
             </div>

@@ -75,12 +75,12 @@ export function EntryCard({
   return (
     <div className={`flex gap-3 ${entry.soldOut ? "opacity-50" : ""}`}>
       {/* Photo */}
-      <div className="size-16 shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
+      <div className="size-16 shrink-0 overflow-hidden rounded-xl bg-muted">
         {entry.photo ? (
           <SafeImg src={entry.photo ? `${entry.photo}?w=128` : null} alt={resolvedName} className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
-            <UtensilsCrossed className="size-5 text-gray-300 dark:text-gray-600" aria-hidden />
+            <UtensilsCrossed className="size-5 text-muted-foreground" aria-hidden />
           </div>
         )}
       </div>
@@ -90,7 +90,7 @@ export function EntryCard({
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <p className="text-sm font-medium leading-snug text-gray-800 dark:text-gray-200">{resolvedName}</p>
+              <p className="text-sm font-medium leading-snug text-foreground">{resolvedName}</p>
               {entry.soldOut && (
                 <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-600 dark:bg-red-900/30 dark:text-red-400">
                   Sold out
@@ -98,7 +98,7 @@ export function EntryCard({
               )}
             </div>
             {entry.description && (
-              <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{entry.description}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{entry.description}</p>
             )}
           </div>
           {entry.price != null && (
@@ -117,7 +117,7 @@ export function EntryCard({
             )}
             {others.map((p) =>
               entry.nutrition![p.id] != null ? (
-                <span key={p.id} className="text-[11px] text-gray-400 dark:text-gray-500">
+                <span key={p.id} className="text-[11px] text-muted-foreground">
                   {p.name} {entry.nutrition![p.id]}{p.unit}
                 </span>
               ) : null,
@@ -145,7 +145,7 @@ export function EntryCard({
               const isLast = gIdx === entry.modifierGroups.length - 1
               return (
                 <div key={g.id}>
-                  <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                  <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                     {g.name}
                   </p>
                   <div className="flex flex-wrap items-center gap-1.5">
@@ -168,12 +168,12 @@ export function EntryCard({
                               ? "shadow-sm"
                               : on
                                 ? "border-brand bg-brand text-white"
-                                : "border-gray-200 text-gray-500 hover:border-brand/40 hover:text-brand dark:border-gray-700 dark:text-gray-400"
+                                : "border-border text-muted-foreground hover:border-brand/40 hover:text-brand"
                           }`}
                         >
                           {o.label}
                           {o.priceDelta !== 0 && (
-                            <span className={`ml-1 text-[10px] ${on || c ? "opacity-75" : "text-gray-400"}`}>
+                            <span className={`ml-1 text-[10px] ${on || c ? "opacity-75" : "text-muted-foreground"}`}>
                               {formatPriceDelta(o.priceDelta, currency)}
                             </span>
                           )}
@@ -215,7 +215,7 @@ export function EntryCard({
         ) : null}
 
         {entry.note && (
-          <p className="mt-1.5 text-[11px] italic text-gray-400 dark:text-gray-500">{entry.note}</p>
+          <p className="mt-1.5 text-[11px] italic text-muted-foreground">{entry.note}</p>
         )}
       </div>
     </div>

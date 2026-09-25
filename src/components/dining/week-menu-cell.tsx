@@ -42,29 +42,29 @@ function DishSearch({ venueId, onPick }: { venueId: string; onPick: (d: Dish) =>
   return (
     <div className="relative">
       <div className="relative">
-        <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
         <input
           autoFocus
           value={q}
           onChange={(e) => search(e.target.value)}
           placeholder="Search dish library…"
-          className="w-full rounded-lg border border-gray-200 py-2 pl-8 pr-3 text-sm text-gray-900 outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500"
+          className="w-full rounded-lg border border-border py-2 pl-8 pr-3 text-sm text-foreground outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:placeholder-gray-500"
         />
-        {loading && <Loader2 className="absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 animate-spin text-gray-400" />}
+        {loading && <Loader2 className="absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 animate-spin text-muted-foreground" />}
       </div>
       {results.length > 0 && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-0.5 max-h-52 overflow-y-auto rounded-lg border border-gray-100 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+        <div className="absolute left-0 right-0 top-full z-50 mt-0.5 max-h-52 overflow-y-auto rounded-lg border border-border bg-popover shadow-lg">
           {results.map((d) => (
             <button
               key={d.id}
               type="button"
               onClick={() => { onPick(d); setQ(""); setResults([]) }}
-              className="flex w-full items-center gap-2.5 px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700/60"
+              className="flex w-full items-center gap-2.5 px-3 py-2 text-left hover:bg-muted"
             >
               <SafeImg src={d.photo ? `${d.photo}?w=72` : d.photo} alt="" className="size-9 shrink-0 rounded-lg object-cover" placeholderClassName="size-9 shrink-0 rounded-lg" width={36} height={36} loading="lazy" />
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{d.name}</p>
-                {d.description && <p className="truncate text-xs text-gray-400 dark:text-gray-500">{d.description}</p>}
+                <p className="truncate text-sm font-medium text-foreground">{d.name}</p>
+                {d.description && <p className="truncate text-xs text-muted-foreground">{d.description}</p>}
               </div>
             </button>
           ))}
@@ -116,20 +116,20 @@ export function WeekMenuCell({
 
   if (editing) {
     return (
-      <div className="rounded-xl border-2 border-brand bg-white p-4 shadow-sm dark:bg-gray-900">
+      <div className="rounded-xl border-2 border-brand bg-card p-4 shadow-sm">
         <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-brand">{catName}</p>
         <div className="space-y-3">
           <DishSearch venueId={venueId} onPick={handlePickDish} />
 
           {(draft.dishId || draft.name) && (
-            <div className="flex items-start gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-              <div className="size-14 shrink-0 overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700">
+            <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
+              <div className="size-14 shrink-0 overflow-hidden rounded-lg bg-border">
                 <SafeImg src={draft.photo} alt="" className="size-full object-cover" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{draft.name}</p>
+                <p className="text-sm font-medium text-foreground">{draft.name}</p>
                 {draft.description && (
-                  <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{draft.description}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{draft.description}</p>
                 )}
                 {draftFeaturedVal != null && (
                   <span className="mt-1.5 inline-block rounded-full bg-brand/10 px-1.5 py-0.5 text-[10px] font-medium text-brand">
@@ -144,7 +144,7 @@ export function WeekMenuCell({
             value={draft.note ?? ""}
             onChange={(e) => setDraft((d) => ({ ...d, note: e.target.value || null }))}
             placeholder="Note (optional)"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500"
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:placeholder-gray-500"
           />
 
           <div className="flex items-center justify-between pt-1">
@@ -159,7 +159,7 @@ export function WeekMenuCell({
               <button
                 type="button"
                 onClick={close}
-                className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
+                className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted"
               >
                 Cancel
               </button>
@@ -177,31 +177,31 @@ export function WeekMenuCell({
     )
   }
 
-  // View state — same structure as portal MobileWeekMenu
+  // View state: same structure as portal MobileWeekMenu
   return (
     <div className="group">
-      {/* Category label — own line, same as portal */}
-      <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+      {/* Category label: own line, same as portal */}
+      <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
         {catName}
       </p>
 
-      {/* Dish row — flex, same as portal */}
+      {/* Dish row: flex, same as portal */}
       <div
         onClick={!filled ? open : undefined}
         className={`flex gap-3 ${!filled ? "cursor-pointer" : ""}`}
       >
-        {/* Photo — size-16, same as portal */}
+        {/* Photo: size-16, same as portal */}
         <div
           className={`size-16 shrink-0 overflow-hidden rounded-lg transition ${
             filled
-              ? "bg-gray-100 dark:bg-gray-800"
-              : "border-2 border-dashed border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
+              ? "bg-muted"
+              : "border-2 border-dashed border-border hover:border-muted-foreground/40"
           }`}
         >
           {filled ? (
             <SafeImg src={entry?.photo ? `${entry.photo}?w=128` : entry?.photo} alt="" className="size-full object-cover" width={64} height={64} loading="lazy" />
           ) : (
-            <div className="flex size-full items-center justify-center text-gray-300 dark:text-gray-600">
+            <div className="flex size-full items-center justify-center text-muted-foreground">
               <Plus className="size-4" />
             </div>
           )}
@@ -211,11 +211,11 @@ export function WeekMenuCell({
         <div className="min-w-0 flex-1">
           {filled ? (
             <>
-              <p className="text-sm font-medium leading-snug text-gray-900 dark:text-gray-100">
+              <p className="text-sm font-medium leading-snug text-foreground">
                 {entry?.name}
               </p>
               {entry?.description && (
-                <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">{entry.description}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{entry.description}</p>
               )}
               <div className="mt-1.5 flex flex-wrap items-center gap-1">
                 {featuredVal != null && (
@@ -238,22 +238,22 @@ export function WeekMenuCell({
                 })}
               </div>
               {entry?.note && (
-                <p className="mt-1 text-[11px] italic text-gray-400 dark:text-gray-500">{entry.note}</p>
+                <p className="mt-1 text-[11px] italic text-muted-foreground">{entry.note}</p>
               )}
             </>
           ) : (
-            <p className="text-xs text-gray-300 dark:text-gray-600">Click to add</p>
+            <p className="text-xs text-muted-foreground">Click to add</p>
           )}
         </div>
 
-        {/* Hover actions — only when filled */}
+        {/* Hover actions: only when filled */}
         {filled && (
           <div className="flex shrink-0 flex-col gap-1 opacity-0 transition-opacity group-hover:opacity-100">
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); open() }}
               aria-label="Edit"
-              className="grid size-7 place-items-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-brand dark:hover:bg-gray-800"
+              className="grid size-7 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-brand"
             >
               <Pencil className="size-3.5" />
             </button>
@@ -261,7 +261,7 @@ export function WeekMenuCell({
               type="button"
               onClick={(e) => { e.stopPropagation(); handleClear() }}
               aria-label="Clear"
-              className="grid size-7 place-items-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/10 dark:hover:text-red-400"
+              className="grid size-7 place-items-center rounded-lg text-muted-foreground hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/10 dark:hover:text-red-400"
             >
               <X className="size-3.5" />
             </button>

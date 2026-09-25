@@ -6,7 +6,7 @@ import { getMealStatus, type MealStatusInfo } from "@/lib/dining-hours"
 interface Props {
   hours: string | null
   timezone: string
-  /** Server-computed initial value — avoids an empty first paint and layout shift. */
+  /** Server-computed initial value: avoids an empty first paint and layout shift. */
   initial: MealStatusInfo
 }
 
@@ -37,7 +37,7 @@ export function MealStatusBadge({ hours, timezone, initial }: Props) {
     )
   }
   return (
-    <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-400 dark:bg-gray-800 dark:text-gray-500">
+    <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
       Ended
     </span>
   )

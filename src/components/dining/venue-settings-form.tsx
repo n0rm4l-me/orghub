@@ -41,7 +41,7 @@ const VENUE_TYPES: {
   },
 ]
 
-const lbl = "mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300"
+const lbl = "mb-1 block text-xs font-medium text-foreground"
 
 export function VenueSettingsForm({ venue }: { venue: Venue }) {
   const router = useRouter()
@@ -66,8 +66,8 @@ export function VenueSettingsForm({ venue }: { venue: Venue }) {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white px-5 py-5 dark:border-gray-700 dark:bg-gray-900">
-      <h2 className="mb-4 text-sm font-semibold text-gray-900 dark:text-gray-100">Venue settings</h2>
+    <div className="rounded-xl border border-border bg-card px-5 py-5">
+      <h2 className="mb-4 text-sm font-semibold text-foreground">Venue settings</h2>
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
           <label className={lbl}>Name <span aria-hidden="true">*</span></label>
@@ -89,14 +89,14 @@ export function VenueSettingsForm({ venue }: { venue: Venue }) {
                   className={`flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition ${
                     active
                       ? "border-brand bg-brand/5 dark:bg-brand/10"
-                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:border-gray-600 dark:hover:bg-gray-800/60"
+                      : "border-border hover:border-border hover:bg-muted"
                   }`}
                 >
-                  <Icon className={`size-5 ${active ? "text-brand" : "text-gray-400"}`} />
-                  <span className={`text-sm font-semibold ${active ? "text-brand" : "text-gray-700 dark:text-gray-200"}`}>
+                  <Icon className={`size-5 ${active ? "text-brand" : "text-muted-foreground"}`} />
+                  <span className={`text-sm font-semibold ${active ? "text-brand" : "text-foreground"}`}>
                     {t.label}
                   </span>
-                  <span className="text-[11px] leading-tight text-gray-400 dark:text-gray-500">
+                  <span className="text-[11px] leading-tight text-muted-foreground">
                     {t.description}
                   </span>
                 </button>
@@ -123,14 +123,14 @@ export function VenueSettingsForm({ venue }: { venue: Venue }) {
 
         {deleteOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 backdrop-blur-[2px]" onClick={() => setDeleteOpen(false)}>
-            <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-              <h2 className="mb-2 text-sm font-semibold text-gray-900">Delete venue?</h2>
-              <p className="mb-5 text-sm text-gray-500">
-                This will permanently delete <span className="font-medium text-gray-900">{venue.name}</span> and all its menus, dishes, and settings.
+            <div className="w-full max-w-sm rounded-xl bg-popover p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+              <h2 className="mb-2 text-sm font-semibold text-foreground">Delete venue?</h2>
+              <p className="mb-5 text-sm text-muted-foreground">
+                This will permanently delete <span className="font-medium text-foreground">{venue.name}</span> and all its menus, dishes, and settings.
               </p>
               <div className="flex justify-end gap-2">
                 <button type="button" onClick={() => setDeleteOpen(false)}
-                  className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50">
+                  className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted">
                   Cancel
                 </button>
                 <button type="button" disabled={deleting}

@@ -31,9 +31,9 @@ export function MobileWeekMenu({ days }: { days: MobileDay[] }) {
   const hasAny = day.rows.some((r) => r.entry)
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+    <div className="overflow-hidden rounded-2xl border border-border bg-card">
       {/* Day selector */}
-      <div className="flex border-b border-gray-100 dark:border-gray-700" role="tablist">
+      <div className="flex border-b border-border" role="tablist">
         {days.map((d, i) => (
           <button
             key={d.key}
@@ -43,7 +43,7 @@ export function MobileWeekMenu({ days }: { days: MobileDay[] }) {
             className={`flex-1 px-1 py-2 text-center transition-colors ${
               i === active
                 ? "bg-brand/5 dark:bg-brand/10"
-                : "hover:bg-gray-50 dark:hover:bg-gray-800/60"
+                : "hover:bg-muted"
             }`}
           >
             <span
@@ -51,8 +51,8 @@ export function MobileWeekMenu({ days }: { days: MobileDay[] }) {
                 i === active
                   ? "text-brand"
                   : d.closed
-                    ? "text-gray-300 dark:text-gray-500"
-                    : "text-gray-600 dark:text-gray-300"
+                    ? "text-muted-foreground"
+                    : "text-muted-foreground"
               }`}
             >
               {d.label}
@@ -63,34 +63,34 @@ export function MobileWeekMenu({ days }: { days: MobileDay[] }) {
 
       {/* Selected day content */}
       {day.closed ? (
-        <div className="flex min-h-[140px] items-center justify-center bg-gray-50 bg-[image:repeating-linear-gradient(-45deg,transparent,transparent_10px,rgba(220,38,38,.06)_10px,rgba(220,38,38,.06)_11px)] dark:bg-gray-900/80 dark:bg-[image:repeating-linear-gradient(-45deg,transparent,transparent_10px,rgba(248,113,113,.04)_10px,rgba(248,113,113,.04)_11px)]">
-          <span className="inline-flex items-center gap-1.5 rounded bg-white/80 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-red-400 dark:bg-gray-900/80 dark:text-red-500">
+        <div className="flex min-h-[140px] items-center justify-center bg-muted bg-[image:repeating-linear-gradient(-45deg,transparent,transparent_10px,rgba(220,38,38,.06)_10px,rgba(220,38,38,.06)_11px)] dark:bg-[image:repeating-linear-gradient(-45deg,transparent,transparent_10px,rgba(248,113,113,.04)_10px,rgba(248,113,113,.04)_11px)]">
+          <span className="inline-flex items-center gap-1.5 rounded bg-card/80 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-red-400">
             <Ban className="size-3.5" aria-hidden />
             Closed
           </span>
         </div>
       ) : !hasAny ? (
         <div className="py-12 text-center">
-          <p className="text-sm text-gray-400 dark:text-gray-500">Nothing scheduled.</p>
+          <p className="text-sm text-muted-foreground">Nothing scheduled.</p>
         </div>
       ) : (
-        <ul className="divide-y divide-gray-100 dark:divide-gray-700">
+        <ul className="divide-y divide-border">
           {day.rows.map((row) => (
             <li key={row.catId} className="px-4 py-3">
-              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 {row.catName}
               </p>
               {row.entry ? (
                 <div className="flex gap-3">
-                  <div className="size-16 shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+                  <div className="size-16 shrink-0 overflow-hidden rounded-lg bg-muted">
                     <SafeImg src={row.entry.photo} alt="" className="size-full object-cover" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium leading-snug text-gray-900 dark:text-gray-100">
+                    <p className="text-sm font-medium leading-snug text-foreground">
                       {row.entry.name ?? row.entry.description}
                     </p>
                     {row.entry.name && row.entry.description && (
-                      <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
+                      <p className="mt-0.5 text-xs text-muted-foreground">
                         {row.entry.description}
                       </p>
                     )}
@@ -111,15 +111,15 @@ export function MobileWeekMenu({ days }: { days: MobileDay[] }) {
                       ))}
                     </div>
                     {row.entry.macros && (
-                      <p className="mt-1 text-[10px] text-gray-400 dark:text-gray-500">{row.entry.macros}</p>
+                      <p className="mt-1 text-[10px] text-muted-foreground">{row.entry.macros}</p>
                     )}
                     {row.entry.note && (
-                      <p className="mt-1 text-[11px] italic text-gray-400 dark:text-gray-500">{row.entry.note}</p>
+                      <p className="mt-1 text-[11px] italic text-muted-foreground">{row.entry.note}</p>
                     )}
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-gray-300 dark:text-gray-600">—</p>
+                <p className="text-xs text-muted-foreground">—</p>
               )}
             </li>
           ))}

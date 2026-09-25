@@ -36,7 +36,7 @@ export function SafeImg({ src, alt, className, placeholderClassName, width, heig
 
   if (!src || failed) {
     return (
-      <div className={`flex items-center justify-center bg-gray-100 text-gray-300 dark:bg-gray-800 dark:text-gray-600 ${placeholderClassName ?? className ?? ""}`}>
+      <div className={`flex items-center justify-center bg-muted text-muted-foreground ${placeholderClassName ?? className ?? ""}`}>
         <ImageOff className="size-4" aria-hidden />
       </div>
     )

@@ -184,7 +184,7 @@ export function WeekMenuGrid({
             onKeyDown={(e) => e.key === "Enter" && (e.currentTarget as HTMLInputElement).blur()}
             placeholder="Menu name…"
             disabled={namePending}
-            className={`w-64 rounded-lg border px-2 py-0.5 text-lg font-semibold text-gray-900 outline-none hover:border-gray-200 focus:border-brand focus:ring-1 focus:ring-brand disabled:opacity-60 ${
+            className={`w-64 rounded-lg border px-2 py-0.5 text-lg font-semibold text-foreground outline-none hover:border-border focus:border-brand focus:ring-1 focus:ring-brand disabled:opacity-60 ${
               !name.trim() ? "border-red-300" : "border-transparent"
             }`}
           />
@@ -197,7 +197,7 @@ export function WeekMenuGrid({
             onClick={handlePublishToggle}
             disabled={publishPending}
             className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition disabled:opacity-60
-              ${publishedAt ? "border-gray-200 text-gray-600 hover:bg-gray-50" : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`}
+              ${publishedAt ? "border-border text-muted-foreground hover:bg-muted" : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`}
           >
             {publishPending ? <Loader2 className="size-3.5 animate-spin" /> : publishedAt ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
             {publishedAt ? "Unpublish" : "Publish"}
@@ -214,8 +214,8 @@ export function WeekMenuGrid({
       </div>
 
       {/* Day tabs */}
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900" role="tablist">
-        <div className="flex divide-x divide-gray-100 dark:divide-gray-700">
+      <div className="overflow-hidden rounded-xl border border-border bg-card" role="tablist">
+        <div className="flex divide-x divide-border">
           {DAYS.map((d, i) => (
             <button
               key={d.key}
@@ -225,11 +225,11 @@ export function WeekMenuGrid({
               className={`flex-1 px-2 py-2.5 text-center transition-colors ${
                 d.key === activeDay
                   ? "bg-brand/5 dark:bg-brand/10"
-                  : "hover:bg-gray-50 dark:hover:bg-gray-800/60"
+                  : "hover:bg-muted"
               }`}
             >
               <span className={`block text-xs font-semibold ${
-                d.key === activeDay ? "text-brand" : closedSlots.has(d.key) ? "text-gray-300 dark:text-gray-600" : "text-gray-600 dark:text-gray-300"
+                d.key === activeDay ? "text-brand" : closedSlots.has(d.key) ? "text-muted-foreground" : "text-muted-foreground"
               }`}>
                 {d.label}
               </span>
@@ -241,9 +241,9 @@ export function WeekMenuGrid({
       {/* Active day content */}
       <div className="space-y-5">
         {/* Day off toggle */}
-        <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-gray-800/60">
-          <span className="text-sm text-gray-600 dark:text-gray-300">
-            {dayClosed ? "Day off — all slots closed" : "Working day"}
+        <div className="flex items-center justify-between rounded-lg border border-border bg-muted px-4 py-2.5">
+          <span className="text-sm text-muted-foreground">
+            {dayClosed ? "Day off: all slots closed" : "Working day"}
           </span>
           <button
             onClick={() => toggleSlot(activeDay)}
@@ -259,8 +259,8 @@ export function WeekMenuGrid({
         </div>
 
         {dayClosed ? (
-          <div className="flex min-h-[120px] items-center justify-center rounded-xl border border-dashed border-gray-200 bg-[image:repeating-linear-gradient(-45deg,transparent,transparent_10px,rgba(220,38,38,.06)_10px,rgba(220,38,38,.06)_11px)] dark:border-gray-700">
-            <span className="inline-flex items-center gap-1.5 rounded bg-white/80 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-red-400 dark:bg-gray-900/80 dark:text-red-500">
+          <div className="flex min-h-[120px] items-center justify-center rounded-xl border border-dashed border-border bg-[image:repeating-linear-gradient(-45deg,transparent,transparent_10px,rgba(220,38,38,.06)_10px,rgba(220,38,38,.06)_11px)]">
+            <span className="inline-flex items-center gap-1.5 rounded bg-card/80 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-red-400">
               <Ban className="size-3.5" aria-hidden />
               Day off
             </span>
@@ -274,7 +274,7 @@ export function WeekMenuGrid({
             return (
               <div key={slot.id} className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     {slot.name}
                   </p>
                   <button
@@ -283,7 +283,7 @@ export function WeekMenuGrid({
                     className={`rounded px-2 py-0.5 text-[11px] font-medium transition disabled:opacity-50 ${
                       slotClosed
                         ? "bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400"
-                        : "bg-gray-100 text-gray-400 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400"
+                        : "bg-muted text-muted-foreground hover:bg-border"
                     }`}
                   >
                     {slotClosed ? "Closed" : "Open"}
@@ -295,7 +295,7 @@ export function WeekMenuGrid({
                     <span className="text-[11px] font-medium uppercase tracking-wider text-red-400">Closed</span>
                   </div>
                 ) : (
-                  <div className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200 bg-white dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-900">
+                  <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
                     {slotCats.map((cat) => (
                       <div key={cat.id} className="px-4 py-3">
                         <WeekMenuCell

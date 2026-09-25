@@ -23,7 +23,7 @@ export function MenuDeleteButton({ menuId }: { menuId: string }) {
         onClick={() => setOpen(true)}
         disabled={pending}
         aria-label="Delete menu"
-        className="grid size-7 place-items-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
+        className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
       >
         <Trash2 className="size-3.5" />
       </button>

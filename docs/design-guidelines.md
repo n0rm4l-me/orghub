@@ -27,9 +27,10 @@ Tailwind color via `@theme inline` so the usual utilities work
 | Divider, track, `divide-*` between rows | `bg-border` / `border-border` / `divide-border` | `bg-gray-200`, `border-gray-200`, `divide-gray-100` |
 | Heading, primary text | `text-foreground` | `text-gray-900/800/700` |
 | Secondary text, captions, placeholders, disabled/empty-state text | `text-muted-foreground` | `text-gray-600/500/400/300` |
-| Hover surface | `hover:bg-muted` | `hover:bg-gray-50/100` |
-| Hover border | `hover:border-border` | `hover:border-gray-300` (yes, this can mean the resting and hover border end up the same token; that's correct, not a bug in the conversion) |
-| Hover text | `hover:text-foreground` / `hover:text-muted-foreground` | `hover:text-gray-800` etc, same bucket as the unprefixed rule |
+| Hover surface | `hover:bg-muted` | `hover:bg-gray-50/100/200` |
+| Hover border, paired with a `hover:bg-*` on the same element | `hover:border-border` | `hover:border-gray-200/300/400` |
+| Hover border, the *only* hover affordance (no accompanying `hover:bg-*`) | `hover:border-muted-foreground/40` | `hover:border-gray-200/300/400` |
+| Hover text | `hover:text-foreground` / `hover:text-muted-foreground` | `hover:text-gray-800` etc, same bucket as the unprefixed rule (yes, this can mean the resting and hover state end up the same token for text and the paired-border case; that's correct, not a bug in the conversion) |
 
 `text-gray-300`/`border-gray-300` are covered by the muted-foreground /
 border buckets above, same as every other shade in the 900-300 range; there
@@ -50,6 +51,20 @@ Do **not** add a paired `dark:` class next to a token class. The token
 already has a `.dark` value in `globals.css`; a `dark:bg-gray-900` sitting
 next to `bg-card` overrides the token in dark mode and reintroduces exactly
 the inconsistency this system exists to remove.
+
+**Known gap, not yet resolved: `text-gray-200`/`dark:text-gray-700`.** A
+small number of dining components (`meal-structure-editor.tsx`,
+`cart-widget.tsx`, `fixed-menu-view.tsx` as of 2026-09-25) use this specific
+pairing on icon-only buttons that are meant to stay nearly invisible at
+rest and only become legible on hover (a "remove" button that shouldn't
+compete for attention until you're pointed at the row it belongs to).
+That's one step fainter than the `text-gray-300` this table already
+resolves, and might genuinely warrant its own, even-fainter treatment
+(e.g. `text-muted-foreground/50`) rather than folding into the same
+`text-muted-foreground` bucket at full opacity, which would make it more
+prominent than intended. Left unconverted deliberately rather than guessed;
+resolve by checking what these specific buttons look like before picking a
+token, not by extending the table further on reasoning alone.
 
 **Exceptions, left alone on purpose:**
 - Status colors (`red`, `amber`, `emerald`, `green`, `blue` and their `-400`

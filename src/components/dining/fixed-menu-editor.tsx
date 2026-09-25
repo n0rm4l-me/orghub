@@ -107,36 +107,36 @@ function DishSearch({ venueId, currency = "JPY", onPick }: { venueId: string; cu
   return (
     <div className="relative">
       <div className="relative">
-        <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
         <input
           ref={inputRef}
           value={q}
           onChange={(e) => search(e.target.value)}
           placeholder="Search dish library…"
-          className="w-full rounded-lg border border-gray-200 py-2 pl-8 pr-3 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+          className="w-full rounded-lg border border-border py-2 pl-8 pr-3 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
         />
-        {loading && <Loader2 className="absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 animate-spin text-gray-400" />}
+        {loading && <Loader2 className="absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 animate-spin text-muted-foreground" />}
       </div>
       {results.length > 0 && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-0.5 max-h-52 overflow-y-auto rounded-lg border border-gray-100 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+        <div className="absolute left-0 right-0 top-full z-50 mt-0.5 max-h-52 overflow-y-auto rounded-lg border border-border bg-popover shadow-lg">
           {results.map((d) => (
             <button
               key={d.id}
               type="button"
               onClick={() => { onPick(d); setQ(""); setResults([]) }}
-              className="flex w-full items-center gap-2.5 px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="flex w-full items-center gap-2.5 px-3 py-2 text-left hover:bg-muted"
             >
-              <div className="size-9 shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-gray-700">
+              <div className="size-9 shrink-0 overflow-hidden rounded-md bg-muted">
                 {d.photo
                   ? <SafeImg src={d.photo} alt={d.name} className="h-full w-full object-cover" />
                   : <div className="h-full w-full" />}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-gray-800 dark:text-gray-200">{d.name}</p>
-                {d.description && <p className="truncate text-xs text-gray-400">{d.description}</p>}
+                <p className="truncate text-sm font-medium text-foreground">{d.name}</p>
+                {d.description && <p className="truncate text-xs text-muted-foreground">{d.description}</p>}
               </div>
               {d.price != null && (
-                <span className="shrink-0 text-xs font-medium text-gray-500">{formatPrice(d.price, currency)}</span>
+                <span className="shrink-0 text-xs font-medium text-muted-foreground">{formatPrice(d.price, currency)}</span>
               )}
             </button>
           ))}
@@ -174,15 +174,15 @@ function ModifierGroupCard({
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/60">
+    <div className="rounded-xl border border-border bg-muted p-3">
       <div className="mb-2.5 flex items-center gap-2">
         <input
           value={group.name}
           onChange={(e) => onChange({ ...group, name: e.target.value })}
           placeholder="Group name (e.g. Size)"
-          className="flex-1 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm font-medium outline-none focus:border-brand dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+          className="flex-1 rounded-lg border border-border bg-card px-2.5 py-1.5 text-sm font-medium outline-none focus:border-brand"
         />
-        <label className="flex cursor-pointer items-center gap-1.5 text-xs text-gray-500">
+        <label className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
           <input
             type="checkbox"
             checked={group.required}
@@ -191,7 +191,7 @@ function ModifierGroupCard({
           />
           Required
         </label>
-        <label className="flex cursor-pointer items-center gap-1.5 text-xs text-gray-500">
+        <label className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
           <input
             type="checkbox"
             checked={group.multiSelect}
@@ -212,14 +212,14 @@ function ModifierGroupCard({
               value={opt.label}
               onChange={(e) => updateOption(i, { label: e.target.value })}
               placeholder="Label"
-              className="w-24 rounded border border-gray-200 bg-white px-2 py-1 text-xs outline-none focus:border-brand dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+              className="w-24 rounded border border-border bg-card px-2 py-1 text-xs outline-none focus:border-brand"
             />
-            <span className="text-xs text-gray-400">+{getCurrencySymbol(currency)}</span>
+            <span className="text-xs text-muted-foreground">+{getCurrencySymbol(currency)}</span>
             <input
               type="number"
               value={opt.priceDelta}
               onChange={(e) => updateOption(i, { priceDelta: Number(e.target.value) })}
-              className="w-14 rounded border border-gray-200 bg-white px-2 py-1 text-xs outline-none focus:border-brand dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+              className="w-14 rounded border border-border bg-card px-2 py-1 text-xs outline-none focus:border-brand"
             />
             {/* Color swatches */}
             <div className="flex items-center gap-1">
@@ -227,7 +227,7 @@ function ModifierGroupCard({
                 type="button"
                 title="No color"
                 onClick={() => updateOption(i, { color: null })}
-                className={`size-4 rounded-full border-2 bg-gray-200 dark:bg-gray-600 transition ${!opt.color ? "border-brand" : "border-transparent hover:border-gray-400"}`}
+                className={`size-4 rounded-full border-2 bg-border transition ${!opt.color ? "border-brand" : "border-transparent hover:border-muted-foreground/40"}`}
               />
               {OPTION_COLORS.map((c) => (
                 <button
@@ -245,11 +245,11 @@ function ModifierGroupCard({
               title="Default"
               aria-label="Set as default"
               onClick={() => updateOption(i, { isDefault: !opt.isDefault })}
-              className={`size-5 rounded-full border text-xs transition ${opt.isDefault ? "border-brand bg-brand text-white" : "border-gray-300 text-gray-400 hover:border-brand"}`}
+              className={`size-5 rounded-full border text-xs transition ${opt.isDefault ? "border-brand bg-brand text-white" : "border-border text-muted-foreground hover:border-brand"}`}
             >
               <Check className="mx-auto size-3" />
             </button>
-            <button type="button" onClick={() => removeOption(i)} aria-label="Remove option" className="text-gray-400 hover:text-red-500">
+            <button type="button" onClick={() => removeOption(i)} aria-label="Remove option" className="text-muted-foreground hover:text-red-500">
               <X className="size-3" />
             </button>
           </div>
@@ -371,13 +371,13 @@ function EntryEditor({
   }
 
   return (
-    <div className="rounded-xl border-2 border-brand bg-white p-4 shadow-sm dark:bg-gray-900">
+    <div className="rounded-xl border-2 border-brand bg-card p-4 shadow-sm">
       {/* Dish search or linked dish */}
       {showDishSearch ? (
         <div className="mb-3">
           <DishSearch venueId={venueId} currency={currency} onPick={pickDish} />
           {!name && (
-            <p className="mt-1.5 text-[11px] text-gray-400">
+            <p className="mt-1.5 text-[11px] text-muted-foreground">
               Pick from library or type a name below.
             </p>
           )}
@@ -390,7 +390,7 @@ function EntryEditor({
             </div>
           )}
           <span className="min-w-0 flex-1 truncate text-sm font-medium text-brand">{name}</span>
-          <button type="button" onClick={clearDish} className="text-xs text-gray-400 hover:text-brand">
+          <button type="button" onClick={clearDish} className="text-xs text-muted-foreground hover:text-brand">
             Change
           </button>
         </div>
@@ -402,13 +402,13 @@ function EntryEditor({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Name *"
-          className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+          className="rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand"
         />
         <input
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Description"
-          className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+          className="rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand"
         />
       </div>
 
@@ -420,20 +420,20 @@ function EntryEditor({
       {/* Price + note */}
       <div className="mb-2.5 grid gap-2 sm:grid-cols-2">
         <div className="relative">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">{getCurrencySymbol(currency)}</span>
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">{getCurrencySymbol(currency)}</span>
           <input
             type="number"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             placeholder="Price"
-            className="w-full rounded-lg border border-gray-200 py-2 pl-6 pr-3 text-sm outline-none focus:border-brand dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+            className="w-full rounded-lg border border-border py-2 pl-6 pr-3 text-sm outline-none focus:border-brand"
           />
         </div>
         <input
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Note (e.g. seasonal, chef's choice)"
-          className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+          className="rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand"
         />
       </div>
 
@@ -448,7 +448,7 @@ function EntryEditor({
                 type="button"
                 onClick={() => toggleTag(t.id)}
                 style={active ? { backgroundColor: t.bgColor, color: t.color, borderColor: t.color } : {}}
-                className={`rounded-full border px-2.5 py-0.5 text-xs transition ${active ? "border-current" : "border-gray-200 text-gray-400 hover:border-gray-300"}`}
+                className={`rounded-full border px-2.5 py-0.5 text-xs transition ${active ? "border-current" : "border-border text-muted-foreground hover:border-muted-foreground/40"}`}
               >
                 {t.name}
               </button>
@@ -460,11 +460,11 @@ function EntryEditor({
       {/* Nutrition */}
       {nutritionParams.length > 0 && (
         <div className="mb-3">
-          <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">Nutrition (per serving)</p>
+          <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nutrition (per serving)</p>
           <div className="flex flex-wrap gap-2">
             {nutritionParams.map((p) => (
               <div key={p.id}>
-                <label className="mb-0.5 block text-[11px] text-gray-400">
+                <label className="mb-0.5 block text-[11px] text-muted-foreground">
                   {p.name}{p.unit ? ` (${p.unit})` : ""}
                 </label>
                 <input
@@ -473,7 +473,7 @@ function EntryEditor({
                   step="0.1"
                   value={nutrition[p.id] ?? ""}
                   onChange={(e) => setNutrition((n) => ({ ...n, [p.id]: e.target.value }))}
-                  className="w-20 rounded border border-gray-200 px-2 py-1 text-xs outline-none focus:border-brand dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                  className="w-20 rounded border border-border px-2 py-1 text-xs outline-none focus:border-brand"
                 />
               </div>
             ))}
@@ -484,7 +484,7 @@ function EntryEditor({
       {/* Modifier groups */}
       <div className="mb-3 space-y-2">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Modifiers</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Modifiers</p>
           <button
             type="button"
             onClick={addGroup}
@@ -505,11 +505,11 @@ function EntryEditor({
       </div>
 
       {/* Actions */}
-      <div className="flex justify-end gap-2 border-t border-gray-100 pt-3 dark:border-gray-800">
+      <div className="flex justify-end gap-2 border-t border-border pt-3">
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400"
+          className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted"
         >
           Cancel
         </button>
@@ -560,19 +560,19 @@ function EntryRow({
     <div className="group flex items-start gap-3 px-4 py-3">
       <div
         {...dragHandleProps}
-        className="mt-1 cursor-grab shrink-0 text-gray-300 opacity-0 group-hover:opacity-100 active:cursor-grabbing dark:text-gray-600"
+        className="mt-1 cursor-grab shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 active:cursor-grabbing"
       >
         <GripVertical className="size-4" />
       </div>
-      <div className="size-12 shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+      <div className="size-12 shrink-0 overflow-hidden rounded-lg bg-muted">
         {resolvedPhoto
           ? <SafeImg src={resolvedPhoto} alt={resolvedName} className="h-full w-full object-cover" />
-          : <div className="flex h-full w-full items-center justify-center"><UtensilsCrossed className="size-4 text-gray-300 dark:text-gray-600" /></div>}
+          : <div className="flex h-full w-full items-center justify-center"><UtensilsCrossed className="size-4 text-muted-foreground" /></div>}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{resolvedName}</p>
+        <p className="text-sm font-medium text-foreground">{resolvedName}</p>
         {entry.description && (
-          <p className="line-clamp-1 text-xs text-gray-400 dark:text-gray-500">{entry.description}</p>
+          <p className="line-clamp-1 text-xs text-muted-foreground">{entry.description}</p>
         )}
         <div className="mt-1 flex flex-wrap items-center gap-1.5">
           {entry.price != null && (
@@ -582,11 +582,11 @@ function EntryRow({
           )}
           {entry.modifierGroups.map((g) => (
             <span key={g.id} className="flex items-center gap-0.5">
-              <span className="text-[10px] text-gray-400">{g.name}:</span>
+              <span className="text-[10px] text-muted-foreground">{g.name}:</span>
               {g.options.map((o) => (
                 <span
                   key={o.id ?? o.label}
-                  className={`rounded px-1 py-0.5 text-[10px] ${o.isDefault ? "bg-brand/5 text-brand dark:bg-brand/10" : "text-gray-500 dark:text-gray-400"}`}
+                  className={`rounded px-1 py-0.5 text-[10px] ${o.isDefault ? "bg-brand/5 text-brand dark:bg-brand/10" : "text-muted-foreground"}`}
                 >
                   {o.label}{o.priceDelta > 0 ? ` +${o.priceDelta}` : ""}
                 </span>
@@ -617,7 +617,7 @@ function EntryRow({
             onClick={() => runToggleSoldOut()}
             title={entry.soldOut ? "Mark available" : "Mark as sold out"}
             aria-label={entry.soldOut ? "Mark available" : "Mark as sold out"}
-            className={`grid size-9 place-items-center rounded-lg text-gray-400 hover:text-red-600 dark:hover:text-red-400 ${entry.soldOut ? "text-red-500 opacity-100! dark:text-red-400" : "hover:bg-red-50 dark:hover:bg-red-900/20"}`}
+            className={`grid size-9 place-items-center rounded-lg text-muted-foreground hover:text-red-600 dark:hover:text-red-400 ${entry.soldOut ? "text-red-500 opacity-100! dark:text-red-400" : "hover:bg-red-50 dark:hover:bg-red-900/20"}`}
           >
             <Ban className="size-3.5" />
           </button>
@@ -625,7 +625,7 @@ function EntryRow({
             type="button"
             onClick={onEdit}
             aria-label="Edit item"
-            className="grid size-9 place-items-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800"
+            className="grid size-9 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             <Pencil className="size-3.5" />
           </button>
@@ -633,7 +633,7 @@ function EntryRow({
             type="button"
             onClick={onDelete}
             aria-label="Delete item"
-            className="grid size-9 place-items-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
+            className="grid size-9 place-items-center rounded-lg text-muted-foreground hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
           >
             <Trash2 className="size-3.5" />
           </button>
@@ -742,12 +742,12 @@ function SectionBlock({
   const editingEntry = section.entries.find((e) => e.id === editingEntryId) ?? null
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
       {/* Section header */}
-      <div className="flex items-center gap-2 border-b border-gray-100 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-gray-800/60">
+      <div className="flex items-center gap-2 border-b border-border bg-muted px-3 py-2">
         <div
           {...dragHandleProps}
-          className="cursor-grab text-gray-300 active:cursor-grabbing dark:text-gray-600"
+          className="cursor-grab text-muted-foreground active:cursor-grabbing"
         >
           <GripVertical className="size-4" />
         </div>
@@ -761,25 +761,25 @@ function SectionBlock({
             onKeyDown={(e) => { if (e.key === "Enter") { onRename(draftName); setEditingName(false) } if (e.key === "Escape") { setDraftName(section.name); setEditingName(false) } }}
             onDragStart={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
-            className="flex-1 rounded border border-brand bg-white px-2 py-0.5 text-sm font-semibold outline-none dark:bg-gray-900 dark:text-gray-100"
+            className="flex-1 rounded border border-brand bg-card px-2 py-0.5 text-sm font-semibold outline-none"
           />
         ) : (
           <button
             type="button"
             onClick={() => setEditingName(true)}
-            className="min-w-0 flex-1 text-left text-sm font-semibold text-gray-800 hover:text-brand dark:text-gray-200"
+            className="min-w-0 flex-1 text-left text-sm font-semibold text-foreground hover:text-brand"
           >
             {section.name}
           </button>
         )}
 
-        <span className="text-xs text-gray-400">{section.entries.length} items</span>
+        <span className="text-xs text-muted-foreground">{section.entries.length} items</span>
 
         <button
           type="button"
           onClick={() => setCollapsed((c) => !c)}
           aria-label={collapsed ? "Expand section" : "Collapse section"}
-          className="p-2 text-gray-400 hover:text-gray-600"
+          className="p-2 text-muted-foreground hover:text-muted-foreground"
         >
           {collapsed ? <ChevronDown className="size-4" /> : <ChevronUp className="size-4" />}
         </button>
@@ -787,7 +787,7 @@ function SectionBlock({
           type="button"
           onClick={onDelete}
           aria-label="Delete section"
-          className="p-2 text-gray-300 hover:text-red-500 dark:text-gray-600"
+          className="p-2 text-muted-foreground hover:text-red-500"
         >
           <Trash2 className="size-3.5" />
         </button>
@@ -797,12 +797,12 @@ function SectionBlock({
         <div>
           {/* Entry list */}
           {section.entries.length > 0 && (
-            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            <div className="divide-y divide-border">
               {section.entries.map((entry, i) => (
                 editingEntryId === entry.id ? (
                   <div key={entry.id} className="p-3">
                     {savePending
-                      ? <div className="flex h-20 items-center justify-center text-xs text-gray-400"><Loader2 className="mr-2 size-4 animate-spin" />Saving…</div>
+                      ? <div className="flex h-20 items-center justify-center text-xs text-muted-foreground"><Loader2 className="mr-2 size-4 animate-spin" />Saving…</div>
                       : <EntryEditor
                           entry={editingEntry}
                           venueId={venueId}
@@ -844,9 +844,9 @@ function SectionBlock({
 
           {/* New entry form */}
           {editingEntryId === "new" ? (
-            <div className="border-t border-gray-100 p-3 dark:border-gray-800">
+            <div className="border-t border-border p-3">
               {savePending
-                ? <div className="flex h-20 items-center justify-center text-xs text-gray-400"><Loader2 className="mr-2 size-4 animate-spin" />Saving…</div>
+                ? <div className="flex h-20 items-center justify-center text-xs text-muted-foreground"><Loader2 className="mr-2 size-4 animate-spin" />Saving…</div>
                 : <EntryEditor
                     entry={null}
                     venueId={venueId}
@@ -859,7 +859,7 @@ function SectionBlock({
               }
             </div>
           ) : (
-            <div className="border-t border-dashed border-gray-100 dark:border-gray-800">
+            <div className="border-t border-dashed border-border">
               <button
                 type="button"
                 onClick={() => { setEditingEntryId("new"); setCollapsed(false) }}
@@ -988,7 +988,7 @@ export function FixedMenuEditor({
             onKeyDown={(e) => e.key === "Enter" && (e.currentTarget as HTMLInputElement).blur()}
             placeholder="Menu name…"
             disabled={namePending}
-            className={`w-64 rounded-lg border px-2 py-0.5 text-lg font-semibold text-gray-900 outline-none hover:border-gray-200 focus:border-brand focus:ring-1 focus:ring-brand disabled:opacity-60 dark:text-gray-100 ${
+            className={`w-64 rounded-lg border px-2 py-0.5 text-lg font-semibold text-foreground outline-none hover:border-border focus:border-brand focus:ring-1 focus:ring-brand disabled:opacity-60 ${
               !name.trim() ? "border-red-300" : "border-transparent"
             }`}
           />
@@ -1000,7 +1000,7 @@ export function FixedMenuEditor({
             disabled={publishPending}
             className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition disabled:opacity-60 ${
               publishedAt
-                ? "border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400"
+                ? "border-border text-muted-foreground hover:bg-muted"
                 : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
             }`}
           >
@@ -1047,7 +1047,7 @@ export function FixedMenuEditor({
         type="button"
         onClick={addSection}
         disabled={sectionsPending}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 py-3 text-sm font-medium text-gray-400 transition hover:border-brand hover:text-brand disabled:opacity-50 dark:border-gray-700 dark:hover:border-brand"
+        className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border py-3 text-sm font-medium text-muted-foreground transition hover:border-brand hover:text-brand disabled:opacity-50 dark:hover:border-brand"
       >
         {sectionsPending ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
         Add section

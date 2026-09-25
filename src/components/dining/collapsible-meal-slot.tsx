@@ -31,13 +31,13 @@ export function CollapsibleMealSlot({
         className="mb-3 flex w-full items-center gap-2 text-left"
       >
         {collapsed
-          ? <ChevronRight className="size-3.5 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden />
-          : <ChevronDown className="size-3.5 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden />
+          ? <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
+          : <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
         }
-        <span className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">{name}</span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{name}</span>
         {badge}
         {collapsed && (
-          <span className="ml-auto text-[10px] italic text-gray-300 dark:text-gray-600">tap to expand</span>
+          <span className="ml-auto text-[10px] italic text-muted-foreground">tap to expand</span>
         )}
       </button>
       {!collapsed && children}

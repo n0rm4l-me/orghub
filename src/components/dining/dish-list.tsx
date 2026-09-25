@@ -23,7 +23,7 @@ type Dish = {
   modifierGroups?: ModifierGroup[]
 }
 
-const lbl = "mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300"
+const lbl = "mb-1 block text-xs font-medium text-foreground"
 const numCls = inputClass + " max-w-[100px]"
 
 // ── Modifier group editor (reused from fixed-menu-editor) ──────────────────────
@@ -44,19 +44,19 @@ function ModifierGroupCard({
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/60">
+    <div className="rounded-xl border border-border bg-muted p-3">
       <div className="mb-2.5 flex items-center gap-2">
         <input
           value={group.name}
           onChange={(e) => onChange({ ...group, name: e.target.value })}
           placeholder="Group name (e.g. Size)"
-          className="flex-1 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm font-medium outline-none focus:border-brand dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+          className="flex-1 rounded-lg border border-border bg-card px-2.5 py-1.5 text-sm font-medium outline-none focus:border-brand"
         />
-        <label className="flex cursor-pointer items-center gap-1.5 text-xs text-gray-500">
+        <label className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
           <input type="checkbox" checked={group.required} onChange={(e) => onChange({ ...group, required: e.target.checked })} className="rounded" />
           Required
         </label>
-        <label className="flex cursor-pointer items-center gap-1.5 text-xs text-gray-500">
+        <label className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
           <input type="checkbox" checked={group.multiSelect} onChange={(e) => onChange({ ...group, multiSelect: e.target.checked })} className="rounded" />
           Multi
         </label>
@@ -69,25 +69,25 @@ function ModifierGroupCard({
               value={opt.label}
               onChange={(e) => updateOpt(i, { label: e.target.value })}
               placeholder="Label"
-              className="w-28 rounded border border-gray-200 bg-white px-2 py-1 text-xs outline-none focus:border-brand dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+              className="w-28 rounded border border-border bg-card px-2 py-1 text-xs outline-none focus:border-brand"
             />
-            <span className="text-xs text-gray-400">+{getCurrencySymbol(currency)}</span>
+            <span className="text-xs text-muted-foreground">+{getCurrencySymbol(currency)}</span>
             <input
               type="number"
               value={opt.priceDelta}
               onChange={(e) => updateOpt(i, { priceDelta: Number(e.target.value) })}
-              className="w-16 rounded border border-gray-200 bg-white px-2 py-1 text-xs outline-none focus:border-brand dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+              className="w-16 rounded border border-border bg-card px-2 py-1 text-xs outline-none focus:border-brand"
             />
             <button
               type="button"
               title="Default"
               aria-label={opt.isDefault ? "Unset as default" : "Set as default"}
               onClick={() => updateOpt(i, { isDefault: !opt.isDefault })}
-              className={`size-5 rounded-full border text-xs transition ${opt.isDefault ? "border-brand bg-brand text-white" : "border-gray-300 text-gray-400 hover:border-brand"}`}
+              className={`size-5 rounded-full border text-xs transition ${opt.isDefault ? "border-brand bg-brand text-white" : "border-border text-muted-foreground hover:border-brand"}`}
             >
               <Check className="mx-auto size-3" />
             </button>
-            <button type="button" aria-label="Remove option" onClick={() => onChange({ ...group, options: group.options.filter((_, j) => j !== i).map((o, j) => ({ ...o, order: j })) })} className="text-gray-400 hover:text-red-500">
+            <button type="button" aria-label="Remove option" onClick={() => onChange({ ...group, options: group.options.filter((_, j) => j !== i).map((o, j) => ({ ...o, order: j })) })} className="text-muted-foreground hover:text-red-500">
               <X className="size-3" />
             </button>
           </div>
@@ -179,8 +179,8 @@ function DishForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-gray-200 bg-white px-5 py-5 dark:border-gray-700 dark:bg-gray-900">
-      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{dish ? "Edit dish" : "New dish"}</h3>
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-border bg-card px-5 py-5">
+      <h3 className="text-sm font-semibold text-foreground">{dish ? "Edit dish" : "New dish"}</h3>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
@@ -201,7 +201,7 @@ function DishForm({
         <div>
           <label className={lbl}>Base price ({getCurrencySymbol(currency)})</label>
           <div className="relative">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">{getCurrencySymbol(currency)}</span>
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">{getCurrencySymbol(currency)}</span>
             <input
               type="number"
               name="price"
@@ -212,7 +212,7 @@ function DishForm({
               className={inputClass + " pl-6"}
             />
           </div>
-          <p className="mt-1 text-[11px] text-gray-400">Auto-fills when added to fixed menus</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">Auto-fills when added to fixed menus</p>
         </div>
       </div>
 
@@ -261,7 +261,7 @@ function DishForm({
         <button
           type="button"
           onClick={() => setShowModifiers((s) => !s)}
-          className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-muted-foreground"
         >
           {showModifiers ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
           Modifiers
@@ -285,7 +285,7 @@ function DishForm({
             <button
               type="button"
               onClick={() => setModifiers((gs) => [...gs, { name: "", required: false, multiSelect: false, order: gs.length, options: [] }])}
-              className="flex items-center gap-1.5 rounded-lg border border-dashed border-gray-200 px-3 py-2 text-xs font-medium text-gray-400 hover:border-brand hover:text-brand dark:border-gray-700"
+              className="flex items-center gap-1.5 rounded-lg border border-dashed border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:border-brand hover:text-brand"
             >
               <Plus className="size-3.5" /> Add modifier group
             </button>
@@ -293,9 +293,9 @@ function DishForm({
         )}
       </div>
 
-      <div className="flex justify-end gap-3 border-t border-gray-100 pt-3 dark:border-gray-800">
+      <div className="flex justify-end gap-3 border-t border-border pt-3">
         <button type="button" onClick={onDone}
-          className="inline-flex items-center rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400">
+          className="inline-flex items-center rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted">
           Cancel
         </button>
         <button type="submit" disabled={pending}
@@ -362,7 +362,7 @@ export function DishList({
           placeholder="Search dishes…"
           defaultValue={q}
           onChange={(e) => navigate(e.target.value)}
-          className="h-9 max-w-xs rounded-lg border border-gray-200 px-3 text-sm text-gray-900 outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+          className="h-9 max-w-xs rounded-lg border border-border px-3 text-sm text-foreground outline-none focus:border-brand focus:ring-1 focus:ring-brand"
         />
         {!showForm && !editId && (
           <button
@@ -385,10 +385,10 @@ export function DishList({
           title={q ? "No dishes match the search." : "No dishes yet."}
         />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+        <div className="overflow-hidden rounded-xl border border-border bg-card">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50 text-xs font-medium text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+              <tr className="border-b border-border bg-muted text-xs font-medium text-muted-foreground">
                 <th className="px-4 py-3 text-left">Dish</th>
                 <th className="px-4 py-3 text-right">Price</th>
                 {featuredParam && <th className="px-4 py-3 text-right">{featuredParam.name}</th>}
@@ -396,7 +396,7 @@ export function DishList({
                 <th className="w-20 px-4 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+            <tbody className="divide-y divide-border">
               {dishes.map((d) =>
                 editId === d.id ? (
                   <tr key={d.id}>
@@ -412,30 +412,30 @@ export function DishList({
                     </td>
                   </tr>
                 ) : (
-                  <tr key={d.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                  <tr key={d.id} className="hover:bg-muted">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="size-10 shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+                        <div className="size-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                           {d.photo
                             ? <SafeImg src={`${d.photo}?w=80`} alt="" className="h-full w-full object-cover" width={40} height={40} loading="lazy" />
-                            : <div className="flex h-full w-full items-center justify-center"><UtensilsCrossed className="size-4 text-gray-300 dark:text-gray-600" /></div>}
+                            : <div className="flex h-full w-full items-center justify-center"><UtensilsCrossed className="size-4 text-muted-foreground" /></div>}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-gray-100">{d.name}</p>
-                          {d.description && <p className="text-xs text-gray-400">{d.description}</p>}
+                          <p className="font-medium text-foreground">{d.name}</p>
+                          {d.description && <p className="text-xs text-muted-foreground">{d.description}</p>}
                           {(d.modifierGroups?.length ?? 0) > 0 && (
-                            <p className="mt-0.5 text-[11px] text-gray-400">
+                            <p className="mt-0.5 text-[11px] text-muted-foreground">
                               {d.modifierGroups!.map((g) => g.name).join(" · ")}
                             </p>
                           )}
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-gray-600 dark:text-gray-400">
-                      {d.price != null ? formatPrice(d.price, currency) : <span className="text-gray-300">—</span>}
+                    <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">
+                      {d.price != null ? formatPrice(d.price, currency) : <span className="text-muted-foreground">—</span>}
                     </td>
                     {featuredParam && (
-                      <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-400">
+                      <td className="px-4 py-3 text-right text-muted-foreground">
                         {((d.nutrition as Record<string, number> | null)?.[featuredParam.id]) ?? "–"}
                       </td>
                     )}
@@ -455,11 +455,11 @@ export function DishList({
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <button onClick={() => setEditId(d.id)} aria-label="Edit"
-                          className="grid size-7 place-items-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800">
+                          className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-muted-foreground">
                           <Pencil className="size-3.5" />
                         </button>
                         <button onClick={() => setConfirmDeleteId(d.id)} disabled={delPending} aria-label="Delete"
-                          className="grid size-7 place-items-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20">
+                          className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20">
                           <Trash2 className="size-3.5" />
                         </button>
                       </div>
@@ -475,12 +475,12 @@ export function DishList({
       {totalPages > 1 && (
         <div className="flex items-center justify-end gap-2">
           <button disabled={page <= 1} onClick={() => navigate(undefined, page - 1)}
-            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-40 dark:border-gray-700 dark:text-gray-400">
+            className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40">
             Previous
           </button>
-          <span className="text-xs text-gray-500">{page} / {totalPages}</span>
+          <span className="text-xs text-muted-foreground">{page} / {totalPages}</span>
           <button disabled={page >= totalPages} onClick={() => navigate(undefined, page + 1)}
-            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-40 dark:border-gray-700 dark:text-gray-400">
+            className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40">
             Next
           </button>
         </div>

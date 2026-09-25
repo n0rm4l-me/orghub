@@ -10,7 +10,7 @@ import { toast } from "@/components/ui/toaster"
 type CatRow = { id?: string; name: string }
 type SlotRow = { id?: string; name: string; timeStart: string; timeEnd: string; cats: CatRow[] }
 
-const inputCls = "rounded-lg border border-gray-200 px-3 py-2 text-base sm:text-sm text-gray-900 outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+const inputCls = "rounded-lg border border-border px-3 py-2 text-base sm:text-sm text-foreground outline-none focus:border-brand focus:ring-1 focus:ring-brand"
 
 export function MealStructureEditor({
   venueId,
@@ -112,28 +112,28 @@ export function MealStructureEditor({
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white px-5 py-5 dark:border-gray-700 dark:bg-gray-900">
+    <div className="rounded-xl border border-border bg-card px-5 py-5">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Meal slots &amp; categories</h2>
-        <p className="text-xs text-gray-400 dark:text-gray-500">Slots define time periods; categories are rows in the menu grid</p>
+        <h2 className="text-sm font-semibold text-foreground">Meal slots &amp; categories</h2>
+        <p className="text-xs text-muted-foreground">Slots define time periods; categories are rows in the menu grid</p>
       </div>
 
       {slots.length === 0 && (
-        <p className="mb-4 text-sm text-gray-400 dark:text-gray-500">No slots yet.</p>
+        <p className="mb-4 text-sm text-muted-foreground">No slots yet.</p>
       )}
 
       <div className="space-y-3">
         {slots.map((slot, si) => (
-          <div key={si} className="rounded-lg border border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/60">
+          <div key={si} className="rounded-lg border border-border bg-muted">
             {/* Slot header row */}
             <div className="flex flex-wrap items-center gap-2 px-3 py-2.5">
               <div className="flex flex-col gap-0.5">
                 <button type="button" onClick={() => moveSlot(si, "up")} disabled={si === 0} aria-label="Move up"
-                  className="rounded p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-20 dark:text-gray-500">
+                  className="rounded p-0.5 text-muted-foreground hover:text-muted-foreground disabled:opacity-20">
                   <ChevronUp className="size-3.5" />
                 </button>
                 <button type="button" onClick={() => moveSlot(si, "down")} disabled={si === slots.length - 1} aria-label="Move down"
-                  className="rounded p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-20 dark:text-gray-500">
+                  className="rounded p-0.5 text-muted-foreground hover:text-muted-foreground disabled:opacity-20">
                   <ChevronDown className="size-3.5" />
                 </button>
               </div>
@@ -150,7 +150,7 @@ export function MealStructureEditor({
                   placeholder="07:30"
                   className={inputCls + " w-20"}
                 />
-                <span className="text-xs text-gray-400 dark:text-gray-500">–</span>
+                <span className="text-xs text-muted-foreground">–</span>
                 <input
                   value={slot.timeEnd}
                   onChange={(e) => updateSlot(si, { timeEnd: e.target.value })}
@@ -158,7 +158,7 @@ export function MealStructureEditor({
                   className={inputCls + " w-20"}
                 />
                 <button type="button" onClick={() => removeSlot(si)} aria-label="Remove slot"
-                  className="shrink-0 rounded p-1 text-gray-300 hover:text-red-500 dark:text-gray-600">
+                  className="shrink-0 rounded p-1 text-muted-foreground hover:text-red-500">
                   <Trash2 className="size-3.5" />
                 </button>
               </div>
@@ -166,17 +166,17 @@ export function MealStructureEditor({
 
             {/* Categories indented under slot */}
             {(slot.cats.length > 0 || true) && (
-              <div className="border-t border-gray-100 px-3 pb-2.5 pt-2 dark:border-gray-800">
+              <div className="border-t border-border px-3 pb-2.5 pt-2">
                 <div className="space-y-1.5">
                   {slot.cats.map((cat, ci) => (
                     <div key={ci} className="flex items-center gap-2 pl-6">
                       <div className="flex flex-col gap-0.5">
                         <button type="button" onClick={() => moveCat(si, ci, "up")} disabled={ci === 0} aria-label="Move up"
-                          className="rounded p-0.5 text-gray-300 hover:text-gray-500 disabled:opacity-20 dark:text-gray-600">
+                          className="rounded p-0.5 text-muted-foreground hover:text-muted-foreground disabled:opacity-20">
                           <ChevronUp className="size-3" />
                         </button>
                         <button type="button" onClick={() => moveCat(si, ci, "down")} disabled={ci === slot.cats.length - 1} aria-label="Move down"
-                          className="rounded p-0.5 text-gray-300 hover:text-gray-500 disabled:opacity-20 dark:text-gray-600">
+                          className="rounded p-0.5 text-muted-foreground hover:text-muted-foreground disabled:opacity-20">
                           <ChevronDown className="size-3" />
                         </button>
                       </div>

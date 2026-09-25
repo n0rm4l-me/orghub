@@ -19,7 +19,7 @@ export function MenuPublishToggle({
   )
 
   if (pending) {
-    return <Loader2 className="size-3.5 animate-spin text-gray-400" />
+    return <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
   }
 
   if (published) {
@@ -38,7 +38,7 @@ export function MenuPublishToggle({
   return (
     <button
       onClick={handle}
-      className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-400 hover:bg-brand/10 hover:text-brand transition-colors"
+      className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground hover:bg-brand/10 hover:text-brand transition-colors"
       title="Click to publish"
     >
       Draft

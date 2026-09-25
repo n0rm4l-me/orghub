@@ -14,7 +14,7 @@ interface Props {
   trigger: ReactNode
 }
 
-const lbl = "mb-1 block text-xs font-medium text-gray-700"
+const lbl = "mb-1 block text-xs font-medium text-foreground"
 
 const ALL_TIMEZONES: string[] = (() => {
   try {
@@ -84,8 +84,8 @@ export function LocationForm({ location, trigger }: Props) {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 backdrop-blur-[2px]" onClick={handleClose}>
-          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h2 className="mb-4 text-sm font-semibold text-gray-900">
+          <div className="w-full max-w-sm rounded-xl bg-popover p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h2 className="mb-4 text-sm font-semibold text-foreground">
               {location ? "Edit location" : "New location"}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-3">
@@ -109,14 +109,14 @@ export function LocationForm({ location, trigger }: Props) {
                     spellCheck={false}
                   />
                   {tzOpen && filtered.length > 0 && (
-                    <div className="absolute left-0 right-0 top-full z-[60] mt-1 max-h-52 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                    <div className="absolute left-0 right-0 top-full z-[60] mt-1 max-h-52 overflow-y-auto rounded-lg border border-border bg-popover shadow-lg">
                       {filtered.map((tz) => (
                         <button
                           key={tz}
                           type="button"
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={() => { setTzQuery(tz); setTzOpen(false) }}
-                          className={`block w-full px-3 py-1.5 text-left text-sm hover:bg-gray-50 ${tzQuery === tz ? "bg-brand/5 font-medium text-brand" : "text-gray-700"}`}
+                          className={`block w-full px-3 py-1.5 text-left text-sm hover:bg-muted ${tzQuery === tz ? "bg-brand/5 font-medium text-brand" : "text-foreground"}`}
                         >
                           {tz}
                         </button>
@@ -134,7 +134,7 @@ export function LocationForm({ location, trigger }: Props) {
                     {location ? "Save" : "Create"}
                   </button>
                   <button type="button" onClick={handleClose}
-                    className="inline-flex items-center rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50">
+                    className="inline-flex items-center rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted">
                     Cancel
                   </button>
                 </div>
@@ -147,7 +147,7 @@ export function LocationForm({ location, trigger }: Props) {
                         Confirm delete
                       </button>
                       <button type="button" onClick={() => setConfirmingDelete(false)}
-                        className="inline-flex items-center rounded-lg border border-gray-200 px-2 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50">
+                        className="inline-flex items-center rounded-lg border border-border px-2 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted">
                         Cancel
                       </button>
                     </div>

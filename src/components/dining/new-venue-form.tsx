@@ -16,7 +16,7 @@ const VENUE_TYPES: { key: VenueType; label: string; description: string; icon: R
   { key: "RESTAURANT",label: "Restaurant",  description: "Full à la carte, sections, premium UX",        icon: ChefHat   },
 ]
 
-const lbl = "mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300"
+const lbl = "mb-1 block text-xs font-medium text-foreground"
 
 export function NewVenueForm({ locations, defaultLocationId }: { locations: Location[]; defaultLocationId?: string }) {
   const router = useRouter()
@@ -38,7 +38,7 @@ export function NewVenueForm({ locations, defaultLocationId }: { locations: Loca
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-gray-200 bg-white px-5 py-5 dark:border-gray-700 dark:bg-gray-900">
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-border bg-card px-5 py-5">
       <div>
         <label className={lbl}>Location <span aria-hidden="true">*</span></label>
         <select name="locationId" defaultValue={defaultLocationId ?? ""} required className={inputClass}>
@@ -65,32 +65,32 @@ export function NewVenueForm({ locations, defaultLocationId }: { locations: Loca
                 className={`flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition ${
                   active
                     ? "border-brand bg-brand/5 dark:bg-brand/10"
-                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/60"
+                    : "border-border hover:border-border hover:bg-muted"
                 }`}
               >
-                <Icon className={`size-5 ${active ? "text-brand" : "text-gray-400"}`} />
-                <span className={`text-sm font-semibold ${active ? "text-brand" : "text-gray-700 dark:text-gray-200"}`}>
+                <Icon className={`size-5 ${active ? "text-brand" : "text-muted-foreground"}`} />
+                <span className={`text-sm font-semibold ${active ? "text-brand" : "text-foreground"}`}>
                   {t.label}
                 </span>
-                <span className="text-[11px] leading-tight text-gray-400 dark:text-gray-500">{t.description}</span>
+                <span className="text-[11px] leading-tight text-muted-foreground">{t.description}</span>
               </button>
             )
           })}
         </div>
       </div>
 
-      <div className="rounded-lg bg-gray-50 px-4 py-3 space-y-3 dark:bg-gray-800">
+      <div className="rounded-lg bg-muted px-4 py-3 space-y-3">
         <label className="flex cursor-pointer items-center justify-between gap-3">
-          <span className="text-sm text-gray-700 dark:text-gray-300">Weekly menu</span>
+          <span className="text-sm text-foreground">Weekly menu</span>
           <button type="button" role="switch" aria-checked={weeklyMenuEnabled} onClick={() => setWeeklyMenuEnabled(!weeklyMenuEnabled)}
-            className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors ${weeklyMenuEnabled ? "bg-brand" : "bg-gray-200"}`}>
+            className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors ${weeklyMenuEnabled ? "bg-brand" : "bg-border"}`}>
             <span className={`pointer-events-none inline-block size-4 rounded-full bg-white shadow transition-transform ${weeklyMenuEnabled ? "translate-x-4" : "translate-x-0"}`} />
           </button>
         </label>
         <label className="flex cursor-pointer items-center justify-between gap-3">
-          <span className="text-sm text-gray-700 dark:text-gray-300">Announcements</span>
+          <span className="text-sm text-foreground">Announcements</span>
           <button type="button" role="switch" aria-checked={topicsEnabled} onClick={() => setTopicsEnabled(!topicsEnabled)}
-            className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors ${topicsEnabled ? "bg-brand" : "bg-gray-200"}`}>
+            className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors ${topicsEnabled ? "bg-brand" : "bg-border"}`}>
             <span className={`pointer-events-none inline-block size-4 rounded-full bg-white shadow transition-transform ${topicsEnabled ? "translate-x-4" : "translate-x-0"}`} />
           </button>
         </label>
@@ -98,7 +98,7 @@ export function NewVenueForm({ locations, defaultLocationId }: { locations: Loca
 
       <div className="flex justify-end gap-3">
         <button type="button" onClick={() => router.push("/admin/dining")}
-          className="inline-flex items-center rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400">
+          className="inline-flex items-center rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted">
           Cancel
         </button>
         <button type="submit" disabled={pending}

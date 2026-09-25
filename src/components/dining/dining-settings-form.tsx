@@ -42,18 +42,18 @@ export function DiningSettingsForm({ currency }: Props) {
   const isCustom = !CURRENCIES.some((c) => c.code === currency)
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white px-5 py-5 dark:border-gray-700 dark:bg-gray-900">
-      <h2 className="mb-4 text-sm font-semibold text-gray-900 dark:text-gray-100">Dining settings</h2>
+    <div className="rounded-xl border border-border bg-card px-5 py-5">
+      <h2 className="mb-4 text-sm font-semibold text-foreground">Dining settings</h2>
       <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Currency</label>
+          <label className="mb-1 block text-xs font-medium text-foreground">Currency</label>
           <select
             name="diningCurrency"
             defaultValue={isCustom ? "__custom" : currency}
             onChange={(e) => {
               if (e.target.value === "__custom") return
             }}
-            className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200"
+            className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-brand focus:ring-1 focus:ring-brand"
           >
             {CURRENCIES.map((c) => (
               <option key={c.code} value={c.code}>{c.label}</option>
@@ -62,7 +62,7 @@ export function DiningSettingsForm({ currency }: Props) {
               <option value={currency}>{currency} (custom)</option>
             )}
           </select>
-          <p className="mt-1 text-[11px] text-gray-400 dark:text-gray-500">
+          <p className="mt-1 text-[11px] text-muted-foreground">
             ISO 4217 code used when displaying prices across the dining module.
           </p>
         </div>

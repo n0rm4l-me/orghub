@@ -40,7 +40,7 @@ export function AddVenueDialog({ locationId }: { locationId: string }) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+        className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted"
       >
         <Plus className="size-3.5" aria-hidden />
         Add venue
@@ -48,17 +48,17 @@ export function AddVenueDialog({ locationId }: { locationId: string }) {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 backdrop-blur-[2px] p-4" onClick={handleClose}>
-          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl dark:bg-gray-900" onClick={(e) => e.stopPropagation()}>
-            <h2 className="mb-4 text-sm font-semibold text-gray-900 dark:text-gray-100">New venue</h2>
+          <div className="w-full max-w-sm rounded-xl bg-popover p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h2 className="mb-4 text-sm font-semibold text-foreground">New venue</h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Name <span aria-hidden="true">*</span></label>
+                <label className="mb-1 block text-xs font-medium text-foreground">Name <span aria-hidden="true">*</span></label>
                 <input name="name" required placeholder="9F Cafeteria" autoFocus className={inputClass} />
               </div>
 
               <div>
-                <p className="mb-1.5 text-xs font-medium text-gray-700 dark:text-gray-300">Venue type</p>
+                <p className="mb-1.5 text-xs font-medium text-foreground">Venue type</p>
                 <div className="grid grid-cols-3 gap-2">
                   {VENUE_TYPES.map((t) => {
                     const Icon = t.icon
@@ -71,14 +71,14 @@ export function AddVenueDialog({ locationId }: { locationId: string }) {
                         className={`flex flex-col items-start gap-1 rounded-xl border-2 p-2.5 text-left transition ${
                           active
                             ? "border-brand bg-brand/5 dark:bg-brand/10"
-                            : "border-gray-200 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/60"
+                            : "border-border hover:border-border hover:bg-muted"
                         }`}
                       >
-                        <Icon className={`size-4 ${active ? "text-brand" : "text-gray-400"}`} />
-                        <span className={`text-xs font-semibold leading-tight ${active ? "text-brand" : "text-gray-700 dark:text-gray-200"}`}>
+                        <Icon className={`size-4 ${active ? "text-brand" : "text-muted-foreground"}`} />
+                        <span className={`text-xs font-semibold leading-tight ${active ? "text-brand" : "text-foreground"}`}>
                           {t.label}
                         </span>
-                        <span className="text-[10px] leading-tight text-gray-400 dark:text-gray-500">{t.description}</span>
+                        <span className="text-[10px] leading-tight text-muted-foreground">{t.description}</span>
                       </button>
                     )
                   })}
@@ -87,7 +87,7 @@ export function AddVenueDialog({ locationId }: { locationId: string }) {
 
               <div className="flex justify-end gap-2 pt-1">
                 <button type="button" onClick={handleClose}
-                  className="inline-flex items-center rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400">
+                  className="inline-flex items-center rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted">
                   Cancel
                 </button>
                 <button type="submit" disabled={pending}
