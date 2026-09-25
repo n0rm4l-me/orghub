@@ -192,7 +192,9 @@ export async function redeemKudos(amount: number, typeId?: string): Promise<Acti
   const settings = await getSettings()
   if (!settings.kudosRedeemEnabled) return fail("Redemption is not enabled.")
 
-  if (amount < 1) return fail("Invalid amount.")
+  // NaN fails both `< 1` here and `> available` below (NaN comparisons are always
+  // false), so a non-integer amount would otherwise sail through both guards.
+  if (!Number.isInteger(amount) || amount < 1) return fail("Invalid amount.")
 
   let resolvedTypeId: string | null = null
   let webhookUrl = settings.kudosRedeemWebhook
