@@ -1,8 +1,5 @@
-import { Suspense } from "react"
 import { PortalSidebarPanel } from "@/components/portal-sidebar-panel"
-import { Skeleton } from "@/components/ui/skeleton"
 
-const FALLBACK = <Skeleton className="h-64 rounded-xl" />
 const DEFAULT_RIGHT = ["quickLinks", "browseByTopic", "upcomingEvents"]
 
 interface Props {
@@ -43,17 +40,13 @@ export function PortalPageLayout({
     <div className="flex items-start gap-8">
       {showLeft && (
         <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
-          <Suspense fallback={FALLBACK}>
-            <PortalSidebarPanel blocks={leftBlocks} {...panelProps} />
-          </Suspense>
+          <PortalSidebarPanel blocks={leftBlocks} {...panelProps} />
         </aside>
       )}
       <div className="min-w-0 flex-1">{children}</div>
       {showRight && (
         <aside className="sticky top-20 hidden w-64 shrink-0 space-y-4 lg:block">
-          <Suspense fallback={FALLBACK}>
-            <PortalSidebarPanel blocks={rightBlocks} {...panelProps} />
-          </Suspense>
+          <PortalSidebarPanel blocks={rightBlocks} {...panelProps} />
         </aside>
       )}
     </div>
