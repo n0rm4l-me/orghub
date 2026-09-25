@@ -121,11 +121,51 @@ module-enabled flag; the comment-reply notification call is now
 - **FIXED (2026-09-24). `orghub-mobile`'s uncommitted work is now committed**
   (commit `4b8f872`, 43 files). No remote is configured on that repo, so this
   was purely a local-disk-loss risk; it's closed now.
-- **OPEN. `orghub-mobile` has three stub screens.**
-  `app/kudos.tsx`, `app/polls.tsx`, `app/suggestions.tsx` all render
-  `<ComingSoonScreen>` and nothing else, despite the web backend fully
-  supporting all three, and despite `lib/useAuth.ts`/`lib/api.ts` already
-  existing to build them on. Decide priority for building these three out.
+- **ONE OF THREE FIXED 2026-09-25: Suggestions.** `orghub-mobile`'s
+  `app/kudos.tsx`, `app/polls.tsx`, `app/suggestions.tsx` all rendered
+  `<ComingSoonScreen>` and nothing else. Correction to the original note:
+  "the web backend fully supports all three" undersold the gap. It's true
+  that the business logic already exists (`src/lib/actions/{kudos,polls,
+  suggestions}.ts`), but that's Next.js Server Actions, not something a
+  React Native app can call over plain HTTP; `orghub-mobile`'s `apiFetch`
+  needs real REST endpoints, and before this fix, `suggestions`/`kudos`/
+  `polls` had none (only `mobile-login`, `mobile-me`, plus read-only REST
+  routes for articles/events/dining/pages). Built the missing endpoints for
+  Suggestions specifically:
+  [src/app/api/suggestions/route.ts](src/app/api/suggestions/route.ts) (list
+  + create),
+  [src/app/api/suggestions/[id]/route.ts](<src/app/api/suggestions/[id]/route.ts>)
+  (detail + comments inline),
+  [src/app/api/suggestions/[id]/vote/route.ts](<src/app/api/suggestions/[id]/vote/route.ts>),
+  [src/app/api/suggestions/[id]/comments/route.ts](<src/app/api/suggestions/[id]/comments/route.ts>);
+  each mirrors its web action's exact business logic (module-enabled gate,
+  same validation bounds, same anonymous-author masking, same admin-reply
+  flagging, same notification-on-comment) but authenticates via
+  `getMobileUser` (Bearer JWT) instead of the cookie-session `requireRole`,
+  matching the existing `/api/articles/*` mobile routes' own convention.
+  Covered by [src/__tests__/api.suggestions.test.ts](src/__tests__/api.suggestions.test.ts)
+  (13 tests: module-disabled 404s, auth gating, validation, vote toggle
+  on/off, comment-notification fired/suppressed correctly). On the mobile
+  side (separate repo, `orghub-mobile`, commit `c8fabb6`): replaced the stub
+  with a real list screen (pagination, pull-to-refresh, inline "New idea"
+  composer, vote button) and a new detail screen (full body, admin response,
+  flat comment list, `CommentForm` reused from the article screen). Deliberate
+  v1 cut: no category picker on mobile submission yet (`categoryId` always
+  null), matching the conservative-scope pattern elsewhere in this file.
+  **Not verified in a simulator or on a device**: this environment has no
+  Expo runtime to actually launch the app in; checked with `tsc --noEmit` in
+  both repos (clean, aside from pre-existing unrelated errors in
+  `orghub-mobile`'s `dining/[id].tsx`/`ThemeContext.tsx`/`mediaCache.ts`
+  that predate this change) and by hand-tracing every API response shape
+  against every screen's consumption of it. Treat as "should work,
+  type-checked, never actually run" until someone opens it on a real device.
+  **Kudos and Polls are still OPEN, same shape of work needed**: new REST
+  endpoints (kudos needs balance/send/history/redeem; polls needs
+  active-poll/vote/results) plus two more screens, following the exact same
+  pattern now established by Suggestions above. Not attempted this pass:
+  kudos touches a currency balance (real correctness stakes, deserves its
+  own careful pass) and polls needs a vote-state UI that's easy to get subtly
+  wrong without any way to watch it actually vote.
 
 - **FIXED (2026-09-24). Admin Events form said "Create article" instead of
   "Create event".** `content-form.tsx` is correctly shared between Articles
@@ -440,26 +480,72 @@ Root-cause item first, the rest multiply in impact once it's fixed:
   next person who added a genuinely static page). A real caching win here
   needs Partial Prerendering, a much bigger change: `dynamic-rendering.md` in
   `node_modules/next/dist/docs/` describes it if this gets revisited.
-- **OPEN, and the visible fix isn't the real one.**
-  [src/components/article-body.tsx](src/components/article-body.tsx) still
+- **PARTIALLY FIXED 2026-09-25; one earlier claim in this same note was
+  wrong, corrected below.**
+  [src/components/article-body.tsx](src/components/article-body.tsx)
   instantiates a live client-side Tiptap/ProseMirror editor (`useEditor` +
   `EditorContent`, `editable: false`) for every public article view, shipping
-  the whole editor runtime just to display static text. The obvious-looking
-  fix, server-side `@tiptap/html` `generateHTML` with no client Tiptap at
-  all, is blocked: [src/components/poll-embed-extension.ts](src/components/poll-embed-extension.ts)
-  renders live, interactive voting inside articles via a client NodeView, and
-  `generateHTML` has no way to keep that interactive after a switch to
-  static HTML, that needs a small client "island" component mounted into the
-  static HTML in the poll's place, not a drop-in swap. Also,
+  the whole editor runtime (StarterKit's full command/history/input-rule
+  machinery, none of it reachable in `editable: false` mode) just to display
+  static text. Shipped the safe half of the fix:
+  [src/components/article-translate-body.tsx](src/components/article-translate-body.tsx)
+  now loads `ArticleBody` through `next/dynamic` instead of a static import,
+  so Tiptap/ProseMirror (confirmed as its own ~412KB chunk, isolated from
+  every other chunk, after a clean `next build`) is no longer part of the
+  route's main bundle and can be cached across article-to-article navigation.
+  This does not reduce total bytes a reader downloads, and does not fix the
+  deeper issue (below); it only takes the heaviest part out of the critical
+  path for the rest of the page (header, like/comment buttons). Verified with
+  `tsc`, `eslint`, the full test suite, and a clean `npx next build`; not
+  visually confirmed in a real browser (`preview_start` still can't reach the
+  DB this session, a standing limitation noted throughout this file), so
+  treat the "isolated chunk" claim as build-output-verified, not
+  screen-verified.
+
+  The real fix, server-side `generateHTML` (no client Tiptap at all for a
+  reader who never votes on a poll), is still blocked, but not for the
+  reason this note previously gave. **Corrected:** the previous claim that
   [src/components/image-embed-extension.ts](src/components/image-embed-extension.ts)
-  defines a NodeView but no `renderHTML`, so `generateHTML` would silently
-  drop every embedded image in every article until that's added. Given the
-  real fix is "add renderHTML to ImageEmbed, then build a poll island, then
-  switch the rendering path" across a component that's live on every public
-  article page, and this session's `preview_start` couldn't reach the DB to
-  functionally verify a poll still votes correctly afterward, didn't attempt
-  it. `next/dynamic({ssr:false})` isn't an option either way: it would kill
-  SSR of the article body itself.
+  "defines a NodeView but no `renderHTML`" was never actually checked against
+  the installed package and was wrong: `ImageEmbed` is `Image.extend({
+  addNodeView() {...} })` from `@tiptap/extension-image`, `.extend()` only
+  overrides the fields it's given, and the base `Image` node's own
+  `renderHTML` (`node_modules/@tiptap/extension-image/dist/index.js:40`) is
+  still there and works standalone. **The actual blocker, empirically
+  reproduced this session:** `generateHTML` (exported from `@tiptap/core` in
+  Tiptap 3, not a separate `@tiptap/html` package like Tiptap 2) throws
+  `ReferenceError: window is not defined` from
+  `prosemirror-model`'s `DOMSerializer.serializeFragment`, because it builds
+  the output by creating real DOM nodes, not by string-templating HTML.
+  Node.js has no `window`/`document` by default and this repo has no DOM
+  shim installed (checked: no `jsdom`, `linkedom`, or `happy-dom` in
+  `package.json` or `node_modules`; `vitest.config.ts` itself runs with
+  `environment: "node"`, confirming nothing already pulls one in). The
+  poll-island reasoning in the original note still holds regardless: 
+  [src/components/poll-embed-extension.ts](src/components/poll-embed-extension.ts)'s
+  `renderHTML` already emits a static `<div data-poll-id>` marker (fine for
+  `generateHTML`), but keeping live voting after a switch to static HTML
+  needs a small client "island" mounted into that marker, not a drop-in
+  swap. A different shortcut was also checked and ruled out:
+  `StarterKit.configure({ dropcursor: false, gapcursor: false, undoRedo:
+  false })` for a trimmed read-only extension list looked promising but does
+  nothing for bundle size, confirmed by reading
+  `node_modules/@tiptap/starter-kit/dist/index.js`: it statically imports
+  every sub-extension unconditionally at the top of the file regardless of
+  `.configure()` flags, so a bundler can't tree-shake what those flags
+  disable at runtime; only *not importing* `@tiptap/starter-kit` at all (and
+  hand-picking individual `@tiptap/extension-*` packages instead) would
+  actually shrink the bundle, which reopens the same "verify every node/mark
+  type real content uses" risk as the `generateHTML` path.
+  Real remaining shape of the fix: add a DOM-shim dependency
+  (`jsdom`/`linkedom`), render server-side via `generateHTML`, build the poll
+  island, and switch the rendering path: a bigger, separately-verifiable
+  change (adding a new dependency, plus functionally confirming a poll still
+  votes correctly afterward) than a same-day item in a larger batch should
+  attempt, especially right after this same session shipped one unverified
+  CSP change to this app's hydration behavior that broke production (see
+  "Lighthouse audit" below). Left for a dedicated pass with real browser
+  verification.
 
 Everything else, roughly ordered by blast radius:
 
@@ -481,12 +567,6 @@ Everything else, roughly ordered by blast radius:
   the file's portal-facing `dark:`/`gray-*` styling was deliberately left
   untouched (Phase 3 of the design-unification plan is still deferred).
   Verified with `tsc --noEmit`, `eslint`, and a full `npx next build`.
-- **OPEN** [src/components/article-body.tsx:4](src/components/article-body.tsx#L4):
-  every public article/page render still imports the full Tiptap editor
-  (toolbar + all extensions) just to get `EDITOR_EXTENSIONS`. Zero
-  `next/dynamic` usage anywhere in `src/`. Extract the extensions list to its
-  own module, render stored content server-side via `@tiptap/html`, lazy-load
-  the actual `Editor` component only in the admin content form.
 - **FIXED 2026-09-25, all 3 pages that had this pattern.**
   [src/app/(portal)/page.tsx](<src/app/(portal)/page.tsx>) (the feed): the
   `lastFeedVisitAt` lookup, active-poll data, and top-kudos data were 3
@@ -646,12 +726,15 @@ Smaller items, independent of the design-unification phases above:
   bug generalizes to a named pattern, grep the whole tree for that pattern
   before calling the fix done, not just for the specific file convention
   that happened to surface it.
-- **OPEN.** `Field` (the accessible-label wrapper in
-  [src/components/ui/field.tsx](src/components/ui/field.tsx)) is used in
-  exactly one file. Six dining/admin files each define their own local `lbl`
-  class string instead:
-  `kudos-redeem-types-panel.tsx`, `new-venue-form.tsx`, `dish-list.tsx`,
-  `venue-settings-form.tsx`, `location-form.tsx`, `topics-list.tsx`.
+- **FIXED 2026-09-25.** `Field` itself (the accessible-label wrapper) still
+  suits only its one existing caller, but the six dining/admin files that
+  each defined their own local `lbl` class string
+  (`kudos-redeem-types-panel.tsx`, `new-venue-form.tsx`, `dish-list.tsx`,
+  `venue-settings-form.tsx`, `location-form.tsx`, `topics-list.tsx`) now
+  import a shared `compactLabelClass` (aliased `as lbl` at each call site, so
+  the change is import-only, zero JSX/className diffs) from
+  [src/components/ui/field.tsx](src/components/ui/field.tsx) instead of
+  repeating the string six times.
 - **FIXED 2026-09-25.** Required-field asterisks are accessible everywhere
   now: the 7 files that put a literal `*` inside the label's own text
   (`kudos-redeem-types-panel.tsx`, `dish-list.tsx`, `new-venue-form.tsx` x2,
@@ -790,10 +873,21 @@ Smaller items, independent of the design-unification phases above:
   (`wouldOrphanAdmins`), and an admin can't deactivate their own account.
   Still open: most non-authorization logic (validation, notification side
   effects) and the remaining action files with zero coverage
-  (`announcements.ts`, `categories.ts`, `nav.ts`, `pages.ts`, `translate.ts`,
-  `translation-settings.ts`, `suggestion-categories.ts`, `feed.ts`,
-  `ldap-sync.ts`, `media.ts`, `media-migrate.ts`); the matrix now covers 5
-  of ~20 action files.
+  (`announcements.ts`, `articles.ts`, `categories.ts`, `nav.ts`, `pages.ts`,
+  `reactions.ts`, `translation-settings.ts`, `suggestion-categories.ts`,
+  `feed.ts`, `ldap-sync.ts`, `media-migrate.ts`). **Extended again
+  2026-09-25:** added
+  [actions.settings.test.ts](src/__tests__/actions.settings.test.ts) (12
+  tests: `toggleLocalAuth`'s lockout rule, `saveSettings`/
+  `saveEnabledModules` validation),
+  [actions.media.test.ts](src/__tests__/actions.media.test.ts) (7 tests:
+  `deleteMediaBulk` role-gating and full-transaction behavior,
+  `deleteOrphanedObjects` role-gating), and
+  [actions.comments.test.ts](src/__tests__/actions.comments.test.ts) (11
+  tests: `addComment`'s anonymous/empty-body/unpublished-article/
+  cross-article-parent-spoofing/nested-reply rejections plus valid cases,
+  `deleteComment`'s ownership and moderation-role-bypass rules); `media.ts`
+  is no longer zero-coverage. The matrix now covers 9 of ~21 action files.
 - **AUDIT COMPLETE 2026-09-25. One HIGH-severity finding, fixed same day.**
   Read every file in `src/lib/actions/` (20 files), both upload routes,
   `rbac.ts`, `dining-scope.ts`, `storage.ts`, and the schema. Full findings
