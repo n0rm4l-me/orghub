@@ -204,7 +204,7 @@ export function GlobalDropZone() {
   return (
     <div className="pointer-events-none fixed inset-0 z-50 flex flex-col items-center justify-center
       bg-brand/10 backdrop-blur-sm">
-      <div className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-brand
+      <div className="flex flex-col items-center gap-3 rounded-xl border-2 border-dashed border-brand
         bg-card/90 px-16 py-12 shadow-xl">
         {uploading
           ? <Loader2 className="size-12 animate-spin text-brand" />

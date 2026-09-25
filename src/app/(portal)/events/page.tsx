@@ -114,7 +114,7 @@ export default async function EventsPage({ searchParams }: Props) {
       />
 
       {/* Calendar grid */}
-      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
         <div className="grid grid-cols-7 border-b border-border">
           {DAY_LABELS.map((d) => (
             <div key={d} className="py-2 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -173,7 +173,7 @@ export default async function EventsPage({ searchParams }: Props) {
             : `No events in ${MONTH_NAMES[month - 1]}`}
         </h2>
         {events.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border py-16 text-center">
+          <div className="rounded-xl border border-dashed border-border py-16 text-center">
             <CalendarDays className="mx-auto mb-3 size-8 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">No events scheduled this month.</p>
           </div>

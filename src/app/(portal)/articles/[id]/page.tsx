@@ -118,12 +118,12 @@ export default async function ArticlePage({ params }: Props) {
       </div>
 
       {article.coverImage && (
-        <div className="mb-4 overflow-hidden rounded-2xl">
+        <div className="mb-4 overflow-hidden rounded-xl">
           <img src={article.coverImage} alt="" className="aspect-[21/9] w-full object-cover" />
         </div>
       )}
 
-      <div className="rounded-2xl border border-border bg-card p-8">
+      <div className="rounded-xl border border-border bg-card p-8">
         <ArticleTranslateBody
           articleId={id}
           title={article.title}
@@ -199,7 +199,7 @@ export default async function ArticlePage({ params }: Props) {
       </div>
 
       {article.commentsEnabled && (
-        <div className="mt-4 rounded-2xl border border-border bg-card p-8">
+        <div className="mt-4 rounded-xl border border-border bg-card p-8">
           <h2 className="mb-5 flex items-center gap-2 text-base font-semibold text-foreground">
             <MessageSquare className="size-4 text-muted-foreground" aria-hidden />
             Comments

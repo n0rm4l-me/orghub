@@ -31,7 +31,7 @@ export function MobileWeekMenu({ days }: { days: MobileDay[] }) {
   const hasAny = day.rows.some((r) => r.entry)
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
       {/* Day selector */}
       <div className="flex border-b border-border" role="tablist">
         {days.map((d, i) => (

@@ -59,7 +59,7 @@ export default async function PublicPagePage({ params }: Props) {
 
       <PageHeader title={page.title} />
 
-      <div className="bg-card rounded-2xl p-8 border border-border">
+      <div className="bg-card rounded-xl p-8 border border-border">
         <ArticleBody body={page.body as object} />
       </div>
 

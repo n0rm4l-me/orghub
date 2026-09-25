@@ -87,7 +87,7 @@ export function SendKudosButton({ values, monthlyBudget, remaining }: Props) {
           className="fixed inset-0 z-[90] flex items-center justify-center bg-black/25 backdrop-blur-[2px] p-4"
           onClick={(e) => { if (e.target === e.currentTarget) close() }}
         >
-          <div className="w-full max-w-md rounded-2xl bg-popover shadow-xl">
+          <div className="w-full max-w-md rounded-xl bg-popover shadow-xl">
             <div className="flex items-center justify-between border-b border-border px-6 py-4">
               <h2 className="text-base font-semibold text-foreground">Send kudos</h2>
               <button

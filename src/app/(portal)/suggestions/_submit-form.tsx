@@ -61,7 +61,7 @@ export function SubmitSuggestionButton({ categories }: Props) {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/25 backdrop-blur-[2px] sm:items-center">
-          <div className="w-full max-w-lg rounded-t-2xl bg-popover p-6 shadow-xl sm:rounded-2xl">
+          <div className="w-full max-w-lg rounded-t-xl bg-popover p-6 shadow-xl sm:rounded-xl">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-foreground">New suggestion</h2>
               <button

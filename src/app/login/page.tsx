@@ -82,7 +82,7 @@ export default async function LoginPage({ searchParams }: Props) {
           <p className="mt-4 text-sm text-muted-foreground">Sign in to continue</p>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
+        <div className="rounded-xl border border-border bg-card p-8 shadow-sm">
           {/* Reserved so the card does not grow and shift on a failed attempt. */}
           {params.error && (
             <p

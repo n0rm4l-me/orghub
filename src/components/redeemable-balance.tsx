@@ -54,7 +54,7 @@ export function RedeemableBalance({ available, types }: Props) {
         />
         <Dialog.Popup
           className="fixed left-1/2 top-1/2 z-[95] w-80 -translate-x-1/2 -translate-y-1/2
-            rounded-2xl border border-border bg-popover p-6 shadow-xl outline-none
+            rounded-xl border border-border bg-popover p-6 shadow-xl outline-none
             transition-all duration-150
             data-[ending-style]:scale-95 data-[ending-style]:opacity-0
             data-[starting-style]:scale-95 data-[starting-style]:opacity-0"

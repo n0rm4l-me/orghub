@@ -17,7 +17,7 @@ interface Props {
 export function FixedMenuView({ sections, tags, nutritionParams = [], currency = "JPY" }: Props) {
   if (!sections.length) {
     return (
-      <div className="overflow-hidden rounded-2xl border border-dashed border-border py-16 text-center">
+      <div className="overflow-hidden rounded-xl border border-dashed border-border py-16 text-center">
         <p className="text-sm text-muted-foreground">No menu available yet.</p>
       </div>
     )
@@ -33,7 +33,7 @@ export function FixedMenuView({ sections, tags, nutritionParams = [], currency =
           {section.entries.length === 0 ? (
             <p className="text-sm text-muted-foreground">No items yet.</p>
           ) : (
-            <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
+            <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
               {section.entries.map((entry) => (
                 <div key={entry.id} className="px-4 py-3.5">
                   <EntryCard entry={entry} tags={tags} nutritionParams={nutritionParams} currency={currency} />

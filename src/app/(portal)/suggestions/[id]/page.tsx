@@ -98,7 +98,7 @@ export default async function SuggestionDetailPage({ params }: Props) {
         )}
 
         {/* Comments */}
-        <div className="mt-4 rounded-2xl border border-border bg-card p-8">
+        <div className="mt-4 rounded-xl border border-border bg-card p-8">
           <h2 className="mb-5 flex items-center gap-2 text-base font-semibold text-foreground">
             <MessageSquare className="size-4 text-muted-foreground" aria-hidden />
             Comments

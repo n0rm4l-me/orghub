@@ -58,7 +58,7 @@ export function WeekPickerCreate({ venueId }: { venueId: string }) {
           onClick={() => !pending && setOpen(false)}
         >
           <div
-            className="w-full max-w-md rounded-2xl bg-popover p-6 shadow-xl text-left"
+            className="w-full max-w-md rounded-xl bg-popover p-6 shadow-xl text-left"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}

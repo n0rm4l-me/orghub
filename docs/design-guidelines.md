@@ -96,12 +96,40 @@ override is redundant there and misleading everywhere else.
 | Radius | Use |
 |---|---|
 | `rounded-full` | Pills, avatars, dots |
-| `rounded-lg` | Buttons, inputs, small controls |
+| `rounded-md` | Icon-only controls at `size-6` to `size-9`, compact segment tabs, skeleton placeholders |
+| `rounded-lg` | Buttons, inputs, and other small controls at normal size |
 | `rounded-xl` | Cards, panels, dialogs |
+
+`rounded-md` looks like a smaller version of `rounded-lg`, but it's a
+deliberate second tier for small elements, not a legacy value to replace: a
+28px icon button with `rounded-lg` reads as over-rounded relative to its own
+size. Checked every `rounded-md` instance in the tree on 2026-09-25 rather
+than assuming they were all leftover: they're icon buttons (`size-7`
+`place-items-center`, the dominant case), image thumbnails (`size-8`/`size-9`
+`overflow-hidden`), the base `Skeleton` primitive, and segmented-tab
+switchers (an active tab gets `bg-card shadow-sm` inside a `rounded-md`
+track, not a pill). None needed consolidating.
 
 Card padding: `p-4` for compact/dense cards (stat cards, list rows), `p-5`
 for a page-level panel section. Don't reach for `p-6` or `p-8` on new cards;
 they're legacy sizes from before this scale, not a deliberate second tier.
+
+## Font weight
+
+`font-bold` is not a leftover to sweep to `font-semibold`: checked every
+instance in the tree on 2026-09-25, and each one earns the heavier weight
+for a specific reason, not habit. `prose-headings:font-bold` (`article-body.tsx`,
+`article-translate-body.tsx`, `editor.tsx`) styles headings inside authored
+article content, a different system from UI chrome weight (400 body / 500
+accent / 600 heading applies to the app's own interface, not to what an
+editor writes inside an article). Avatar-fallback initials and tiny count
+badges (`text-[10px]`/`text-[11px]` in a pill) use bold because a heavier
+weight is what keeps text that small legible, not because semibold was
+forgotten. Large standalone numbers (kudos balances, event countdowns, the
+dining announcement day count) use bold as the classic big-number accent
+treatment, not body text needing a lighter hand. If you're about to add a
+NEW `font-bold` outside these three cases, that one probably should be
+`font-semibold` instead; the existing ones don't need touching.
 
 ## Typography
 

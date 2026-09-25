@@ -37,7 +37,7 @@ export function CartWidget({ currency }: { currency: string }) {
       )}
 
       <div
-        className={`fixed bottom-0 left-1/2 z-[95] flex w-full max-w-xl -translate-x-1/2 flex-col rounded-t-2xl bg-card shadow-2xl transition-transform duration-300 ${
+        className={`fixed bottom-0 left-1/2 z-[95] flex w-full max-w-xl -translate-x-1/2 flex-col rounded-t-xl bg-card shadow-2xl transition-transform duration-300 ${
           open ? "translate-y-0" : "translate-y-full"
         }`}
         style={{ maxHeight: "85dvh" }}

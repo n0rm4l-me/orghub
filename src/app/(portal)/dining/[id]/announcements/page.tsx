@@ -52,7 +52,7 @@ export default async function DiningAnnouncementsPage({ params }: Props) {
         <div className="space-y-14">
           {topics.map((topic, index) => (
             <article key={topic.id}>
-              <div className={`relative mb-5 w-full overflow-hidden rounded-2xl bg-gradient-to-br from-brand/20 to-brand/5 ${index === 0 ? "aspect-video" : "aspect-[21/9]"}`}>
+              <div className={`relative mb-5 w-full overflow-hidden rounded-xl bg-gradient-to-br from-brand/20 to-brand/5 ${index === 0 ? "aspect-video" : "aspect-[21/9]"}`}>
                 {topic.bannerImage ? (
                   <img
                     src={`${topic.bannerImage}?w=800`}

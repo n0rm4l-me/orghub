@@ -199,7 +199,7 @@ export default async function DiningVenuePage({ params, searchParams }: Props) {
 
       {/* Topic hero banner */}
       {currentTopic && (
-        <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="overflow-hidden rounded-xl border border-border bg-card">
           {currentTopic.bannerImage && (
             <div className="relative h-48 overflow-hidden">
               <img
@@ -226,7 +226,7 @@ export default async function DiningVenuePage({ params, searchParams }: Props) {
       )}
 
       {!menu ? (
-        <div className="overflow-hidden rounded-2xl border border-dashed border-border py-16 text-center">
+        <div className="overflow-hidden rounded-xl border border-dashed border-border py-16 text-center">
           <p className="text-sm text-muted-foreground">No menu available yet.</p>
         </div>
       ) : menu.menuType === "FIXED" ? (

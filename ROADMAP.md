@@ -193,7 +193,7 @@ on a device.
 
 ---
 
-## Design unification (Phases 1-4 done, Phase 5 not started)
+## Design unification (Phases 1-5 done)
 
 Full plan at `/Users/petr.petrenko/.claude/plans/zesty-sprouting-frost.md`,
 written earlier this session assuming zero phases were done. **That
@@ -386,6 +386,32 @@ so they read the same in both themes (`new-venue-form.tsx:87,94`,
 this date: `font-bold` 31, `rounded-2xl` 20, `rounded-md` 42, plus the
 leftover `bg-white`/`text-gray-*` outside `(portal)` and `dining/` (mostly
 admin components not yet covered by this plan's own file list).
+
+**Phase 5, done, 2026-09-25 (later the same day).** The plan's own framing
+("consolidate leftover font-bold/rounded-2xl/rounded-md") turned out to be
+half right: `rounded-2xl` really was 20 leftover instances of the old card
+radius, replaced with `rounded-xl` across all 16 files, mechanical and safe
+(every instance was `bg-card`/`bg-popover` with `border`/`shadow-xl`, exactly
+the "cards, panels, dialogs" bucket). `font-bold` and `rounded-md` were the
+opposite: read every one of the 73 combined instances with its surrounding
+markup before touching anything, and none of them were leftovers. `rounded-md`
+is icon-only controls at `size-6` to `size-9` (the dominant case, matches this
+doc's own pre-existing example), image thumbnails, the base `Skeleton`
+primitive, and segmented-tab switchers, none of which should be `rounded-lg`
+at that size. `font-bold` is either `prose-headings:` styling for authored
+article content (a different system from UI chrome weight entirely), bold
+text at 10-11px where the weight is what keeps it legible, or the classic
+big-number accent treatment on standalone stats. Replacing either
+mechanically would have made things worse, not more consistent, so nothing
+was changed; both are now spelled out in
+[design-guidelines.md](docs/design-guidelines.md) so a future audit doesn't
+recount the same instances as open work. `separator.tsx` was already gone,
+removed by this session's own earlier dead-code pass. Design unification is
+done: no phase has open mechanical work left, only the pre-existing, already
+documented deliberate exceptions (dining's 7 lines, the icon-hover-reveal
+`text-gray-200`/`dark:text-gray-700` gap in "UI and design system polish"
+below) and the `bg-white`/`text-gray-*` instances outside `(portal)`/`dining/`
+noted above, which were never in either plan's file list to begin with.
 
 ---
 

@@ -72,7 +72,7 @@ function FeaturedCard({
   pinned?: boolean
 }) {
   return (
-    <article className={`group mb-3 overflow-hidden rounded-2xl border transition-shadow hover:shadow-md ${article.important ? "border-amber-200 bg-amber-50/40 dark:border-amber-900/50 dark:bg-amber-950/20" : "border-border bg-card"}`}>
+    <article className={`group mb-3 overflow-hidden rounded-xl border transition-shadow hover:shadow-md ${article.important ? "border-amber-200 bg-amber-50/40 dark:border-amber-900/50 dark:bg-amber-950/20" : "border-border bg-card"}`}>
       <Link href={`/articles/${article.id}`} className="block">
         {article.coverImage ? (
           <div className="relative h-48 overflow-hidden">
