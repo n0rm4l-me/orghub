@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react"
 import dynamic from "next/dynamic"
-import { Loader2, RotateCcw } from "lucide-react"
+import { BarChart2, Loader2, RotateCcw } from "lucide-react"
 import { translateArticle, type TranslatedBlock } from "@/lib/actions/translate"
 import { toast } from "@/components/ui/toaster"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -57,6 +57,17 @@ function renderBlocks(blocks: TranslatedBlock[]) {
     if (b.type === "code") return <pre key={i}><code>{b.text}</code></pre>
     if (b.type === "image") return <img key={i} src={b.src} alt={b.alt ?? ""} className="rounded-lg" />
     if (b.type === "paragraph") return <p key={i}>{b.text}</p>
+    if (b.type === "poll") {
+      // Polls need live vote state, which this static translated view has no
+      // mechanism for; naming the gap beats the block just vanishing with no
+      // trace, which is what happened here before this was handled at all.
+      return (
+        <div key={i} className="not-prose flex items-center gap-2 rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+          <BarChart2 className="size-4 shrink-0" />
+          This article has a poll here. View the original language to see and vote on it.
+        </div>
+      )
+    }
     return null
   })
 

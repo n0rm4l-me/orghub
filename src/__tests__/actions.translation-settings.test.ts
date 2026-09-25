@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach } from "vitest"
+import { vi, describe, it, expect, beforeEach, afterEach } from "vitest"
 
 vi.mock("next/navigation", () => ({
   redirect: vi.fn((url: string) => { throw new Error(`REDIRECT:${url}`) }),
@@ -42,8 +42,20 @@ function formData(fields: Record<string, string>): FormData {
   return fd
 }
 
+const ENV_KEYS = ["DEEPL_API_KEY", "HF_TOKEN"] as const
+const savedEnv: Record<string, string | undefined> = {}
+
 describe("saveTranslationSettings", () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => {
+    vi.clearAllMocks()
+    for (const k of ENV_KEYS) { savedEnv[k] = process.env[k]; delete process.env[k] }
+  })
+  afterEach(() => {
+    for (const k of ENV_KEYS) {
+      if (savedEnv[k] === undefined) delete process.env[k]
+      else process.env[k] = savedEnv[k]
+    }
+  })
 
   it("EDITOR is rejected (ADMIN-only)", async () => {
     signInAs(USERS.editor)
@@ -59,6 +71,30 @@ describe("saveTranslationSettings", () => {
     expect(mockDb.siteSettings.update).not.toHaveBeenCalled()
   })
 
+  it("rejects deepl when DEEPL_API_KEY isn't configured", async () => {
+    signInAs(USERS.admin)
+    const { saveTranslationSettings } = await import("@/lib/actions/translation-settings")
+    const result = await saveTranslationSettings(formData({ translationProvider: "deepl", lang_en: "on" }))
+    expect(result).toMatchObject({ ok: false, error: expect.stringContaining("DEEPL_API_KEY") })
+    expect(mockDb.siteSettings.update).not.toHaveBeenCalled()
+  })
+
+  it("accepts deepl once DEEPL_API_KEY is configured", async () => {
+    signInAs(USERS.admin)
+    process.env.DEEPL_API_KEY = "fake-key"
+    const { saveTranslationSettings } = await import("@/lib/actions/translation-settings")
+    const result = await saveTranslationSettings(formData({ translationProvider: "deepl", lang_en: "on" }))
+    expect(result).toMatchObject({ ok: true })
+  })
+
+  it("rejects hf when HF_TOKEN isn't configured", async () => {
+    signInAs(USERS.admin)
+    const { saveTranslationSettings } = await import("@/lib/actions/translation-settings")
+    const result = await saveTranslationSettings(formData({ translationProvider: "hf", lang_en: "on" }))
+    expect(result).toMatchObject({ ok: false, error: expect.stringContaining("HF_TOKEN") })
+    expect(mockDb.siteSettings.update).not.toHaveBeenCalled()
+  })
+
   it("rejects when no language is selected at all", async () => {
     signInAs(USERS.admin)
     const { saveTranslationSettings } = await import("@/lib/actions/translation-settings")
@@ -69,6 +105,7 @@ describe("saveTranslationSettings", () => {
 
   it("combines checked preset languages with valid extra codes, deduped", async () => {
     signInAs(USERS.admin)
+    process.env.DEEPL_API_KEY = "fake-key"
     const { saveTranslationSettings } = await import("@/lib/actions/translation-settings")
     const result = await saveTranslationSettings(formData({
       translationProvider: "deepl",

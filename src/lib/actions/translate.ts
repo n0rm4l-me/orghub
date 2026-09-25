@@ -14,6 +14,7 @@ export type TranslatedBlock =
   | { type: "blockquote"; text: string }
   | { type: "code"; text: string }
   | { type: "image"; src: string; alt?: string }
+  | { type: "poll"; pollId: string }
 
 type TiptapNode = { type: string; text?: string; attrs?: Record<string, unknown>; content?: TiptapNode[] }
 
@@ -28,6 +29,11 @@ function extractBlocks(doc: TiptapNode): TranslatedBlock[] {
     if (node.type === "image") {
       const src = node.attrs?.src as string | undefined
       if (src) blocks.push({ type: "image", src, alt: node.attrs?.alt as string | undefined })
+      continue
+    }
+    if (node.type === "pollEmbed") {
+      const pollId = node.attrs?.pollId as string | undefined
+      if (pollId) blocks.push({ type: "poll", pollId })
       continue
     }
     const text = leafText(node).trim()
@@ -68,58 +74,55 @@ export async function translateArticle(
   const allowedLangs = (settings.translationLanguages as string).split(",").map((s: string) => s.trim()).filter(Boolean)
   if (!allowedLangs.includes(target)) return { ok: false, error: "Unsupported target language" }
 
-  const article = await db.article.findUnique({
-    where: { id: articleId, published: true },
-    select: { title: true, body: true },
-  })
-  if (!article) return { ok: false, error: "Article not found" }
-
-  // Check DB cache first
-  const cached = await db.articleTranslation.findUnique({
-    where: { articleId_lang: { articleId, lang: target } },
-    select: { title: true, body: true },
-  })
-  if (cached) {
-    return {
-      ok: true,
-      translatedTitle: cached.title,
-      blocks: JSON.parse(cached.body) as TranslatedBlock[],
-    }
-  }
-
-  const blocks = extractBlocks(article.body as TiptapNode)
-  if (!blocks.length) return { ok: false, error: "Article has no text content" }
-
+  // Everything below can throw on a transient failure (DB connection, cache
+  // read, JSON.parse of a corrupt cache row), not just the provider calls;
+  // narrower try/catch here previously let a DB hiccup surface as Next's
+  // opaque production error digest instead of a normal toast.
   try {
-    const provider = getProvider(settings.translationProvider)
+    const article = await db.article.findUnique({
+      where: { id: articleId, published: true },
+      select: { title: true, body: true },
+    })
+    if (!article) return { ok: false, error: "Article not found" }
 
-    const translatableBlocks = blocks.filter((b) => b.type !== "code" && b.type !== "image")
-    const bodyText = translatableBlocks.map((b) => b.text).join("\n\n")
-
-    // Chunk body into ≤450-char segments split on paragraph boundaries
-    const paragraphs = bodyText.split("\n\n")
-    const chunks: string[] = []
-    let current = ""
-    for (const para of paragraphs) {
-      const sep = current ? "\n\n" : ""
-      if ((current + sep + para).length <= 450 || !current) {
-        current += sep + para
-      } else {
-        chunks.push(current)
-        current = para
+    // Check DB cache first
+    const cached = await db.articleTranslation.findUnique({
+      where: { articleId_lang: { articleId, lang: target } },
+      select: { title: true, body: true },
+    })
+    if (cached) {
+      return {
+        ok: true,
+        translatedTitle: cached.title,
+        blocks: JSON.parse(cached.body) as TranslatedBlock[],
       }
     }
-    if (current) chunks.push(current)
 
-    const [translatedTitle, ...chunkResults] = await Promise.all([
+    const blocks = extractBlocks(article.body as TiptapNode)
+    if (!blocks.length) return { ok: false, error: "Article has no text content" }
+
+    const provider = getProvider(settings.translationProvider)
+
+    // One provider.translate() call per block, not batched into shared
+    // chunks: no translation provider guarantees it preserves an internal
+    // "\n\n" separator verbatim (DeepL doesn't request that, MyMemory's GET
+    // endpoint is built for one string not a multi-paragraph blob, HF's
+    // seq2seq models give no such guarantee either), so joining several
+    // blocks into one request and re-splitting the result on "\n\n" can
+    // silently come back with a different number of pieces than went in,
+    // permanently misassigning every later block's translation to the wrong
+    // block with no error surfaced. One block per call has no reassembly
+    // step at all: each result maps back to the exact block that produced it.
+    const translatableBlocks = blocks.filter((b) => b.type !== "code" && b.type !== "image" && b.type !== "poll")
+
+    const [translatedTitle, ...translatedTexts] = await Promise.all([
       provider.translate(article.title, target),
-      ...chunks.map((c) => provider.translate(c, target)),
+      ...translatableBlocks.map((b) => provider.translate((b as { text: string }).text, target)),
     ])
 
-    const translatedTexts = chunkResults.join("\n\n").split(/\n\n+/)
     let i = 0
     const translatedBlocks: TranslatedBlock[] = blocks.map((b) =>
-      b.type === "code" || b.type === "image" ? b : { ...b, text: translatedTexts[i++] ?? b.text }
+      b.type === "code" || b.type === "image" || b.type === "poll" ? b : { ...b, text: translatedTexts[i++] ?? b.text }
     )
 
     // Persist to DB cache

@@ -15,11 +15,21 @@ export async function saveTranslationSettings(formData: FormData): Promise<Actio
   if (!VALID_PROVIDERS.includes(provider as (typeof VALID_PROVIDERS)[number])) {
     return fail("Invalid provider")
   }
+  // getProvider() (src/lib/translation/index.ts) throws at translate-time if
+  // the matching key is missing, caught generically and shown to end users as
+  // "Translation failed. Please try again." with no hint what's wrong. Catch
+  // it here instead, where there's an admin to actually tell.
+  if (provider === "deepl" && !process.env.DEEPL_API_KEY) {
+    return fail("DEEPL_API_KEY is not set on the server. Add it before selecting DeepL.")
+  }
+  if (provider === "hf" && !process.env.HF_TOKEN) {
+    return fail("HF_TOKEN is not set on the server. Add it before selecting Hugging Face.")
+  }
 
   // Predefined checkboxes
   const presetLangs = PRESET_LANGS.filter((l) => formData.get(`lang_${l}`) === "on")
 
-  // Extra codes from text input — strip whitespace, lowercase, filter non-empty
+  // Extra codes from text input: strip whitespace, lowercase, filter non-empty
   const extra = String(formData.get("translationExtraLanguages") ?? "")
     .split(",")
     .map((s) => s.trim().toLowerCase())
