@@ -487,10 +487,12 @@ Everything else, roughly ordered by blast radius:
   (`?w=800`, matching the feed's featured-card image, both are `w-full`
   hero images of a similar scale inside a comparable max-width container)
   all pass a `?w=` width param.
-- **PARTIAL** [src/app/(portal)/articles/[id]/page.tsx:288-301](<src/app/(portal)/articles/[id]/page.tsx#L288>)
-  still duplicates `PortalPageLayout`'s sidebar branching by hand instead of
-  using the component, which now has 3 other consumers and wraps sidebars in
-  Suspense.
+- **FIXED 2026-09-25 (stale entry, already done by the design-unification
+  Phase 3 pass, nobody updated this note at the time).**
+  [src/app/(portal)/articles/[id]/page.tsx](src/app/(portal)/articles/[id]/page.tsx)
+  now renders through `PortalPageLayout` like every other portal page;
+  confirmed by grepping the file for `showLeft`/`showRight`/the hand-rolled
+  flex split, none remain.
 
 ---
 
@@ -640,11 +642,24 @@ Smaller items, independent of the design-unification phases above:
   (EDITOR rejected / ADMIN allowed on `deleteSuggestion`, and
   `deleteComment`'s ownership-or-role check: a VIEWER can delete their own
   comment, can't delete someone else's, an EDITOR can delete anyone's).
-  All follow the same no-DB mocking style as `actions.auth.test.ts`. Still
-  open: kudos beyond `deleteKudos`, and most non-authorization logic
-  (validation, notification side effects, the `isAdminReply` flag
-  `addComment` computes from the caller's role) have no coverage; the
-  matrix now covers 4 of ~15 action files.
+  All follow the same no-DB mocking style as `actions.auth.test.ts`.
+  **Extended 2026-09-25:** `actions.roles.test.ts` gained
+  `createRedeemType`/`rejectRedemption` (VIEWER rejected, ADMIN allowed);
+  `actions.suggestions.test.ts` gained the `isAdminReply` flag on its own
+  `addComment` (false for a VIEWER's comment, true for an EDITOR's; the
+  line above named `comments.ts`'s `addComment`, that was wrong, the flag
+  is computed in `suggestions.ts:283`); new
+  [actions.users.test.ts](src/__tests__/actions.users.test.ts) covers
+  `changeUserRole`/`setUserActive`, including the one rule worth a
+  regression test more than the role-gating itself: demoting or
+  deactivating the sole remaining active admin is refused
+  (`wouldOrphanAdmins`), and an admin can't deactivate their own account.
+  Still open: most non-authorization logic (validation, notification side
+  effects) and the remaining action files with zero coverage
+  (`announcements.ts`, `categories.ts`, `nav.ts`, `pages.ts`, `translate.ts`,
+  `translation-settings.ts`, `suggestion-categories.ts`, `feed.ts`,
+  `ldap-sync.ts`, `media.ts`, `media-migrate.ts`); the matrix now covers 5
+  of ~20 action files.
 - **AUDIT COMPLETE 2026-09-25. One HIGH-severity finding, fixed same day.**
   Read every file in `src/lib/actions/` (20 files), both upload routes,
   `rbac.ts`, `dining-scope.ts`, `storage.ts`, and the schema. Full findings
