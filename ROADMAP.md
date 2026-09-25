@@ -478,8 +478,11 @@ Root-cause item first, the rest multiply in impact once it's fixed:
   itself, mainly a correctness/architecture fix (the global flag was quietly
   covering pages that don't actually need it, which would have bitten the
   next person who added a genuinely static page). A real caching win here
-  needs Partial Prerendering, a much bigger change: `dynamic-rendering.md` in
-  `node_modules/next/dist/docs/` describes it if this gets revisited.
+  needs Partial Prerendering, a much bigger change, now called Cache
+  Components: **corrected 2026-09-26**, the doc pointer this note originally
+  gave (`dynamic-rendering.md`) no longer exists under that name; see the
+  "Feature audits" section below for what actually revisiting this would
+  involve and why it isn't worth it yet.
 - **PARTIALLY FIXED 2026-09-25; one earlier claim in this same note was
   wrong, corrected below.**
   [src/components/article-body.tsx](src/components/article-body.tsx)
@@ -1260,6 +1263,211 @@ older browsers for a small (~13KB) bundle-size win, and this session has no
 data on what browsers this portal's actual userbase runs. Left the default
 in place rather than guess; revisit if real user-agent analytics ever
 becomes available.
+
+---
+
+## Feature audits (2026-09-26)
+
+Four previously un-audited areas, done as four parallel deep-dives. Two had
+real, shipped-and-verified bugs; one has a documented, deliberately-not-taken
+option; one is correctly out of scope.
+
+### Translation: two real bugs, both shared between web and mobile
+
+- **FIXED, HIGH severity: reassembly could silently scramble a translated
+  article.** [src/lib/actions/translate.ts](src/lib/actions/translate.ts) and
+  [src/app/api/articles/[id]/translate/route.ts](<src/app/api/articles/[id]/translate/route.ts>)
+  (independent implementations, same bug in both) joined every translatable
+  block's text with `"\n\n"`, sent the whole multi-paragraph blob to the
+  provider in ≤450-char chunks as single requests, then re-split the
+  provider's *response* on `"\n\n"` and assigned pieces back to blocks by
+  position. No provider (MyMemory, DeepL, Hugging Face) guarantees it
+  preserves that separator verbatim through translation; if the split count
+  ever came back different from what went in, every block from that point
+  on would have silently received the wrong translation, or the untranslated
+  original, with no error surfaced anywhere. Fixed by sending one
+  `provider.translate()` call per block instead of batching: no reassembly
+  step at all, so there's nothing left to scramble. Costs more provider
+  requests (one per block instead of one per merged chunk); no
+  currently-configured provider enforces a per-request limit tight enough
+  for a single normal paragraph to hit it, and the old code could already
+  send one oversized paragraph as its own unmerged chunk, so this isn't a
+  new risk. Regression-tested in both files
+  ([actions.translate.test.ts](src/__tests__/actions.translate.test.ts),
+  [api.articles-translate.test.ts](src/__tests__/api.articles-translate.test.ts))
+  with a fake provider that prefixes its input, so a misassignment would
+  show up as a wrong prefix on the wrong block, not just a wrong-looking
+  string.
+- **FIXED: polls silently vanished from translated articles.** Both files'
+  block extraction had no case for the `pollEmbed` node type (unlike
+  `image`, which was already handled); it fell through to "no text content,
+  skip", so a poll embedded in an article simply disappeared when viewed in
+  translation, with nothing indicating anything was missing. Added a `poll`
+  block type (carries just the `pollId`, like `image` carries just the
+  `src`) and excluded it from translation, same treatment as `code`. Web
+  render ([article-translate-body.tsx](src/components/article-translate-body.tsx))
+  now shows a labeled placeholder pointing back at the original language;
+  the static translated view has no live-vote-state mechanism to actually
+  embed the poll itself. **Not done on `orghub-mobile`'s matching renderer**
+  (`app/article/[id].tsx`'s `TranslatedBody`): the user paused all mobile
+  work mid-session before this was found; it has the identical silent-drop
+  gap and needs the identical small fix whenever mobile work resumes.
+- **FIXED, smaller: an admin could select DeepL or Hugging Face with no key
+  configured.** `getProvider()` throws in the provider's own constructor
+  when its env var is missing, caught generically by `translateArticle`/the
+  mobile route and surfaced to the *end user* as "Translation failed. Please
+  try again," with no hint anything's misconfigured. `saveTranslationSettings`
+  now checks `DEEPL_API_KEY`/`HF_TOKEN` at save time and refuses with a
+  specific message naming the missing variable, so the admin who can
+  actually fix it sees the real problem.
+- **FIXED, drift:** the mobile route treated an empty `translationLanguages`
+  as "allow any language"; the web action always requires the target to be
+  in the (non-empty-by-construction) allow-list. Aligned the mobile route to
+  match. Latent, not currently reachable (the DB default is non-empty and
+  the settings form refuses to save an empty list), but the two
+  implementations should agree regardless of whether today's data can
+  trigger the difference.
+- **FIXED, robustness:** `translateArticle`'s `try/catch` only wrapped the
+  provider-calling section, not the earlier `db.article.findUnique`/cache
+  lookup; a transient DB error there would throw uncaught instead of
+  returning the same `{ ok: false }` shape every other failure path already
+  uses, surfacing to the user as Next's opaque production error digest
+  instead of a toast. Widened the `try` to cover the whole function body
+  after the cheap validation checks, in both files.
+- **Not fixed, correctly deferred:** an admin can pick "deepl"/"hf" without
+  any check that the *language* they're enabling is supported by that
+  provider's model list (Hugging Face's `MODEL` map in
+  [hf.ts](src/lib/translation/providers/hf.ts) only covers 9 languages).
+  Real gap, lower severity than the three above (fails per-request with a
+  clear-enough "No HF model configured" error, doesn't corrupt anything),
+  left for a future pass.
+
+### Media upload flow: one real bug fixed, two more found and fixed, two documented
+
+- **FIXED: resizing a transparent PNG/WebP flattened it to JPEG.**
+  [src/app/uploads/[...path]/route.ts](<src/app/uploads/[...path]/route.ts>)'s
+  on-the-fly resize path always re-encoded to `.jpeg()` regardless of source
+  format. A logo or icon with transparency, once resized (e.g. via a
+  `?w=400` thumbnail request), would come back with a solid black or white
+  background depending on the viewer, silently, with no way to tell without
+  comparing pixels. Fixed: when `sharp`'s metadata reports `hasAlpha`,
+  resize into the source's own format instead of forcing JPEG, and skip the
+  derived-cache write/read for that case (every cache-hit response
+  hardcodes `Content-Type: image/jpeg`, so caching a non-JPEG derivative
+  there would serve it with a wrong header on the next request). Regression
+  test added:
+  [uploads-serve-route.test.ts](src/__tests__/uploads-serve-route.test.ts)
+  (7 tests; this route had zero coverage before). Not touched: MyMemory-style
+  per-request length limits are a separate, pre-existing, lower-priority
+  question noted above, not something this fix changes either way.
+- **FIXED: two of three upload call-sites swallowed failures with zero user
+  feedback.** [src/components/editor.tsx](src/components/editor.tsx)'s
+  toolbar image-upload button and
+  [src/components/media-picker.tsx](src/components/media-picker.tsx)'s
+  `MediaPickerField` (site logo, dish/menu photos) both had no `catch` and
+  no error branch: a rejected upload (wrong file type, too large, a network
+  drop) just silently stopped the spinner with no toast, no message,
+  nothing. Only `MediaPicker.handleFile` (the article/page media-library
+  picker) already did this correctly. Both fixed to match that pattern:
+  `toast.error(data.error ?? "Upload failed")` on a non-ok response, same
+  message on a thrown/network error.
+- **Documented, not fixed: no image carries width/height anywhere in the
+  pipeline.** The `Media` model has no dimension columns, the upload route's
+  response omits them, `ImageEmbed` (Tiptap) adds no width/height/
+  aspect-ratio attributes, and the NodeView renders a bare `<img>` with no
+  reserved space. This isn't editor-only: `ArticleBody` reuses the same
+  extensions for the public renderer, so every embedded image causes layout
+  shift both while editing and on published articles/pages, with no
+  next/image and no CSS placeholder anywhere in the chain. Real gap, but
+  fixing it means a schema migration plus changes across the upload route,
+  the Tiptap extension, and the NodeView, all in the same rendering pipeline
+  `article-body.tsx`'s pending SSR rewrite already touches (see
+  "Performance" above); doing it as a second, uncoordinated pass through the
+  same files risks conflicting with that rewrite whenever it happens.
+  Bundled here as one thing to pick up together, not two.
+- **Documented, not fixed: uploaded-then-discarded images can orphan a
+  Media row + storage object.** Uploading (toolbar or media-library picker)
+  creates the row and object immediately, before the article/page is ever
+  saved; removing the image node in the editor, or navigating away unsaved,
+  deletes neither. No cron/scheduled sweep exists. Not a silent-failure bug:
+  a working manual escape hatch already exists (Admin -> Media -> Orphaned,
+  `findOrphanedObjects`/`deleteOrphanedObjects` in
+  [media.ts](src/lib/actions/media.ts), which cross-references live storage
+  against actual DB content references, not just the `Media` table, so it
+  correctly catches this exact case). Just no automation or reminder, so
+  orphans accumulate until an admin happens to check that tab. Low priority:
+  a scheduled job calling the existing action would close this without new
+  logic, whenever background jobs exist for anything else in this app (they
+  don't yet).
+
+### next/image: not used anywhere; one real bug found in the custom alternative
+
+**Headline finding:** next/image is used exactly zero times in this
+codebase; every image is a plain `<img>`. 16 occurrences of ESLint's
+`@next/next/no-img-element` fire across 13 files, only one deliberately
+suppressed (`brand-logo.tsx`, documented rationale for its hand-built
+anti-CLS logic). `next.config.ts` has no `images` key at all (no
+`remotePatterns`, currently harmless only because next/image is never
+invoked).
+
+This app already built its own resize pipeline instead
+([uploads/[...path]/route.ts](<src/app/uploads/[...path]/route.ts>): `?w=`
+query param, `sharp`-backed, cached derivatives under `_derived/`), which is
+where this audit's one real, now-fixed bug was found and covered above (the
+JPEG-alpha-flattening issue) rather than in an next/image adoption gap.
+
+**Not adopted, and not blocked on anything except effort:** next/image
+would work today with zero `remotePatterns` changes for every existing
+`/uploads/...` path (same-origin; confirmed no `<img>` anywhere ever points
+directly at an S3 bucket URL even when S3-compatible storage is configured,
+`NEXT_PUBLIC_S3_PUBLIC_URL` is read only to extend the CSP `img-src`
+allowlist defensively, see the Lighthouse section above). If this gets
+picked up, the highest-value targets are the public LCP candidates: the
+portal feed's featured/list images, the article cover image, dining venue
+banners
+([(portal)/page.tsx](<src/app/(portal)/page.tsx>),
+[articles/[id]/page.tsx](<src/app/(portal)/articles/[id]/page.tsx>),
+[dining/[id]/page.tsx](<src/app/(portal)/dining/[id]/page.tsx>),
+[dining/[id]/announcements/page.tsx](<src/app/(portal)/dining/[id]/announcements/page.tsx>)).
+Admin media-library thumbnails are cosmetic-priority only. Not attempted
+this pass: changing what actually renders on every public page's hero image
+is exactly the kind of rendering change this session's CSP incident argues
+for verifying in a real browser before shipping, and that verification
+still isn't available here.
+
+### Cache Components / React 19.2: correctly out of scope, not just skipped
+
+Checked concretely against the installed packages and the actual doc pages
+in `node_modules/next/dist/docs/`, not assumed from general React/Next
+knowledge:
+
+- **Cache Components** (the current name for what this file's Performance
+  section called "Partial Prerendering") is a single flag,
+  `cacheComponents: true`, currently unset. Turning it on immediately
+  build-errors on every existing `force-dynamic`/`unstable_cache` usage,
+  which this app has 7 route-level exports of plus `settings.ts`'s
+  `unstable_cache`, and doesn't remove the actual constraint that put them
+  there in the first place (`cloudbuild.yaml` builds with zero DB access, so
+  anything touching the DB at prerender time still fails the build; Cache
+  Components just requires expressing that via `'use cache'`/`<Suspense>`
+  instead of a route flag). Worse, the admin console's `requireRole` call
+  (an unconditional cookie read before any JSX, gating all 42 admin
+  page/layout files) has no safe static shell to show before the visitor's
+  role is known, and the portal is Server-Actions-heavy with genuinely live
+  per-request state (votes, kudos, comments), so `force-dynamic` there is
+  mostly correct today, not an oversight to fix. A broad, risky
+  rearchitecture for a build that can't reach its own database either way.
+- **React 19.2.8** genuinely exports `Activity`, `cacheSignal`, `use`,
+  `useEffectEvent` (checked against the installed package, not the
+  changelog). `ViewTransition` is documented in this Next.js version's own
+  guide but isn't actually exported by this installed React build, a doc/
+  reality mismatch worth knowing if anyone reaches for it later.
+  `useEffectEvent` needs no config change and could be adopted standalone,
+  but there's no existing stale-closure symptom it would fix (zero
+  `eslint-disable ... exhaustive-deps` anywhere in `src`), so adopting it
+  now would be speculative, not evidence-driven, the same standard this file
+  already holds performance changes to elsewhere (see the dining-reorder and
+  revalidation items above, both declined for lack of a concrete symptom).
 
 ---
 
