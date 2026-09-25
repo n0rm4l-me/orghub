@@ -498,29 +498,41 @@ Everything else, roughly ordered by blast radius:
 
 Smaller items, independent of the design-unification phases above:
 
-- **FIXED 2026-09-25.** Portal navigation had a visible layout jump on every
-  route change: each `(portal)/*/loading.tsx` skeleton was a fixed, generic
-  shape (no sidebar, one width), so when the real page resolved with
-  `PortalPageLayout`'s sidebar the content reflowed. Root cause wasn't "the
-  skeleton is the wrong shape", it's that Next.js only shows a route's
-  `loading.tsx` fallback at all when navigation takes long enough to need
-  one; for the common fast case it already keeps the previous page on
-  screen and swaps directly, so removing the fallback entirely (rather than
-  making it layout-aware per module) also removes the jump, not just makes
-  it prettier. Deleted all 10 `loading.tsx` files under `(portal)/`; kept
-  every admin `loading.tsx` as is, admin has no per-page sidebar-layout
-  variance so its skeletons never had this problem. Added
+- **FIXED 2026-09-25.** Navigation had a visible layout jump on every route
+  change: each `loading.tsx` skeleton was a fixed, generic shape, so when
+  the real page resolved (portal: with or without `PortalPageLayout`'s
+  sidebar; admin: whatever that page's actual content turned out to be) the
+  content reflowed. Root cause wasn't "the skeleton is the wrong shape",
+  it's that Next.js only shows a route's `loading.tsx` fallback at all when
+  navigation takes long enough to need one; for the common fast case it
+  already keeps the previous page on screen and swaps directly, so removing
+  the fallback entirely (rather than making it layout-aware per module)
+  also removes the jump, not just makes it prettier. Deleted all 32
+  `loading.tsx` files (10 portal, 22 admin) and the now-fully-orphaned
+  `src/components/skeletons.tsx`. Added
   [nextjs-toploader](https://www.npmjs.com/package/nextjs-toploader) (zero
-  new transitive dependencies, peer deps `next >= 6`/`react >= 16`) mounted
-  once in [src/app/layout.tsx](src/app/layout.tsx) as a thin brand-colored
-  bar for the slower-navigation case, spinner and shadow off to match the
-  rest of the token system's understated look. Removed the two skeleton
-  exports this orphaned (`FeedSkeleton`, `SidebarSkeleton`, `ArticleSkeleton`
-  in [src/components/skeletons.tsx](src/components/skeletons.tsx)); every
-  other export there still backs an admin `loading.tsx`. Verified with
-  `tsc`, `eslint`, the full test suite, and `npx next build`; visual
-  confirmation of the bar itself is pending since `preview_start` is broken
-  this session, the user will check the deployed result directly.
+  new transitive dependencies, peer deps `next >= 6`/`react >= 16`) for the
+  slower-navigation case instead, wrapped in
+  [src/components/top-loader.tsx](src/components/top-loader.tsx) rather than
+  mounted directly: the bar spans the full viewport width at `y=0`
+  regardless of section, so a single fixed color can't read against both
+  the portal's brand-colored sticky header and admin's plain light
+  background (admin has no top bar of its own). The wrapper reads the
+  pathname and picks white for the portal (matching the header's own
+  `text-white` convention) or the brand color for admin. First attempt
+  shipped with a single `color="var(--brand)"` for both, which is exactly
+  invisible in the portal since it draws the brand color on top of the
+  brand-colored header; caught only after asking the user to check the
+  deployed result twice, `preview_start` still being broken this session.
+  Also tried `scrollbar-gutter: stable` on `html` alongside this, to stop a
+  second, unrelated jump when a page crosses the scroll threshold; reverted
+  same day, it reserves the scrollbar's width even on pages that don't need
+  one, leaving a permanent empty strip against the same full-bleed header.
+  User chose to keep the occasional cross-threshold jump over a
+  permanent, always-visible gap. Verified with `tsc`, `eslint`, the full
+  test suite, and `npx next build` at every step; the color fix and the
+  scrollbar-gutter revert are both still only confirmed by reasoning about
+  the code, not by seeing them, same `preview_start` limitation.
 - **OPEN.** `Field` (the accessible-label wrapper in
   [src/components/ui/field.tsx](src/components/ui/field.tsx)) is used in
   exactly one file. Six dining/admin files each define their own local `lbl`
