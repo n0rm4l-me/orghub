@@ -16,16 +16,22 @@ function s3ImgSrcHost(): string | null {
   }
 }
 
-// script-src has no 'unsafe-inline': the one inline script this app used to need
-// (theme/font-size FOUC prevention) now loads from public/theme-init.js by src
-// instead, specifically so this can stay strict. style-src does need it: dynamic
-// per-row colors (tag swatches, poll result bars, etc.) are set via React's style
-// prop across many components, which a nonce can't reach (nonces only cover
-// <style>/<script> elements, not arbitrary style="" attributes), and rewriting
-// all of them to avoid it is a much larger, visually-risky change on its own.
+// script-src needs 'unsafe-inline': Next.js's App Router itself emits inline
+// <script>self.__next_f.push(...)</script> tags on every page to stream RSC
+// payload/hydration data to the client, not just this app's own code. Broke
+// production the first time this was written without it or a nonce (site
+// stopped hydrating entirely: no menu, no client-side rendering at all).
+// Removing it again requires the proxy.ts nonce approach from
+// node_modules/next/dist/docs/01-app/02-guides/content-security-policy.md,
+// which forces dynamic rendering everywhere and is a bigger change to get
+// right than a same-day follow-up fix should attempt. style-src needs it
+// for a different, unrelated reason: dynamic per-row colors (tag swatches,
+// poll result bars, etc.) are set via React's style prop across many
+// components, which a nonce can't reach either way (nonces only cover
+// <style>/<script> elements, not arbitrary style="" attributes).
 const cspDirectives = [
   "default-src 'self'",
-  `script-src 'self'${isProd ? "" : " 'unsafe-eval'"}`,
+  `script-src 'self' 'unsafe-inline'${isProd ? "" : " 'unsafe-eval'"}`,
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: https://www.gravatar.com${s3ImgSrcHost() ? ` ${s3ImgSrcHost()}` : ""}`,
   "font-src 'self'",
