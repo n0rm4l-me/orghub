@@ -2,7 +2,10 @@ import type { TranslationProvider } from "../provider"
 
 // Helsinki-NLP models follow the pattern Helsinki-NLP/opus-mt-{src}-{tgt}
 // We use "en" as the pivot language for non-English pairs.
-const MODEL: Record<string, string> = {
+// Exported so saveTranslationSettings can validate the enabled language set
+// against it at save time, instead of a language only failing per-request
+// once someone actually tries to translate into it.
+export const MODEL: Record<string, string> = {
   ru: "Helsinki-NLP/opus-mt-en-ru",
   ja: "Helsinki-NLP/opus-mt-en-jap",
   zh: "Helsinki-NLP/opus-mt-en-zh",

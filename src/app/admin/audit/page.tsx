@@ -63,6 +63,7 @@ type AuditRow = {
   action: string
   metadata: Prisma.JsonValue
   ip: string | null
+  userAgent: string | null
   createdAt: Date
   user: { name: string | null; email: string } | null
 }
@@ -137,7 +138,17 @@ const columns: AdminTableCol<AuditRow>[] = [
     type: "center",
     hideOnMobile: true,
     render: (entry) => (
-      <span className="font-mono text-xs text-muted-foreground">{entry.ip ?? "—"}</span>
+      // The user agent is logged but was never surfaced anywhere in the UI;
+      // shown as a native tooltip on the one column it's actually related
+      // to, rather than a new column, since a raw UA string is too long to
+      // sit inline in a table row without a parsing library this app
+      // doesn't otherwise need.
+      <span
+        className="font-mono text-xs text-muted-foreground"
+        title={entry.userAgent ?? undefined}
+      >
+        {entry.ip ?? "—"}
+      </span>
     ),
   },
 ]
@@ -167,6 +178,7 @@ export default async function AuditPage({ searchParams }: Props) {
         action: true,
         metadata: true,
         ip: true,
+        userAgent: true,
         createdAt: true,
         user: { select: { name: true, email: true } },
       },

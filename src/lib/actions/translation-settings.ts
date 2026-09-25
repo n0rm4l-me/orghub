@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { requireRole } from "@/lib/rbac"
 import { revalidatePath } from "next/cache"
 import { type ActionResult, ok, fail } from "@/lib/actions/types"
+import { MODEL as HF_MODEL } from "@/lib/translation/providers/hf"
 
 const VALID_PROVIDERS = ["mymemory", "deepl", "hf"] as const
 const PRESET_LANGS = ["en", "ru", "ja", "zh", "es", "fr", "hi", "uk"] as const
@@ -37,6 +38,18 @@ export async function saveTranslationSettings(formData: FormData): Promise<Actio
 
   const langs = [...new Set([...presetLangs, ...extra])]
   if (!langs.length) return fail("Select at least one language")
+
+  // Hugging Face's Helsinki-NLP model set only covers 9 languages; picking a
+  // language it has no model for currently fails per-request at
+  // translate-time with "No HF model configured for language: X", once an
+  // employee actually tries it. Catch it here instead, same reasoning as the
+  // missing-API-key checks above.
+  if (provider === "hf") {
+    const unsupported = langs.filter((l) => !(l in HF_MODEL))
+    if (unsupported.length) {
+      return fail(`Hugging Face has no model for: ${unsupported.join(", ")}. Remove them or choose a different provider.`)
+    }
+  }
 
   await db.siteSettings.update({
     where: { id: "singleton" },

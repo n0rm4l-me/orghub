@@ -95,6 +95,25 @@ describe("saveTranslationSettings", () => {
     expect(mockDb.siteSettings.update).not.toHaveBeenCalled()
   })
 
+  it("rejects hf when an enabled language has no Helsinki-NLP model", async () => {
+    signInAs(USERS.admin)
+    process.env.HF_TOKEN = "fake-token"
+    const { saveTranslationSettings } = await import("@/lib/actions/translation-settings")
+    const result = await saveTranslationSettings(formData({
+      translationProvider: "hf", lang_en: "on", translationExtraLanguages: "pt",
+    }))
+    expect(result).toMatchObject({ ok: false, error: expect.stringContaining("pt") })
+    expect(mockDb.siteSettings.update).not.toHaveBeenCalled()
+  })
+
+  it("accepts hf when every enabled language has a Helsinki-NLP model", async () => {
+    signInAs(USERS.admin)
+    process.env.HF_TOKEN = "fake-token"
+    const { saveTranslationSettings } = await import("@/lib/actions/translation-settings")
+    const result = await saveTranslationSettings(formData({ translationProvider: "hf", lang_en: "on", lang_ru: "on" }))
+    expect(result).toMatchObject({ ok: true })
+  })
+
   it("rejects when no language is selected at all", async () => {
     signInAs(USERS.admin)
     const { saveTranslationSettings } = await import("@/lib/actions/translation-settings")

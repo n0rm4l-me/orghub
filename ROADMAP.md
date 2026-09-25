@@ -1111,17 +1111,27 @@ FIXED is a documented decision, not an oversight.
   so `WeekMenuCell` has no type-safe way to read `entry.id` even though it's
   present at runtime. Nothing currently needs it inside `WeekMenuCell`, so
   left alone, but worth a look if that ever changes.
-- **NOT DONE, judgment call.** The ordered-CRUD-list pattern (named rows,
-  up/down reorder, inline add, delete) in `venue-tags-editor.tsx` and
-  `nutrition-params-editor.tsx` really does share ~40 near-identical lines
-  each (~28-31% of both files: `update`/`removeRow`/`moveRow`/the up-down
-  button JSX/the Add-Save footer, all rename-only diffs) out of ~130-145
-  total. A `useOrderedRows<T>` hook is a defensible extraction for just these
-  two. Didn't do it this pass: unlike the type consolidation above, a hook
-  extraction changes runtime control flow in live interactive admin editors,
-  and `preview_start` has been broken all session, so there'd be no way to
-  visually confirm reorder/add/delete still work afterward beyond code
-  review. Do this once visual verification is available again.
+- **FIXED (was stale here: this was actually already done, commit
+  `30e1343`, and this note just never got updated to say so).** The
+  ordered-CRUD-list pattern (named rows, up/down reorder, inline add,
+  delete) in `venue-tags-editor.tsx` and `nutrition-params-editor.tsx` shared
+  ~40 near-identical lines each (~28-31% of both files:
+  `update`/`removeRow`/`moveRow`/the up-down button JSX/the Add-Save footer,
+  all rename-only diffs) out of ~130-145 total. Extracted to
+  [src/lib/use-ordered-rows.ts](src/lib/use-ordered-rows.ts), a generic
+  `useOrderedRows<T>` hook (state, `update`/`addRow`/`removeRow`/`moveRow`/
+  `handleSave`, name-required validation before save); both editors now call
+  it instead of duplicating the logic. Re-verified 2026-09-26: both call
+  sites still compile and pass `tsc`/`eslint`; `moveRow`'s swap-and-reindex
+  and `removeRow`'s reindex both correctly recompute every row's `order` to
+  match its new array position, not just the two rows that moved. Still not
+  visually confirmed in a browser (`preview_start` still can't reach the DB
+  this session), same standing limitation as the rest of this file; the
+  hook itself contains no DOM/rendering logic of its own (pure array-state
+  transitions plus a call into the existing `useAction` hook both editors
+  already used before this extraction), which is why this was judged safe
+  to land without that visual check, unlike a change to JSX or styling
+  would be.
   `fixed-menu-editor.tsx`'s section/entry handling looks similar at a glance
   but isn't the same duplication: it reorders via drag-and-drop (not
   up/down buttons), persists each mutation immediately through its own
@@ -1168,18 +1178,32 @@ FIXED is a documented decision, not an oversight.
   routes now just redirect there). No row can ever be created through the
   live UI today. Same asymmetry as above (dropping a whole model is harder
   to reverse than leaving unreachable code alone), same call: leave it.
-- **Needs a look, lower confidence:** `Venue.orderingEnabled` is unused but
-  is almost certainly reserved for the dining-cart checkout feature this
-  file's Feature Gaps section already documents as *decided-to-defer*, not
-  an unrelated dead flag: treat as reserved, not a deletion candidate, unless
-  the cart's fate is being decided too. `AuditLog.userAgent` is written on
-  every audit entry but never displayed (its sibling `ip` *is* shown in the
-  admin audit page); could be an oversight (add a UI column) or intentional
-  "log more than we show" hygiene. `Session`/`VerificationToken` (NextAuth's
-  own models) look structurally unreachable given this app uses JWT sessions
-  and only Credentials/Okta providers, but `@auth/prisma-adapter` may still
-  need the delegate to exist for its TS contract even if unused at runtime;
-  don't remove either without checking the adapter still compiles.
+- **`Venue.orderingEnabled`: still reserved, not a deletion candidate.**
+  Unused but almost certainly reserved for the dining-cart checkout feature
+  this file's Feature Gaps section already documents as *decided-to-defer*,
+  not an unrelated dead flag: leave alone unless the cart's fate is being
+  decided too.
+- **FIXED 2026-09-26: `AuditLog.userAgent` is now shown.** Was written on
+  every audit entry but never displayed anywhere (its sibling `ip` *was*
+  shown in the admin audit page). Added as a native `title` tooltip on that
+  same "From" column rather than a new table column: a raw user-agent
+  string is too long to sit inline in a table row without a parsing library
+  this app doesn't otherwise need, and the data is now at least reachable
+  by hovering instead of invisible.
+- **CONFIRMED 2026-09-26: `Session`/`VerificationToken` cannot be removed,
+  not just "may need to stay."** This app uses JWT sessions and only
+  Credentials/Okta providers, so both models look structurally unreachable
+  at runtime. Checked `@auth/prisma-adapter`'s actual source
+  (`node_modules/@auth/prisma-adapter/index.js`) rather than reasoning about
+  it: `PrismaAdapter(db)` unconditionally builds its returned adapter object
+  around `p.session.findUnique/create/update/delete` and
+  `p.verificationToken.create/delete` as plain property accesses on the
+  Prisma Client passed in. Removing either model from the schema removes
+  the matching delegate from the generated Prisma Client's type, which
+  breaks `PrismaAdapter(db)`'s own call at the type level, a compile error,
+  regardless of whether those specific adapter methods are ever invoked
+  under this app's JWT session strategy. Settled: leave both, for a
+  concrete verified reason now, not a hedge.
 
 ---
 
