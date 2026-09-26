@@ -227,8 +227,8 @@ export function SendKudosButton({ values, monthlyBudget, remaining }: Props) {
               <button
                 type="submit"
                 disabled={pending || !toId || !message.trim()}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand py-2.5 text-sm
-                  font-medium text-white transition hover:brightness-95 disabled:opacity-60"
+                className="flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-brand text-sm
+                  font-medium text-white transition hover:brightness-95 active:brightness-90 disabled:opacity-70"
               >
                 {pending && <Loader2 className="size-4 animate-spin" />}
                 {pending ? "Sending…" : "Send kudos"}

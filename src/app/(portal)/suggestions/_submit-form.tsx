@@ -52,8 +52,8 @@ export function SubmitSuggestionButton({ categories }: Props) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold
-          text-white transition-opacity hover:opacity-90"
+        className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium
+          text-white transition hover:brightness-95 active:brightness-90"
       >
         <Lightbulb className="size-4" aria-hidden />
         Submit idea
@@ -162,8 +162,8 @@ export function SubmitSuggestionButton({ categories }: Props) {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm
-                    font-semibold text-white disabled:opacity-60"
+                  className="inline-flex h-9 items-center gap-2 rounded-lg bg-brand px-4 text-sm
+                    font-medium text-white transition hover:brightness-95 active:brightness-90 disabled:opacity-70"
                 >
                   {loading ? "Submitting…" : "Submit"}
                 </button>
