@@ -3,21 +3,25 @@ import Underline from "@tiptap/extension-underline"
 import TextAlign from "@tiptap/extension-text-align"
 import Highlight from "@tiptap/extension-highlight"
 import Link from "@tiptap/extension-link"
-import { PollEmbed } from "@/components/poll-embed-extension"
-import { ImageEmbed } from "@/components/image-embed-extension"
+import { PollEmbedEditor } from "@/components/poll-embed-editor-extension"
+import { ImageEmbedEditor } from "@/components/image-embed-editor-extension"
 
 /**
- * Shared by the admin editor and the read-only article renderer, so it lives
- * outside editor.tsx: importing it from there would drag the admin toolbar,
- * its icons, and its media/poll-insert actions into every public page that
- * renders an article body.
+ * What the admin editor actually mounts: the same document shape as
+ * SCHEMA_EXTENSIONS (schema-extensions.ts), plus each embed's live NodeView
+ * (a broken-image placeholder for ImageEmbed, the actual fetch-and-vote UI
+ * with a remove button for PollEmbed). Deliberately its own file, not
+ * SCHEMA_EXTENSIONS plus a couple of swapped-in entries in the same module:
+ * see the comment in schema-extensions.ts for why that silently defeats the
+ * server-side renderer's whole reason for existing. Only
+ * editor.tsx/content-form.tsx should import this.
  */
 export const EDITOR_EXTENSIONS = [
   StarterKit.configure({ link: false, underline: false }),
   Underline,
   Highlight,
   TextAlign.configure({ types: ["heading", "paragraph"] }),
-  ImageEmbed,
+  ImageEmbedEditor,
   Link.configure({ openOnClick: false }),
-  PollEmbed,
+  PollEmbedEditor,
 ]

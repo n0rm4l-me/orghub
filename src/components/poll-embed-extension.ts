@@ -1,7 +1,8 @@
 import { Node, mergeAttributes } from "@tiptap/core"
-import { ReactNodeViewRenderer } from "@tiptap/react"
-import { PollEmbedView } from "@/components/poll-embed-view"
 
+// Schema-only: no addNodeView here on purpose, same reasoning as
+// image-embed-extension.ts. poll-embed-editor-extension.ts adds the live
+// voting NodeView back for the admin editor's own extension list only.
 export const PollEmbed = Node.create({
   name: "pollEmbed",
   group: "block",
@@ -19,9 +20,5 @@ export const PollEmbed = Node.create({
 
   renderHTML({ HTMLAttributes }) {
     return ["div", mergeAttributes({ "data-poll-id": HTMLAttributes.pollId })]
-  },
-
-  addNodeView() {
-    return ReactNodeViewRenderer(PollEmbedView)
   },
 })
