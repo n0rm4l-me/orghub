@@ -201,6 +201,11 @@ model Media {
   url          String
   mimeType     String
   size         Int
+  /// Intrinsic pixel dimensions, captured at upload time so <img> tags can
+  /// reserve their aspect ratio before the image loads. Null for anything
+  /// uploaded before this field existed, or where sharp failed/was skipped.
+  width        Int?
+  height       Int?
   context      String?
   uploadedById String
   uploadedBy   User     @relation(fields: [uploadedById], references: [id], onDelete: Cascade)

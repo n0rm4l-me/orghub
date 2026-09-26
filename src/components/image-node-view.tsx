@@ -4,9 +4,13 @@ import { NodeViewWrapper } from "@tiptap/react"
 import { useState } from "react"
 import { ImageOff } from "lucide-react"
 
-export function ImageNodeView({ node }: { node: { attrs: { src?: string; alt?: string; title?: string } } }) {
+export function ImageNodeView({
+  node,
+}: {
+  node: { attrs: { src?: string; alt?: string; title?: string; width?: number | null; height?: number | null } }
+}) {
   const [broken, setBroken] = useState(false)
-  const { src, alt, title } = node.attrs
+  const { src, alt, title, width, height } = node.attrs
 
   return (
     <NodeViewWrapper>
@@ -20,6 +24,8 @@ export function ImageNodeView({ node }: { node: { attrs: { src?: string; alt?: s
           src={src}
           alt={alt ?? ""}
           title={title ?? ""}
+          width={width ?? undefined}
+          height={height ?? undefined}
           onError={() => setBroken(true)}
           className="max-w-full rounded-lg"
         />

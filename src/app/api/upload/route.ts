@@ -27,20 +27,42 @@ const MAX_EDGE = 1600
 /** Formats that can be safely downscaled. GIF is excluded to keep animation. */
 const RESIZABLE = new Set(["image/jpeg", "image/png", "image/webp"])
 
+type Dimensions = { width: number | null; height: number | null }
+
+/**
+ * EXIF orientation 5-8 means the stored pixel grid is rotated 90 degrees
+ * from how it's actually displayed (browsers honor EXIF orientation by
+ * default). sharp's plain `metadata()` always reports the raw, un-rotated
+ * grid, so width/height need swapping here for anything not going through
+ * the `.rotate()` call below (which normalizes real pixels, and so needs no
+ * such swap on its own output).
+ */
+function orientedDimensions(width?: number, height?: number, orientation?: number): Dimensions {
+  if (!width || !height) return { width: null, height: null }
+  return orientation && orientation >= 5 ? { width: height, height: width } : { width, height }
+}
+
 /**
  * Downscales an oversized photo, preserving its format so PNG diagrams and
  * screenshots stay lossless. Returns the original bytes unchanged when the
  * image is already small enough, when the format is not resizable, or when
  * sharp is unavailable: sharp reaches us as an optional dependency of Next,
  * and losing uploads entirely would be far worse than serving a large file.
+ * Also returns the image's intrinsic dimensions (null if they can't be
+ * determined) so callers can persist them for later layout-shift-free
+ * rendering, regardless of whether any resizing actually happened.
  */
-async function downscale(buffer: Buffer, contentType: string): Promise<Buffer> {
-  if (!RESIZABLE.has(contentType)) return buffer
+async function downscale(
+  buffer: Buffer,
+  contentType: string,
+): Promise<{ buffer: Buffer } & Dimensions> {
+  if (!RESIZABLE.has(contentType)) return { buffer, width: null, height: null }
   try {
     const sharp = (await import("sharp")).default
     const image = sharp(buffer, { failOn: "none" })
-    const { width, height } = await image.metadata()
-    if (!width || !height || Math.max(width, height) <= MAX_EDGE) return buffer
+    const meta = await image.metadata()
+    const { width, height } = orientedDimensions(meta.width, meta.height, meta.orientation)
+    if (!width || !height || Math.max(width, height) <= MAX_EDGE) return { buffer, width, height }
 
     const resized = image.rotate().resize({ width: MAX_EDGE, height: MAX_EDGE, fit: "inside" })
     const out =
@@ -48,10 +70,12 @@ async function downscale(buffer: Buffer, contentType: string): Promise<Buffer> {
       contentType === "image/webp" ? await resized.webp({ quality: 82 }).toBuffer() :
                                      await resized.jpeg({ quality: 82, mozjpeg: true }).toBuffer()
     // A pathological source can grow on re-encode; never make things worse.
-    return out.length < buffer.length ? out : buffer
+    if (out.length >= buffer.length) return { buffer, width, height }
+    const finalMeta = await sharp(out).metadata()
+    return { buffer: out, width: finalMeta.width ?? width, height: finalMeta.height ?? height }
   } catch (err) {
     console.error("Image downscale skipped:", err)
-    return buffer
+    return { buffer, width: null, height: null }
   }
 }
 
@@ -88,7 +112,7 @@ export async function POST(req: Request) {
 
   const uuid = randomUUID()
   const key = `${folder}/${uuid}.${ext}`
-  const buffer = await downscale(Buffer.from(await file.arrayBuffer()), file.type)
+  const { buffer, width, height } = await downscale(Buffer.from(await file.arrayBuffer()), file.type)
 
   let url: string
   try {
@@ -107,11 +131,13 @@ export async function POST(req: Request) {
       context: folder,
       // The stored size, not the uploaded one: downscaling may have shrunk it.
       size: buffer.length,
+      width,
+      height,
       uploadedById: user.id,
     },
   })
 
   await logAudit({ userId: user.id, action: "media.upload", resourceType: "Media", resourceId: media.id, metadata: { filename: file.name, context: folder } })
   revalidatePath("/admin/media")
-  return NextResponse.json({ id: media.id, url, key, filename: file.name })
+  return NextResponse.json({ id: media.id, url, key, filename: file.name, width, height })
 }

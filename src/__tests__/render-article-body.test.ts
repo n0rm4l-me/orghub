@@ -39,7 +39,7 @@ describe("renderArticleBodyHtml", () => {
           { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Item one" }] }] },
         ]},
         { type: "horizontalRule" },
-        { type: "image", attrs: { src: "/uploads/pic.png", alt: "A pic", title: null } },
+        { type: "image", attrs: { src: "/uploads/pic.png", alt: "A pic", title: null, width: 800, height: 450 } },
         { type: "pollEmbed", attrs: { pollId: "poll-123" } },
       ],
     }
@@ -61,7 +61,20 @@ describe("renderArticleBodyHtml", () => {
     expect(html).toContain("<hr")
     expect(html).toContain('src="/uploads/pic.png"')
     expect(html).toContain('alt="A pic"')
+    expect(html).toContain('width="800"')
+    expect(html).toContain('height="450"')
     expect(html).toContain('data-poll-id="poll-123"')
+  })
+
+  it("omits width/height on images uploaded before dimensions were tracked", async () => {
+    const { renderArticleBodyHtml } = await import("@/lib/render-article-body")
+    const html = renderArticleBodyHtml({
+      type: "doc",
+      content: [{ type: "image", attrs: { src: "/uploads/old.png", alt: null, title: null, width: null, height: null } }],
+    })
+    expect(html).toContain('src="/uploads/old.png"')
+    expect(html).not.toContain("width=")
+    expect(html).not.toContain("height=")
   })
 
   it("does not send the poll node's id through as visible text", async () => {

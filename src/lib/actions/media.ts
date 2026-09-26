@@ -24,6 +24,7 @@ export async function getMediaList(page = 1, query = "", folder?: string) {
       select: {
         id: true, filename: true, url: true, mimeType: true,
         size: true, createdAt: true, key: true, context: true,
+        width: true, height: true,
         uploadedBy: { select: { name: true } },
       },
     }),

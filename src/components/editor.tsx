@@ -119,7 +119,7 @@ function Toolbar({ editor, folder }: { editor: ReturnType<typeof useEditor>; fol
 function InsertImageButton({ editor, folder }: { editor: ReturnType<typeof useEditor>; folder?: string }) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [open, setOpen] = useState(false)
-  const [media, setMedia] = useState<Array<{ id: string; url: string; filename: string; mimeType: string }> | null>(null)
+  const [media, setMedia] = useState<Array<{ id: string; url: string; filename: string; mimeType: string; width: number | null; height: number | null }> | null>(null)
   const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState("")
   const [uploading, setUploading] = useState(false)
@@ -145,8 +145,13 @@ function InsertImageButton({ editor, folder }: { editor: ReturnType<typeof useEd
     setLoading(false)
   }
 
-  function insert(url: string) {
-    editor?.chain().focus().setImage({ src: url }).run()
+  // insertContent with explicit attrs, not the built-in setImage command:
+  // width/height are real node attrs (Tiptap's own Image extension already
+  // declares them), but setImage's TS signature only knows about
+  // src/alt/title, the same reason the poll button below uses
+  // insertContent directly instead of a typed command.
+  function insert(url: string, width: number | null = null, height: number | null = null) {
+    editor?.chain().focus().insertContent({ type: "image", attrs: { src: url, width, height } }).run()
     setOpen(false)
   }
 
@@ -160,7 +165,7 @@ function InsertImageButton({ editor, folder }: { editor: ReturnType<typeof useEd
       const res = await fetch("/api/upload", { method: "POST", body: fd })
       const data = await res.json()
       if (res.ok) {
-        insert(data.url)
+        insert(data.url, data.width ?? null, data.height ?? null)
         setMedia(null) // reset cache so next open re-fetches
       } else {
         toast.error(data.error ?? "Upload failed")
@@ -221,7 +226,7 @@ function InsertImageButton({ editor, folder }: { editor: ReturnType<typeof useEd
                 <button
                   key={m.id}
                   type="button"
-                  onClick={() => insert(m.url)}
+                  onClick={() => insert(m.url, m.width, m.height)}
                   className="group overflow-hidden rounded border border-border hover:border-brand transition"
                   title={m.filename}
                 >
