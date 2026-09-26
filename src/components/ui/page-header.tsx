@@ -3,9 +3,12 @@ import { ChevronLeft } from "lucide-react"
 import type { ReactNode } from "react"
 
 interface Props {
-  title: string
+  /** Usually a string; accepts a node so a page can render a value that can
+   *  only be resolved client-side (e.g. the visitor's local time of day)
+   *  without turning the whole page into a client component. */
+  title: ReactNode
   /** Short context line: a count, or what the page is for. */
-  description?: string
+  description?: ReactNode
   /** Primary action, rendered flush right. */
   action?: ReactNode
   /** When provided, renders a back link above the heading. */

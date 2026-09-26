@@ -3,6 +3,7 @@ import Link from "next/link"
 import { Plus, FileText, Files, Users, Tag, ArrowRight, CalendarDays, Eye, Award } from "lucide-react"
 import { requireRole, can } from "@/lib/rbac"
 import { PageHeader } from "@/components/ui/page-header"
+import { AdminGreetingTitle, AdminGreetingDate } from "@/components/admin-greeting"
 import { EmptyState } from "@/components/ui/empty-state"
 import { StatCard } from "@/components/ui/stat-card"
 import { getSettings } from "@/lib/settings"
@@ -59,12 +60,8 @@ export default async function AdminDashboard() {
   return (
     <div>
       <PageHeader
-        title={`Good ${greeting()}, ${firstName(user.name, user.email)}`}
-        description={new Date().toLocaleDateString("en-US", {
-          weekday: "long",
-          month: "long",
-          day: "numeric",
-        })}
+        title={<AdminGreetingTitle firstName={firstName(user.name, user.email)} />}
+        description={<AdminGreetingDate />}
         action={
           <Link
             href="/admin/articles/new"
@@ -236,16 +233,9 @@ export default async function AdminDashboard() {
 }
 
 
-function greeting(): string {
-  const hour = new Date().getHours()
-  if (hour < 12) return "morning"
-  if (hour < 18) return "afternoon"
-  return "evening"
-}
-
 function firstName(name: string | null, email: string): string {
   if (name) {
-    // AD stores displayName as "Lastname, Firstname" — take the part after the comma
+    // AD stores displayName as "Lastname, Firstname": take the part after the comma
     const commaIdx = name.indexOf(",")
     if (commaIdx !== -1) return name.slice(commaIdx + 1).trim().split(" ")[0]!
     return name.split(" ")[0]!
