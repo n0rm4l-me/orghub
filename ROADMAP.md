@@ -1600,6 +1600,34 @@ knowledge:
 
 ---
 
+## Admin diagnostics page (2026-09-26, added on request)
+
+New: [/admin/diagnostics](src/app/admin/diagnostics/page.tsx), ADMIN-only.
+App (own version, Next.js/Node versions, environment, uptime via
+`process.uptime()`, memory, server clock), database (Postgres version and
+size via `pg_size_pretty(pg_database_size(...))`, row counts for the main
+models), storage (endpoint/bucket, object count and total size from
+`listStorageObjects()`, tolerates the storage backend being unreachable
+without failing the whole page), and a configuration checklist
+(LDAP/Okta/translation-provider/web-push/S3, presence-only, never a secret
+value, matching this session's own established convention for surfacing
+"is this configured" without exposing what it's configured *to*).
+
+Needed one small deploy-pipeline change to show something more useful than
+`package.json`'s mostly-static `0.1.0` for "version": added a `BUILD_SHA`
+build arg threaded through [Dockerfile](Dockerfile)'s `runner` stage and
+[cloudbuild.yaml](cloudbuild.yaml)'s image-build step (`--build-arg
+BUILD_SHA=$_TAG`, reusing the commit SHA already used as the image tag),
+surfaced as a plain runtime env var. Could not verify this specific part
+locally: `podman build` failed silently in this environment (no Podman
+machine/VM running, confirmed by checking the actual exit status rather
+than trusting the misleading one the wrapping shell pipeline reported),
+so this is standard, unambiguous Docker syntax reasoned through carefully
+rather than locally test-built; will be confirmed by the real Cloud Build
+and a live check of the deployed page right after this ships.
+
+---
+
 ## Recently fixed
 
 Confirmed fixed as of 2026-09-24, listed so nobody re-investigates them:

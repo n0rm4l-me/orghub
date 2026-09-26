@@ -19,6 +19,7 @@ import {
   Images,
   UtensilsCrossed,
   Lightbulb,
+  Activity,
   type LucideIcon,
 } from "lucide-react"
 
@@ -53,6 +54,7 @@ const SYSTEM: Item[] = [
   { href: "/admin/appearance",      label: "Appearance",     icon: Paintbrush  },
   { href: "/admin/navigation",      label: "Navigation",     icon: Compass     },
   { href: "/admin/auth-providers",  label: "Authentication", icon: ShieldCheck },
+  { href: "/admin/diagnostics",     label: "Diagnostics",    icon: Activity    },
 ]
 
 /** `/admin` must not light up for every child route, so it matches exactly. */

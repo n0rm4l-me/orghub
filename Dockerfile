@@ -30,6 +30,11 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN apk add --no-cache openssl
 
+# Surfaced read-only on /admin/diagnostics; defaults to "unknown" for a local
+# `docker build` with no --build-arg, rather than failing the build.
+ARG BUILD_SHA=unknown
+ENV BUILD_SHA=$BUILD_SHA
+
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public

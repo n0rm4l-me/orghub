@@ -12,6 +12,8 @@ steps:
   - name: gcr.io/cloud-builders/docker
     args:
       - build
+      - --build-arg
+      - BUILD_SHA=$_TAG
       - -t
       - $_IMAGE:$_TAG
       - .
