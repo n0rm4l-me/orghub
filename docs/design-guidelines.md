@@ -118,7 +118,7 @@ they're legacy sizes from before this scale, not a deliberate second tier.
 
 `font-bold` is not a leftover to sweep to `font-semibold`: checked every
 instance in the tree on 2026-09-25, and each one earns the heavier weight
-for a specific reason, not habit. `prose-headings:font-bold` (`article-body.tsx`,
+for a specific reason, not habit. `prose-headings:font-bold` (`article-body-html.tsx`,
 `article-translate-body.tsx`, `editor.tsx`) styles headings inside authored
 article content, a different system from UI chrome weight (400 body / 500
 accent / 600 heading applies to the app's own interface, not to what an

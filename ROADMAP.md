@@ -529,72 +529,116 @@ Root-cause item first, the rest multiply in impact once it's fixed:
   gave (`dynamic-rendering.md`) no longer exists under that name; see the
   "Feature audits" section below for what actually revisiting this would
   involve and why it isn't worth it yet.
-- **PARTIALLY FIXED 2026-09-25; one earlier claim in this same note was
-  wrong, corrected below.**
-  [src/components/article-body.tsx](src/components/article-body.tsx)
-  instantiates a live client-side Tiptap/ProseMirror editor (`useEditor` +
-  `EditorContent`, `editable: false`) for every public article view, shipping
-  the whole editor runtime (StarterKit's full command/history/input-rule
-  machinery, none of it reachable in `editable: false` mode) just to display
-  static text. Shipped the safe half of the fix:
-  [src/components/article-translate-body.tsx](src/components/article-translate-body.tsx)
-  now loads `ArticleBody` through `next/dynamic` instead of a static import,
-  so Tiptap/ProseMirror (confirmed as its own ~412KB chunk, isolated from
-  every other chunk, after a clean `next build`) is no longer part of the
-  route's main bundle and can be cached across article-to-article navigation.
-  This does not reduce total bytes a reader downloads, and does not fix the
-  deeper issue (below); it only takes the heaviest part out of the critical
-  path for the rest of the page (header, like/comment buttons). Verified with
-  `tsc`, `eslint`, the full test suite, and a clean `npx next build`; not
-  visually confirmed in a real browser (`preview_start` still can't reach the
-  DB this session, a standing limitation noted throughout this file), so
-  treat the "isolated chunk" claim as build-output-verified, not
-  screen-verified.
+- **FIXED 2026-09-26.** The public article/page read path no longer loads
+  Tiptap/ProseMirror at all. Previously,
+  `src/components/article-body.tsx` (now deleted) instantiated a live
+  client-side editor (`useEditor` + `EditorContent`, `editable: false`) for
+  every public view, shipping the whole editor runtime just to display
+  static text; an earlier same-session pass only got as far as
+  code-splitting it into its own lazily-loaded chunk (see the
+  now-superseded note this replaced), not removing it.
 
-  The real fix, server-side `generateHTML` (no client Tiptap at all for a
-  reader who never votes on a poll), is still blocked, but not for the
-  reason this note previously gave. **Corrected:** the previous claim that
-  [src/components/image-embed-extension.ts](src/components/image-embed-extension.ts)
-  "defines a NodeView but no `renderHTML`" was never actually checked against
-  the installed package and was wrong: `ImageEmbed` is `Image.extend({
-  addNodeView() {...} })` from `@tiptap/extension-image`, `.extend()` only
-  overrides the fields it's given, and the base `Image` node's own
-  `renderHTML` (`node_modules/@tiptap/extension-image/dist/index.js:40`) is
-  still there and works standalone. **The actual blocker, empirically
-  reproduced this session:** `generateHTML` (exported from `@tiptap/core` in
-  Tiptap 3, not a separate `@tiptap/html` package like Tiptap 2) throws
-  `ReferenceError: window is not defined` from
-  `prosemirror-model`'s `DOMSerializer.serializeFragment`, because it builds
-  the output by creating real DOM nodes, not by string-templating HTML.
-  Node.js has no `window`/`document` by default and this repo has no DOM
-  shim installed (checked: no `jsdom`, `linkedom`, or `happy-dom` in
-  `package.json` or `node_modules`; `vitest.config.ts` itself runs with
-  `environment: "node"`, confirming nothing already pulls one in). The
-  poll-island reasoning in the original note still holds regardless: 
-  [src/components/poll-embed-extension.ts](src/components/poll-embed-extension.ts)'s
-  `renderHTML` already emits a static `<div data-poll-id>` marker (fine for
-  `generateHTML`), but keeping live voting after a switch to static HTML
-  needs a small client "island" mounted into that marker, not a drop-in
-  swap. A different shortcut was also checked and ruled out:
-  `StarterKit.configure({ dropcursor: false, gapcursor: false, undoRedo:
-  false })` for a trimmed read-only extension list looked promising but does
-  nothing for bundle size, confirmed by reading
-  `node_modules/@tiptap/starter-kit/dist/index.js`: it statically imports
-  every sub-extension unconditionally at the top of the file regardless of
-  `.configure()` flags, so a bundler can't tree-shake what those flags
-  disable at runtime; only *not importing* `@tiptap/starter-kit` at all (and
-  hand-picking individual `@tiptap/extension-*` packages instead) would
-  actually shrink the bundle, which reopens the same "verify every node/mark
-  type real content uses" risk as the `generateHTML` path.
-  Real remaining shape of the fix: add a DOM-shim dependency
-  (`jsdom`/`linkedom`), render server-side via `generateHTML`, build the poll
-  island, and switch the rendering path: a bigger, separately-verifiable
-  change (adding a new dependency, plus functionally confirming a poll still
-  votes correctly afterward) than a same-day item in a larger batch should
-  attempt, especially right after this same session shipped one unverified
-  CSP change to this app's hydration behavior that broke production (see
-  "Lighthouse audit" below). Left for a dedicated pass with real browser
-  verification.
+  **What actually shipped:** [src/lib/render-article-body.ts](src/lib/render-article-body.ts)
+  renders a body's Tiptap JSON to a static HTML string entirely server-side,
+  and [src/components/article-body-html.tsx](src/components/article-body-html.tsx)
+  (a small client component) drops that HTML in via `dangerouslySetInnerHTML`
+  and mounts a live "island" only into each poll's marker, for the one piece
+  that genuinely needs client interactivity (live vote state).
+  [articles/[id]/page.tsx](<src/app/(portal)/articles/[id]/page.tsx>) and
+  [pages/[slug]/page.tsx](<src/app/(portal)/pages/[slug]/page.tsx>) both now
+  call `renderArticleBodyHtml()` themselves and pass the resulting string
+  down, instead of passing the raw JSON to a component that used to build
+  an editor from it.
+
+  **The two blockers the previous note described were both real, both
+  solved differently than expected:**
+  - *No DOM in Node.* `@tiptap/core`'s own `generateHTML()` throws
+    `"window is not defined"`: its internal `getHTMLFromFragment` reads the
+    bare `document` global with no way to inject one (confirmed by reading
+    its source, not just retrying it). Added `jsdom` as a dependency, but
+    **did not** reach for the obvious `global.window = ...` fix: that would
+    make every concurrent request on this server share one mutable DOM,
+    a real correctness risk for a Next.js server that handles requests
+    concurrently, not just an inelegance. Checked ProseMirror's own
+    `DOMSerializer.serializeFragment` source first and found it already
+    accepts an explicit `{ document }` option (`doc(options) { return
+    options.document || window.document }` in
+    `prosemirror-model/src/to_dom.ts`) that `@tiptap/core`'s wrapper simply
+    never threads through. `render-article-body.ts` calls
+    `getSchema()`/`Node.fromJSON()`/`DOMSerializer.fromSchema().serializeFragment()`
+    directly instead of going through `generateHTML()`, passing one jsdom
+    `document` built once at module load (reused across calls; a plain
+    `createElement` factory with no state a concurrent second call could
+    observe or corrupt, and considerably cheaper than constructing a fresh
+    jsdom environment per request). Verified empirically with a throwaway
+    spike script before writing any of the real code, confirming
+    `globalThis.window`/`globalThis.document` stayed `undefined` throughout.
+  - *The poll-island NodeView.* Extracted the fetch-and-render core of
+    [poll-embed-view.tsx](src/components/poll-embed-view.tsx) into
+    [poll-embed-content.tsx](src/components/poll-embed-content.tsx) (a plain
+    component taking just `pollId`, no Tiptap `NodeViewProps` coupling), zero
+    behavior change for the existing editor NodeView, which now just wraps
+    it. `article-body-html.tsx` finds every `<div data-poll-id>`
+    `PollEmbed`'s unchanged `renderHTML` already emits and mounts a separate
+    React root (`createRoot`, not a portal: these nodes come from
+    `dangerouslySetInnerHTML`, outside anything React's own tree is
+    tracking, so there's no already-rendered target a portal could aim at)
+    directly onto each one.
+  - The earlier note's claim that `ImageEmbed` "defines a NodeView but no
+    `renderHTML`" was already corrected in an earlier pass (it inherits a
+    working one from the base `@tiptap/extension-image`); that correction
+    turned out not to matter much in the end, since the schema/editor split
+    below needed touching `image-embed-extension.ts` anyway.
+
+  **A second bundle leak, caught only by re-checking the build output, not
+  by trusting green tests.** The first version of this fix left
+  `EDITOR_EXTENSIONS` (needs `@tiptap/react` and each embed's NodeView
+  component, both genuinely client-only) and a new schema-only
+  `SCHEMA_EXTENSIONS` (for the server renderer) as two exports *in the same
+  file*. Everything compiled, every test passed, `next build` succeeded, and
+  the fix still didn't work: re-grepping `.next/static/chunks` for
+  `prosemirror` and cross-referencing which routes' `client-reference-manifest`
+  files pointed at the matches (the same technique that caught this exact
+  problem with `@tiptap/starter-kit` itself a session earlier) showed the
+  public article route still pulling in `image-node-view.tsx` and
+  `poll-embed-view.tsx`. Reason: a module's imports are evaluated for the
+  whole file, not per export, so importing *either* export from that shared
+  file still pulled in *both* exports' imports. Split `ImageEmbed`/`PollEmbed`
+  into schema-only versions (`image-embed-extension.ts`/
+  `poll-embed-extension.ts`, no `addNodeView`, no `@tiptap/react` import) and
+  editor-only versions that add the NodeView back
+  (`image-embed-editor-extension.ts`/`poll-embed-editor-extension.ts`,
+  new files), *and* split the two extension lists themselves into separate
+  files ([schema-extensions.ts](src/lib/schema-extensions.ts) vs.
+  [editor-extensions.ts](src/lib/editor-extensions.ts), the latter now
+  editor-only) rather than two exports of one file, specifically so this
+  can't silently regress the same way again. Re-verified after the split:
+  the public article/page routes' `client-reference-manifest`s no longer
+  list either NodeView file or anything Tiptap-related at all; the one
+  remaining chunk containing ProseMirror code is referenced only by the
+  admin content-editing routes (`/admin/articles/new`,
+  `/admin/articles/[id]/edit`, and the equivalent `events`/`pages` routes),
+  which still need the real, live, editable Tiptap instance.
+
+  **Verification, and its limits.** Covered by
+  [render-article-body.test.ts](src/__tests__/render-article-body.test.ts)
+  (6 tests: every node/mark type the admin editor's toolbar can actually
+  produce, the poll marker, `null`/malformed input handled without throwing,
+  text content HTML-escaped rather than injected, deterministic output
+  across repeated calls). `tsc`, `eslint`, the full test suite, and a clean
+  `npx next build` all pass. **Not covered:** no component-level test for
+  `article-body-html.tsx`'s island-mounting effect itself (this codebase has
+  no React-component testing set up anywhere, jsdom-as-a-test-environment
+  included, and adding that paradigm just for one component felt like a
+  bigger, separate decision); and, as with everything else in this file
+  behind the same standing limitation, no real-browser confirmation that a
+  poll embedded in a real article actually loads and accepts a vote
+  (`preview_start` still can't reach the DB this session). The HTML-generation
+  correctness (the part with the most surface area for a real bug: wrong or
+  missing content reaching every reader) is the part that's actually
+  tested; the island-mounting mechanism is a well-established, small React
+  pattern (`querySelectorAll` + `createRoot`) reviewed carefully but not
+  exercised by a test.
 
 Everything else, roughly ordered by blast radius:
 
@@ -1503,17 +1547,19 @@ option; one is correctly out of scope.
 - **Documented, not fixed: no image carries width/height anywhere in the
   pipeline.** The `Media` model has no dimension columns, the upload route's
   response omits them, `ImageEmbed` (Tiptap) adds no width/height/
-  aspect-ratio attributes, and the NodeView renders a bare `<img>` with no
-  reserved space. This isn't editor-only: `ArticleBody` reuses the same
-  extensions for the public renderer, so every embedded image causes layout
-  shift both while editing and on published articles/pages, with no
-  next/image and no CSS placeholder anywhere in the chain. Real gap, but
+  aspect-ratio attributes, and both the editor NodeView and the public
+  renderer emit a bare `<img>` with no reserved space. Still true after the
+  article-body SSR rewrite (see "Performance" above): that rewrite changed
+  *how* the HTML is produced (server-side via `render-article-body.ts`
+  instead of a client Tiptap instance), not *what* it contains, so every
+  embedded image still causes layout shift on published articles/pages, with
+  no next/image and no CSS placeholder anywhere in the chain. Real gap,
   fixing it means a schema migration plus changes across the upload route,
-  the Tiptap extension, and the NodeView, all in the same rendering pipeline
-  `article-body.tsx`'s pending SSR rewrite already touches (see
-  "Performance" above); doing it as a second, uncoordinated pass through the
-  same files risks conflicting with that rewrite whenever it happens.
-  Bundled here as one thing to pick up together, not two.
+  the Tiptap extension, and both NodeView files
+  (`image-embed-editor-extension.ts`, and the schema-only
+  `image-embed-extension.ts` for the `renderHTML` side). No longer bundled
+  with a pending rewrite since that rewrite is done; just its own open item
+  now.
 - **Documented, not fixed: uploaded-then-discarded images can orphan a
   Media row + storage object.** Uploading (toolbar or media-library picker)
   creates the row and object immediately, before the article/page is ever
