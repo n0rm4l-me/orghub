@@ -1,34 +1,10 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import dynamic from "next/dynamic"
 import { BarChart2, Loader2, RotateCcw } from "lucide-react"
 import { translateArticle, type TranslatedBlock } from "@/lib/actions/translate"
 import { toast } from "@/components/ui/toaster"
-import { Skeleton } from "@/components/ui/skeleton"
-
-// Tiptap + ProseMirror (StarterKit's full editing machinery: history, drag/gap
-// cursors, input rules, etc.) has no business being in this route's initial
-// JS just to display already-published, read-only text. Splitting it into
-// its own chunk via next/dynamic doesn't reduce the bytes a reader downloads
-// overall, but takes it out of the critical path for the rest of the page
-// (header, like/comment buttons) and lets browsers cache that chunk across
-// article-to-article navigation. The heavier fix (rendering this server-side
-// so there's real HTML before any client JS runs at all) needs a DOM shim
-// (`generateHTML` throws "window is not defined" under Prosemirror's
-// DOMSerializer without one; confirmed empirically, nothing like jsdom/
-// linkedom is installed) plus a client-side "island" for PollEmbed's live
-// voting UI, which is a bigger, separately-verifiable change; see
-// ROADMAP.md's Performance section.
-const ArticleBody = dynamic(() => import("@/components/article-body").then((m) => m.ArticleBody), {
-  loading: () => (
-    <div className="space-y-3 py-1">
-      <Skeleton className="h-4 w-full" />
-      <Skeleton className="h-4 w-full" />
-      <Skeleton className="h-4 w-2/3" />
-    </div>
-  ),
-})
+import { ArticleBodyHtml } from "@/components/article-body-html"
 
 function langLabel(code: string): string {
   try {
@@ -101,13 +77,17 @@ function renderBlocks(blocks: TranslatedBlock[]) {
 interface Props {
   articleId: string
   title: string
-  bodyJson: unknown
+  /** Pre-rendered server-side (see render-article-body.ts), not the raw
+   *  Tiptap JSON: this component never loads a client-side editor for the
+   *  original-language view, only for a translation result (blocks fetched
+   *  fresh from the server on demand, rendered via renderBlocks below). */
+  bodyHtml: string
   /** Comma-separated lang codes from settings. When undefined, translation UI is hidden. */
   enabledLanguages?: string
   children?: React.ReactNode
 }
 
-export function ArticleTranslateBody({ articleId, title, bodyJson, enabledLanguages, children }: Props) {
+export function ArticleTranslateBody({ articleId, title, bodyHtml, enabledLanguages, children }: Props) {
   const TARGETS = (enabledLanguages ?? "")
     .split(",")
     .map((s) => s.trim())
@@ -177,7 +157,7 @@ export function ArticleTranslateBody({ articleId, title, bodyJson, enabledLangua
       {showTranslation && result ? (
         <div key={shownTarget} className={`${PROSE} animate-in fade-in-0 duration-300`}>{renderBlocks(result.blocks)}</div>
       ) : (
-        <ArticleBody body={bodyJson} />
+        <ArticleBodyHtml html={bodyHtml} />
       )}
     </>
   )

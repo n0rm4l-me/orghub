@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { gravatarUrl } from "@/lib/gravatar"
 import { ArticleTranslateBody } from "@/components/article-translate-body"
+import { renderArticleBodyHtml } from "@/lib/render-article-body"
 import Link from "next/link"
 import { ArrowLeft, CalendarDays, Eye, MapPin, MessageSquare } from "lucide-react"
 import { getCurrentUser, hasRole } from "@/lib/rbac"
@@ -127,7 +128,7 @@ export default async function ArticlePage({ params }: Props) {
         <ArticleTranslateBody
           articleId={id}
           title={article.title}
-          bodyJson={article.body}
+          bodyHtml={renderArticleBodyHtml(article.body)}
           enabledLanguages={translationEnabled ? settings.translationLanguages : undefined}
         >
           {eventStart && (

@@ -2,7 +2,8 @@ import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 import { db } from "@/lib/db"
 import { notFound } from "next/navigation"
-import { ArticleBody } from "@/components/article-body"
+import { ArticleBodyHtml } from "@/components/article-body-html"
+import { renderArticleBodyHtml } from "@/lib/render-article-body"
 import { getSettings } from "@/lib/settings"
 import { parseModules } from "@/lib/modules"
 import { PortalPageLayout } from "@/components/portal-page-layout"
@@ -60,7 +61,7 @@ export default async function PublicPagePage({ params }: Props) {
       <PageHeader title={page.title} />
 
       <div className="bg-card rounded-xl p-8 border border-border">
-        <ArticleBody body={page.body as object} />
+        <ArticleBodyHtml html={renderArticleBodyHtml(page.body)} />
       </div>
 
       {page.children.length > 0 && (
