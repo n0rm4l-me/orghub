@@ -120,7 +120,7 @@ export default async function ArticlePage({ params }: Props) {
 
       {article.coverImage && (
         <div className="mb-4 overflow-hidden rounded-xl">
-          <img src={article.coverImage} alt="" className="aspect-[21/9] w-full object-cover" />
+          <img src={`${article.coverImage}?w=800`} alt="" className="aspect-[21/9] w-full object-cover" />
         </div>
       )}
 
