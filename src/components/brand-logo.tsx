@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useLayoutEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 
 interface Props {
@@ -49,7 +49,16 @@ export function BrandLogo({
   const imgRef = useRef<HTMLImageElement>(null)
 
   // Catches a logo the browser already had cached, whose onLoad may not fire.
-  useEffect(() => {
+  // useLayoutEffect, not useEffect: this component remounts on every portal
+  // navigation (it sits inside a force-dynamic layout, so the server tree
+  // above it is fresh on each request), and an already-cached logo would
+  // otherwise replay the placeholder-then-fade-in every single time, since
+  // useEffect's correction lands after the browser has already painted the
+  // "loading" frame. Running the same check before paint instead means a
+  // cache hit is never visible as a flash. Doesn't change hydration safety:
+  // this still never runs during SSR, it only changes when the correction
+  // is applied relative to paint on whichever client mount is happening.
+  useLayoutEffect(() => {
     if (state !== "loading") return
     const img = imgRef.current
     if (!img) return
