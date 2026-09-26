@@ -626,7 +626,17 @@ Root-cause item first, the rest multiply in impact once it's fixed:
   produce, the poll marker, `null`/malformed input handled without throwing,
   text content HTML-escaped rather than injected, deterministic output
   across repeated calls). `tsc`, `eslint`, the full test suite, and a clean
-  `npx next build` all pass. **Not covered:** no component-level test for
+  `npx next build` all pass. Deployed (Helm revision 42) and checked live:
+  `curl` against three real article URLs and a real page URL from staging
+  all return 200 with several KB of real rendered HTML (one `class="prose`
+  container each, confirming the server-rendered body actually made it into
+  the response, not an empty shell); the chunk files each of those live
+  pages actually references were cross-checked against the build output and
+  none contain ProseMirror, the same check as below but against the
+  deployed artifact itself rather than a local build. **Not covered:** no
+  sampled article happened to contain a poll, so the poll marker's *live*
+  HTML output wasn't spot-checked this way (only via the unit test above);
+  no component-level test for
   `article-body-html.tsx`'s island-mounting effect itself (this codebase has
   no React-component testing set up anywhere, jsdom-as-a-test-environment
   included, and adding that paradigm just for one component felt like a
