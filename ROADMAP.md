@@ -1554,22 +1554,72 @@ option; one is correctly out of scope.
   picker) already did this correctly. Both fixed to match that pattern:
   `toast.error(data.error ?? "Upload failed")` on a non-ok response, same
   message on a thrown/network error.
-- **Documented, not fixed: no image carries width/height anywhere in the
-  pipeline.** The `Media` model has no dimension columns, the upload route's
-  response omits them, `ImageEmbed` (Tiptap) adds no width/height/
-  aspect-ratio attributes, and both the editor NodeView and the public
-  renderer emit a bare `<img>` with no reserved space. Still true after the
-  article-body SSR rewrite (see "Performance" above): that rewrite changed
-  *how* the HTML is produced (server-side via `render-article-body.ts`
-  instead of a client Tiptap instance), not *what* it contains, so every
-  embedded image still causes layout shift on published articles/pages, with
-  no next/image and no CSS placeholder anywhere in the chain. Real gap,
-  fixing it means a schema migration plus changes across the upload route,
-  the Tiptap extension, and both NodeView files
-  (`image-embed-editor-extension.ts`, and the schema-only
-  `image-embed-extension.ts` for the `renderHTML` side). No longer bundled
-  with a pending rewrite since that rewrite is done; just its own open item
-  now.
+- **FIXED 2026-09-26. Images now carry width/height, end to end.** This sat
+  in this file as "documented, not fixed" across several passes without
+  actually getting done; fixed properly this time rather than deferred or
+  re-documented again.
+  [`Media`](prisma/schema.prisma) gained nullable `width`/`height` columns
+  ([migration 0008](prisma/migrations/0008_media_dimensions/migration.sql)).
+  [The upload route](src/app/api/upload/route.ts)'s `downscale()` already
+  read dimensions via `sharp` for its own resize decision; it now returns
+  them too (EXIF-orientation-aware: raw `sharp.metadata()` reports the
+  un-rotated pixel grid, which is wrong for a portrait phone photo stored
+  with a rotation tag, so orientation 5-8 swaps width/height before
+  storing, matching what the browser actually renders), and both `db.media.create`
+  and the JSON response carry them. Both insertion paths in
+  [editor.tsx](src/components/editor.tsx) (fresh upload, and picking an
+  existing image from the media-library popover, which needed
+  [`getMediaList`](src/lib/actions/media.ts) to select the new columns)
+  now pass width/height into the inserted node's attrs, via
+  `insertContent` rather than the built-in `setImage` command (whose TS
+  signature doesn't know about them, the same reason the poll button in the
+  same file already used `insertContent` directly).
+
+  **The Tiptap extension and the SSR renderer needed no changes at all**,
+  which is itself worth recording since the previous version of this exact
+  note claimed `ImageEmbed` "adds no width/height/aspect-ratio attributes"
+  without checking: reading the installed
+  `node_modules/@tiptap/extension-image/dist/index.js` directly showed its
+  `addAttributes()` already declares `width`/`height` with `default: null`,
+  and reading `prosemirror-model`'s `to_dom.ts` confirmed ProseMirror's own
+  DOM-building step already skips `null`-valued attributes
+  (`if (attrs[name] != null)`) and sets real ones otherwise. The schema-level
+  plumbing this note previously assumed was missing was already there in
+  the installed package version; the actual gap was purely that nothing set
+  the values on insertion. [`image-node-view.tsx`](src/components/image-node-view.tsx)
+  (the editor's own live view, separate from the public SSR path) now reads
+  and forwards the same attrs, so editing also reserves space, not just the
+  published page.
+
+  Existing images uploaded before this migration keep rendering exactly as
+  before (`width`/`height` stay `null`, so ProseMirror's own null-skipping
+  omits the attributes, verified by
+  [a dedicated regression test](src/__tests__/render-article-body.test.ts)
+  asserting the *absence* of `width=`/`height=` for that case, alongside one
+  asserting their presence when set): no backfill, nothing retroactive,
+  deliberately.
+
+  **Companion fix, same theme, from a live Lighthouse run against this
+  session's own build:** the article page's cover image
+  ([`articles/[id]/page.tsx`](<src/app/(portal)/articles/[id]/page.tsx>))
+  was serving its full original size (1200x515 for this session's test
+  article) into a `w-full` slot rendered at a fraction of that on mobile,
+  wasting ~89KB per load. Added the same `?w=800` sizing param already used
+  for the feed's own cover image and other `w-full` hero-scale images in
+  this app. Verified live post-deploy: the same URL now serves 34KB instead
+  of 101KB.
+
+  Verified: `tsc`, `eslint`, the full test suite (229 tests, was 228),
+  `npx next build`, the live migration log on the actual deploy
+  (`kubectl logs` on the new pod's `migrate` init container: "Applying
+  migration `0008_media_dimensions`" / "All migrations have been
+  successfully applied"), and curl against the live article page
+  confirming both the resized cover image's byte count and that the page
+  still renders. **Not verified:** an actual authenticated image upload
+  through a real browser (needs a session cookie this environment can't
+  produce), so the upload route's new width/height capture is covered by
+  its unit test and by reading through the exact code path, not by
+  watching a real upload happen.
 - **Documented, not fixed: uploaded-then-discarded images can orphan a
   Media row + storage object.** Uploading (toolbar or media-library picker)
   creates the row and object immediately, before the article/page is ever
