@@ -722,6 +722,65 @@ Everything else, roughly ordered by blast radius:
 
 Smaller items, independent of the design-unification phases above:
 
+- **FIXED 2026-09-26, found by the user live on staging (three reports in one
+  sitting, all real).**
+  1. [_submit-form.tsx](<src/app/(portal)/suggestions/_submit-form.tsx>)'s
+     "Submit idea" trigger button used `py-2.5`/`font-semibold` while
+     [send-kudos-button.tsx](src/components/send-kudos-button.tsx)'s "Send
+     kudos" trigger used `py-2`/`font-medium`, a few pixels of height
+     difference that read as sloppy sitting near each other. Checked
+     [design-guidelines.md](docs/design-guidelines.md)'s documented "Primary
+     action" button pattern first rather than guessing which one to change:
+     kudos's version already matches it (`py-2`/`font-medium`/
+     `hover:brightness-95 active:brightness-90`, the same classes
+     [submit-button.tsx](src/components/submit-button.tsx) hardcodes as
+     `h-9`), so suggestions's trigger was the drifted one. Fixed to match,
+     and while there, also aligned both modals' *internal* submit buttons
+     the same way (suggestions' used `font-semibold` with no hover state at
+     all; kudos' used `py-2.5`, taller than its own trigger button one
+     click away).
+  2. The admin dashboard's "Good {morning/afternoon/evening}, {name}"
+     greeting and its date line were computed with `new Date()` inside
+     `admin/page.tsx`, an `async` Server Component: that clock is the
+     container's, UTC on this deployment, not the visiting browser's, so an
+     admin at 8am local could see "Good evening." Extracted both into a new
+     small client component
+     ([admin-greeting.tsx](src/components/admin-greeting.tsx)) that resolves
+     `new Date()` after mount instead, which needed widening
+     [PageHeader](src/components/ui/page-header.tsx)'s `title`/`description`
+     props from `string` to `ReactNode` (every existing caller passing a
+     plain string is still exactly as valid, `ReactNode` is a superset).
+     Deliberately doesn't guess a time-of-day word for the sub-second gap
+     before the client resolves it; shows the name-neutral "Good day" instead
+     of flashing a possibly-wrong specific one.
+  3. The header/admin-rail logo appeared to "keep reloading" on every portal
+     navigation. HTTP caching itself was already correct (verified live:
+     `Cache-Control: public, max-age=31536000, immutable` on the real
+     deployed logo URL), so the fix wasn't cache headers. Root cause:
+     [brand-logo.tsx](src/components/brand-logo.tsx) sits under
+     `(portal)/layout.tsx`, which is `force-dynamic`, so it remounts fresh
+     on every navigation; its `loadedSrc` state started back at `null`
+     ("loading") on each remount regardless of whether the browser already
+     had the image cached, and the `useEffect` that corrects this (checking
+     `img.complete`) only runs *after* the browser paints, so the
+     placeholder-then-fade-in replayed visibly every time even though no
+     network request was actually slow. Changed that one effect to
+     `useLayoutEffect`: same check, same hydration safety (still never runs
+     during SSR, this only changes when the correction lands relative to
+     paint on whichever client mount is happening), but a cache hit now
+     resolves before the browser paints the "loading" frame instead of
+     after, so it's never visible as a flash.
+
+  All three verified with `tsc`/`eslint`/the full test suite/a clean
+  `npx next build`; **none visually confirmed in a real browser**
+  (`preview_start` still can't reach the DB this session). The button and
+  greeting fixes are low-risk enough (class-string/prop-type changes, no
+  behavior change to anything already working) that this is an acceptable
+  gap; the logo fix specifically touches client-side rendering timing, the
+  same category of change that broke production earlier this session (see
+  the CSP incident in "Lighthouse audit"), so treat it as reasoned-through
+  and type-checked, not screen-verified, until confirmed live.
+
 - **FIXED 2026-09-25.** Navigation had a visible layout jump on every route
   change: each `loading.tsx` skeleton was a fixed, generic shape, so when
   the real page resolved (portal: with or without `PortalPageLayout`'s
