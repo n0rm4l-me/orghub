@@ -776,6 +776,37 @@ Everything else, roughly ordered by blast radius:
 
 Smaller items, independent of the design-unification phases above:
 
+- **FIXED 2026-09-26, found by the user live on staging.** Opening the Poll
+  search dropdown inside the article editor's toolbar
+  ([editor.tsx](src/components/editor.tsx)) visibly shifted the whole
+  editor panel (toolbar and the text below it together) to the left, with
+  no way to scroll back via normal means. Root cause: `InsertPollButton`'s
+  popup is `position: absolute`, anchored `left-0` off the Poll button,
+  which is the last item in the toolbar row, and that popup's search
+  `<input>` has `autoFocus`. Because the popup grows rightward from the
+  last button in the row, it extended past the right edge of the editor's
+  own `overflow-hidden` wrapper (the `div` around both the toolbar and the
+  content area). `overflow: hidden` has no visible scrollbar and blocks
+  user-driven scrolling, but the element stays scrollable through code
+  (`scrollLeft`, or a browser's own focus handling), and a browser focusing
+  an element outside the currently-visible bounds of any
+  overflow-non-visible ancestor scrolls that ancestor to reveal it
+  automatically and silently, with no scrollbar appearing to hint that
+  anything moved. That's the shift the user saw: the whole wrapper
+  (toolbar and body text together, since both are children of it)
+  scrolling left to bring the newly-focused search input into view. Fixed
+  by anchoring the popup `right-0` instead of `left-0`, so it grows
+  leftward, back into the toolbar's own width, instead of off its right
+  edge; there is nothing left to scroll into view once the input is
+  already inside the visible area. Left `InsertImageButton`'s equivalent
+  popup (same file) alone: it sits earlier in the toolbar with room to its
+  right under any realistic editor width, not the last item, so it doesn't
+  reproduce this. **Not visually verified:** `preview_start` still can't
+  reach the DB (`orghub-postgres` unreachable) to render an authenticated
+  admin page that mounts this editor, confirmed again this session;
+  verified instead by tracing the exact scroll-into-view mechanism against
+  the actual DOM structure, plus `tsc`/`eslint`/the full test suite/
+  `npx next build` clean.
 - **FIXED 2026-09-26, found by the user live on staging (three reports in one
   sitting, all real).**
   1. [_submit-form.tsx](<src/app/(portal)/suggestions/_submit-form.tsx>)'s
@@ -1449,6 +1480,39 @@ becomes available.
 
 ---
 
+## Lighthouse audit (2026-09-26, staging, mobile)
+
+Performance 94, Accessibility 100, Best Practices 100, SEO 100. Same URL as
+the 2026-09-25 run above (`https://orghub.stg.inpd-tardis.dev/`), a
+separate pass. Most of what it flags reconfirms decisions already made and
+documented above rather than surfacing anything new: `legacy-javascript-insight`'s
+about 13KB of polyfills, `script-src`'s `'unsafe-inline'`, and the logo's
+`unsized-images` warning are the same three items from the 2026-09-25 audit,
+unchanged, same reasoning applies. The dominant contributor to
+`unused-javascript` (352KB of the reported 375KB) is the auditing browser's
+own ad-blocker extension, not this app's code.
+
+**Fixed:** `image-delivery-insight` on the feed's `FeaturedCard` cover
+image, documented in full under "Media upload flow" above (the `srcSet`
+follow-up to the `?w=800` fix).
+
+**Investigated, left alone.** `server-response-time`/
+`document-latency-insight` flag a 663ms TTFB on the root document. The feed
+page's own data loading ([`(portal)/page.tsx`](<src/app/(portal)/page.tsx>))
+is already two batched `Promise.all` blocks (7 queries, then 3 more that
+depend on the first batch's user lookup), from earlier work this session;
+nothing sequential-and-avoidable turned up on a fresh read. No server-side
+timing breakdown exists to say whether the remaining time is a slow
+individual query, container cold start, or plain network/DB round-trip
+latency on staging, so narrowing it further needs real instrumentation, not
+another guess. `bf-cache`'s two failures (`Cache-Control: no-store` on the
+document and on a JS-initiated fetch) are consistent with this page
+intentionally serving personalized content (unread-notification count,
+per-user "isNew" flags) that must not be served stale from a back/forward
+cache; not something to loosen for a cache-restore win.
+
+---
+
 ## Feature audits (2026-09-26)
 
 Four previously un-audited areas, done as four parallel deep-dives. Two had
@@ -1620,6 +1684,29 @@ option; one is correctly out of scope.
   produce), so the upload route's new width/height capture is covered by
   its unit test and by reading through the exact code path, not by
   watching a real upload happen.
+
+  **Follow-up, 2026-09-26, from a fresh Lighthouse run against the
+  homepage.** The `?w=800` fix above wasn't sufficient on its own: on the
+  feed ([`(portal)/page.tsx`](<src/app/(portal)/page.tsx>)'s `FeaturedCard`),
+  the same cover image sits in `PortalPageLayout`'s content column, which is
+  only about 374-411px wide once the two `w-64` sidebars disappear below the
+  `lg` (1024px) breakpoint. Lighthouse's `image-delivery-insight` flagged
+  exactly this on `/`: about 24KB of a 34KB image called avoidable. A single
+  `?w=800` can't fix that, it's one fixed width, so mobile and desktop
+  always fetch the identical derived image no matter which one actually
+  needs it. Added `srcSet`/`sizes` to both this card and the article-detail
+  cover (same layout, same problem) instead of picking one compromise width
+  for both: `?w=480 480w, ?w=800 800w` with
+  `sizes="(min-width: 1024px) 700px, 100vw"`, so the browser's own
+  responsive-image logic picks the right candidate for its real viewport
+  and device pixel ratio. The resize endpoint already supports arbitrary
+  widths with its own per-width cache
+  (`_derived/wN/...`, [route.ts](<src/app/uploads/[...path]/route.ts>)), so
+  this needed no server-side change. **Not verified live in a browser**
+  (same `preview_start`-can't-reach-the-DB limitation as above); confirmed
+  only `tsc`/`eslint`/the full test suite/`npx next build` clean, plus a
+  post-deploy curl of both derived widths for distinct, smaller byte
+  counts.
 - **Documented, not fixed: uploaded-then-discarded images can orphan a
   Media row + storage object.** Uploading (toolbar or media-library picker)
   creates the row and object immediately, before the article/page is ever

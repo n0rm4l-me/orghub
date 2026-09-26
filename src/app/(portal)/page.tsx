@@ -76,7 +76,14 @@ function FeaturedCard({
       <Link href={`/articles/${article.id}`} className="block">
         {article.coverImage ? (
           <div className="relative h-48 overflow-hidden">
-            <img src={`${article.coverImage}?w=800`} alt="" className="h-full w-full object-cover" loading="lazy" />
+            <img
+              src={`${article.coverImage}?w=800`}
+              srcSet={`${article.coverImage}?w=480 480w, ${article.coverImage}?w=800 800w`}
+              sizes="(min-width: 1024px) 700px, 100vw"
+              alt=""
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
             <div
               className={`absolute inset-x-0 bottom-0 h-1.5 ${article.important ? "bg-amber-400/80" : "bg-brand/80"}`}
               aria-hidden

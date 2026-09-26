@@ -289,7 +289,7 @@ function InsertPollButton({ editor }: { editor: ReturnType<typeof useEditor> }) 
         Poll
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-20 mt-1 w-72 max-w-[calc(100vw-2rem)] rounded-lg border border-border bg-card shadow-lg">
+        <div className="absolute right-0 top-full z-20 mt-1 w-72 max-w-[calc(100vw-2rem)] rounded-lg border border-border bg-card shadow-lg">
           {loading ? (
             <p className="px-3 py-2 text-xs text-muted-foreground">Loading polls...</p>
           ) : !polls?.length ? (
