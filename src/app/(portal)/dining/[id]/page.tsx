@@ -49,7 +49,7 @@ export default async function DiningVenuePage({ params, searchParams }: Props) {
       orderBy: { publishedAt: "desc" },
       include: {
         entries: {
-          include: { dish: { select: { photo: true, nutrition: true, tagIds: true } } },
+          include: { dish: { select: { name: true, description: true, photo: true, nutrition: true, tagIds: true } } },
           orderBy: [{ day: "asc" as const }],
         },
         fixedSections: {
@@ -58,6 +58,7 @@ export default async function DiningVenuePage({ params, searchParams }: Props) {
             entries: {
               orderBy: { order: "asc" },
               include: {
+                dish: { select: { name: true, description: true, photo: true } },
                 modifierGroups: {
                   orderBy: { order: "asc" },
                   include: { options: { orderBy: { order: "asc" } } },
@@ -130,6 +131,8 @@ export default async function DiningVenuePage({ params, searchParams }: Props) {
     const nutrition = ((entry.nutrition ?? entry.dish?.nutrition) ?? null) as Record<string, number> | null
     const featuredVal = featuredParam && nutrition ? nutrition[featuredParam.id] : null
     return {
+      name: entry.name ?? entry.dish?.name ?? null,
+      description: entry.description ?? entry.dish?.description ?? null,
       photo: entry.photo ?? entry.dish?.photo ?? null,
       tagIds: (entry.tagIds || entry.dish?.tagIds || "").split(",").filter(Boolean),
       featuredVal,
@@ -156,7 +159,7 @@ export default async function DiningVenuePage({ params, searchParams }: Props) {
           catId: cat.id,
           catName: cat.name,
           entry: {
-            name: e.name, description: e.description, photo: r.photo,
+            name: r.name, description: r.description, photo: r.photo,
             featured: r.featured, macros: r.macroLine || null, note: e.note,
             tags: r.tagIds
               .map((tid) => tagMap.get(tid))
@@ -236,9 +239,9 @@ export default async function DiningVenuePage({ params, searchParams }: Props) {
             name: s.name,
             entries: s.entries.map((e) => ({
               id: e.id,
-              name: e.name,
-              description: e.description,
-              photo: e.photo,
+              name: e.name ?? e.dish?.name ?? null,
+              description: e.description ?? e.dish?.description ?? null,
+              photo: e.photo ?? e.dish?.photo ?? null,
               price: e.price != null ? Number(e.price) : null,
               tagIds: e.tagIds,
               note: e.note,

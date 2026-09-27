@@ -64,7 +64,14 @@ function buildInitialState(entries: RawEntry[]): State {
   const map = new Map<string, EntryData>()
   for (const e of entries) {
     map.set(entryKey(e.day, e.mealSlotId, e.categoryId), {
-      id: e.id, dishId: e.dishId, name: e.name, description: e.description, photo: e.photo,
+      id: e.id, dishId: e.dishId,
+      // Entry rows keep their own name/description/photo as of whenever a
+      // dish was picked, so an edit to the Dish itself never retroactively
+      // reached already-saved entries. The dish stays the live source of
+      // truth here too, same as the portal's own resolveEntry.
+      name: e.name ?? e.dish?.name ?? null,
+      description: e.description ?? e.dish?.description ?? null,
+      photo: e.photo ?? e.dish?.photo ?? null,
       nutrition: e.nutrition as Record<string, number | null> | null,
       tagIds: e.tagIds, note: e.note,
     })

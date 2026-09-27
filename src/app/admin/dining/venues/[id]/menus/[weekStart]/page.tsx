@@ -86,8 +86,8 @@ export default async function WeekMenuEditorPage({ params }: Props) {
             entries: s.entries.map((e) => ({
               id: e.id,
               dishId: e.dishId,
-              name: e.name,
-              description: e.description,
+              name: e.name ?? e.dish?.name ?? null,
+              description: e.description ?? e.dish?.description ?? null,
               photo: e.photo ?? e.dish?.photo ?? null,
               price: e.price != null ? Number(e.price) : null,
               nutrition: (e.nutrition ?? null) as Record<string, number> | null,
