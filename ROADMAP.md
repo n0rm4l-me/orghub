@@ -903,6 +903,29 @@ Everything else, roughly ordered by blast radius:
 
 Smaller items, independent of the design-unification phases above:
 
+- **FIXED 2026-09-27, found by the user live on staging.** Editing a
+  [Dish](src/lib/actions/dining.ts)'s name in the admin catalog didn't
+  change how it showed up in any menu that already referenced it.
+  `WeekMenuEntry`/`FixedMenuEntry` copy a dish's `name`/`description`/
+  `photo` into their own columns at the moment it's picked in the editor
+  ([week-menu-cell.tsx](src/components/dining/week-menu-cell.tsx):
+  `setDraft({ dishId: d.id, name: d.name, ... })`), so a later edit to the
+  `Dish` row itself never reached entries that already copied the old
+  value. `photo` already had a "fall back to the linked dish when the
+  entry's own copy is empty" resolver in most of the four render paths
+  (weekly/fixed, admin/portal); `name` and `description` did not, in any
+  of them, including one Prisma `select` that omitted
+  `dish.name`/`dish.description` entirely so the fallback had nothing to
+  read even where the JS side was ready for it. Added the same
+  `entry.name ?? entry.dish?.name` pattern everywhere `photo` already had
+  it, four call sites: [(portal)/dining/[id]/page.tsx](<src/app/(portal)/dining/[id]/page.tsx>)'s
+  `resolveEntry` (weekly) and its fixed-menu mapping,
+  [week-menu-grid.tsx](src/components/dining/week-menu-grid.tsx)'s
+  `buildInitialState`, and the admin week-menu-editor page's fixed-section
+  mapping. Deliberately didn't change the underlying copy-on-pick
+  architecture (an entry can still hold its own text that diverges from
+  the dish, e.g. a day-specific note) -- an entry only falls back to the
+  dish when its own field is empty, same contract `photo` already had.
 - **FIXED 2026-09-27, found by the user live on staging.** Opening the
   dining cart ([cart-widget.tsx](src/components/dining/cart-widget.tsx))
   shifted the whole page sideways. Root cause: the open/close effect set
