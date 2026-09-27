@@ -419,6 +419,18 @@ dark:text-gray-[0-9]       308  (was 327)
 dark:border-gray-[0-9]     157  (was 166)
 ```
 
+**Note (2026-09-27): "done" here means colors only, not components.** This
+whole section tracks *which CSS classes* a file uses (`bg-white` vs
+`bg-card`, `text-gray-500` vs `text-muted-foreground`), and by that
+measure it really is done, re-verified below. It never tracked *which
+component* renders a button, a table, or a search box. Phase 1's own
+primitives (`Button`, `AdminTable`, `AdminFilters`) were sitting
+correctly-styled and almost entirely unused this whole time; every page
+kept its own hand-rolled `<button className="bg-brand ...">` with the
+right tokens but drifting padding/hover/transition from file to file.
+See "Admin component consistency" below for that separate gap, closed
+2026-09-27.
+
 Phase 2 (admin) is done per the plan's own file list. Remaining counts are
 almost entirely Phase 3 (portal, 12 pages + components) and Phase 4 (dining
 editors, 12 files) territory; read the plan for both file lists before
@@ -498,6 +510,121 @@ documented deliberate exceptions (dining's 7 lines, the icon-hover-reveal
 `text-gray-200`/`dark:text-gray-700` gap in "UI and design system polish"
 below) and the `bg-white`/`text-gray-*` instances outside `(portal)`/`dining/`
 noted above, which were never in either plan's file list to begin with.
+
+---
+
+## Admin component consistency (2026-09-27)
+
+User report, verbatim in spirit: switching an admin venue's Settings/Dishes/
+Menus/Announcements tabs shifted all the page content sideways, and asked
+for a full pass so every admin creation button, back link, search box, and
+table looks and behaves the same way. Two separate things were true at
+once: one genuine, previously-undiagnosed layout bug, and one real gap in
+the design-unification work above (colors were unified; which *component*
+renders each control was not).
+
+**Root cause of the tab-switch shift, found and fixed.** The venue editor's
+"tabs" ([venues/[id]/page.tsx](<src/app/admin/dining/venues/[id]/page.tsx>))
+aren't a client-side tab widget, they're plain `?tab=` links: a full
+navigation to a different page with a different content height. Settings
+(tall) vs. Dishes (short, empty venue) crossing the viewport's scroll
+threshold makes the page scrollbar appear or disappear between them, and
+that changes the available content width, shifting everything sideways by
+the scrollbar's own width. This is the same underlying browser mechanism as
+the cart widget's modal-scroll-lock shift (see "UI and design system
+polish" below), but a different trigger, and needed a different fix:
+reserving the scrollbar's width permanently so its presence never changes
+layout (`scrollbar-gutter: stable`). That was tried globally on `html` once
+already this session and reverted the same day (`docs/design-guidelines.md`)
+because the portal's sticky header is full-bleed and brand-colored, so a
+permanent reserved strip reads as a visible seam right next to it on every
+short page. `/admin` has no such header: a fixed dark sidebar plus a plain
+`bg-background` content column, nothing flush against the true viewport
+edge. Re-scoped the rule to `html.admin-scrollbar-stable`
+([globals.css](src/app/globals.css)), toggled by the existing
+[admin-appearance-reset.tsx](src/components/admin-appearance-reset.tsx)
+(already ran on every `/admin` mount to strip stale dark-mode/font-size
+classes; extended rather than adding a second mechanism doing the same kind
+of thing). Portal itself is deliberately still unscoped.
+
+**Component adoption, the actual bulk of this pass.** Audited every admin
+page and dining editor component for four things, matching the user's own
+list:
+
+- **Tables.** Exactly two hand-rolled `<table>`s existed outside
+  [admin-table.tsx](src/components/ui/admin-table.tsx): the dish list
+  ([dish-list.tsx](src/components/dining/dish-list.tsx)) and the venue
+  menus tab. Both converted to `AdminTable`. The dish list's inline
+  edit-in-place row (clicking Edit replaced that one row with a full form,
+  spanning all columns) had no equivalent in `AdminTable`'s column-based
+  API, so `AdminTable` gained a `renderRow` escape hatch: return a node for
+  a given row and it replaces that row's cells entirely, return `undefined`
+  and it renders normally through `columns`. Whole-tree audit confirms zero
+  raw `<table>` left outside the primitive.
+- **Search.** Three different hand-rolled search inputs (dish list, venue
+  menus tab, both plain debounce-free inputs with slightly different
+  classes) replaced with the existing, already-good
+  [admin-filters.tsx](src/components/admin-filters.tsx) (debounced,
+  clear button, pending spinner) used by every other admin list page.
+  `AdminFilters` itself had a real gap that blocked this: it always
+  rebuilt the URL from just `q`/`status`, silently dropping any other
+  param. Fixed to preserve unrelated params (e.g. a tabbed page's
+  `?tab=`) via `useSearchParams()`, backward-compatible for its ~9
+  existing callers, now also usable from a tabbed page.
+- **Back links.** One hand-rolled back link left
+  ([menus/[weekStart]/page.tsx](<src/app/admin/dining/venues/[id]/menus/[weekStart]/page.tsx>)),
+  using `ArrowLeft` and different classes than
+  [page-header.tsx](src/components/ui/page-header.tsx)'s own back-link
+  treatment. Aligned icon (`ChevronLeft`) and classes to match exactly.
+  Confirmed zero other `ArrowLeft` usage and zero other `ChevronLeft`
+  usage outside `page-header.tsx` remained in admin afterward.
+- **Creation buttons, and their paired Cancel/secondary buttons.** The
+  actual scale of the gap: `Button` ([button.tsx](src/components/ui/button.tsx))
+  had a grand total of zero real call sites anywhere in the app, despite
+  being correctly styled since Phase 1. ~40 hand-rolled
+  `bg-brand ... text-white` primary buttons existed across admin pages and
+  the dining editors, each with its own copy of the same intended classes,
+  drifted slightly (missing `transition`, different `px`, no
+  `active:brightness-90`, etc.). Converted every clear primary/secondary
+  admin action to `Button`/`Button variant="outline"` across ~25 files
+  (admin top-level pages: articles, dashboard, announcements, events,
+  pages, dining, polls; dining editors: dish list, venue forms, menu/entry
+  editors, settings editors; kudos redeem types, translation settings).
+  `Button` supports base-ui's polymorphic `render` prop, used for
+  navigation "New X" links that aren't real `<button>`s
+  (`<Button render={<Link href="..." />}>`), so a page-header action link
+  and an inline form's submit button now share one component regardless
+  of which element either renders as underneath.
+  **Deliberately left alone, so the next pass doesn't re-litigate this:**
+  destructive/delete buttons (never `bg-brand`, and a neutral Cancel next
+  to a destructive action isn't the same pairing this pass covered);
+  dense, repeated-per-row affordances (`text-brand` "Add option"/"Add
+  row" links with no background, icon-only remove/reorder/chevron
+  buttons, modifier-group card internals); status-pill toggles that
+  already have their own dedicated components (`StatusToggle`,
+  `MenuPublishToggle`); tab/switch/listbox widgets that aren't buttons at
+  all. All confirmed file-by-file, not assumed.
+
+Verified after every file: `tsc --noEmit` and `eslint` on the touched
+files, then a final whole-tree pass of both plus `vitest run` (229 tests)
+and a full `next build`, all clean. Not visually verified against a
+running admin UI for the same reason as everything else this session
+(`preview_start` can't reach the DB); relied on the diff review above plus
+the fact that every conversion target (`Button`, `AdminTable`,
+`AdminFilters`, `PageHeader`) is itself already live and working on other
+admin pages today. Built, deployed (revision 45), and smoke-tested live
+via curl (health/feed 200, unauthenticated `/admin` redirects, `/api/upload`
+correctly 401s unauthenticated) same as every deploy this session.
+
+Also fixed in the same pass: [route.ts](src/app/api/upload/route.ts) checked
+the 10 MB size limit against the *raw* uploaded file, before `downscale()`
+had a chance to shrink it. A phone photo (food, menu boards -- exactly what
+this app's dish/menu photos are) routinely exceeds 10 MB straight off the
+camera and would have been hard-rejected even though the resized, actually-
+stored version would have fit comfortably. Raw uploads now get a generous
+25 MB ceiling (abuse/memory guard only, checked before touching the buffer);
+the real 10 MB check now runs against the post-downscale bytes, i.e. what
+actually gets stored.
 
 ---
 
@@ -776,6 +903,20 @@ Everything else, roughly ordered by blast radius:
 
 Smaller items, independent of the design-unification phases above:
 
+- **FIXED 2026-09-27, found by the user live on staging.** Opening the
+  dining cart ([cart-widget.tsx](src/components/dining/cart-widget.tsx))
+  shifted the whole page sideways. Root cause: the open/close effect set
+  `document.body.style.overflow = "hidden"` to lock scroll while the cart
+  sheet is open, which removes the page's scrollbar and widens the
+  viewport by the scrollbar's own width, so everything shifts to fill the
+  gap, then shifts back on close. Fixed by measuring
+  `window.innerWidth - document.documentElement.clientWidth` (the
+  scrollbar's width) when locking, and applying that as `paddingRight` on
+  `body` for the duration of the lock, removing both on unlock. Different
+  mechanism, and a different fix, from the admin tab-switch shift in
+  "Admin component consistency" above (that one has no scroll lock at
+  all, it's two different pages naturally having different heights); the
+  two should not be conflated or solved with the same technique.
 - **FIXED 2026-09-26, found by the user live on staging.** Opening the Poll
   search dropdown inside the article editor's toolbar
   ([editor.tsx](src/components/editor.tsx)) visibly shifted the whole
