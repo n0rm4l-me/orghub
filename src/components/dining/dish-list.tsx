@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter, useSearchParams, usePathname } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { Plus, Loader2, Pencil, Trash2, X, Check, ChevronDown, ChevronUp, UtensilsCrossed } from "lucide-react"
 import { formatPrice, getCurrencySymbol } from "@/lib/format-price"
 import { createDish, updateDish, deleteDish, saveDishModifiers } from "@/lib/actions/dining"
@@ -11,6 +11,10 @@ import { inputClass, compactLabelClass as lbl } from "@/components/ui/field"
 import { SafeImg } from "@/components/dining/safe-img"
 import { EmptyState } from "@/components/ui/empty-state"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { Button } from "@/components/ui/button"
+import { AdminFilters } from "@/components/admin-filters"
+import { AdminTable, type AdminTableCol } from "@/components/ui/admin-table"
+import { TablePagination } from "@/components/ui/table-pagination"
 import { ok, type ActionResult } from "@/lib/actions/types"
 import type { NutritionParam, VenueTag } from "@/lib/dining-types"
 
@@ -293,15 +297,13 @@ function DishForm({
       </div>
 
       <div className="flex justify-end gap-3 border-t border-border pt-3">
-        <button type="button" onClick={onDone}
-          className="inline-flex items-center rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted">
+        <Button type="button" variant="outline" onClick={onDone}>
           Cancel
-        </button>
-        <button type="submit" disabled={pending}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:brightness-95 disabled:opacity-60">
+        </Button>
+        <Button type="submit" disabled={pending}>
           {pending && <Loader2 className="size-3.5 animate-spin" />}
           {dish ? "Save" : "Create"}
-        </button>
+        </Button>
       </div>
     </form>
   )
@@ -332,7 +334,6 @@ export function DishList({
 }) {
   const router = useRouter()
   const pathname = usePathname()
-  const sp = useSearchParams()
   const [showForm, setShowForm] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
@@ -344,35 +345,100 @@ export function DishList({
     onSuccess: () => { setConfirmDeleteId(null); router.refresh() },
   })
 
-  function navigate(newQ?: string, newPage?: number) {
-    const params = new URLSearchParams(sp.toString())
-    if (newQ !== undefined) { newQ ? params.set("q", newQ) : params.delete("q"); params.delete("page") }
-    if (newPage !== undefined) newPage > 1 ? params.set("page", String(newPage)) : params.delete("page")
-    router.push(`${pathname}?${params.toString()}`)
-  }
-
   const totalPages = Math.ceil(total / perPage)
+
+  const columns: AdminTableCol<Dish>[] = [
+    {
+      id: "dish",
+      header: "Dish",
+      render: (d) => (
+        <div className="flex items-center gap-3">
+          <div className="size-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+            {d.photo
+              ? <SafeImg src={`${d.photo}?w=80`} alt="" className="h-full w-full object-cover" width={40} height={40} loading="lazy" />
+              : <div className="flex h-full w-full items-center justify-center"><UtensilsCrossed className="size-4 text-muted-foreground" /></div>}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate font-medium text-foreground">{d.name}</p>
+            {d.description && <p className="truncate text-xs text-muted-foreground">{d.description}</p>}
+            {(d.modifierGroups?.length ?? 0) > 0 && (
+              <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                {d.modifierGroups!.map((g) => g.name).join(" · ")}
+              </p>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "price",
+      header: "Price",
+      type: "number",
+      width: "w-20",
+      render: (d) => (d.price != null ? formatPrice(d.price, currency) : "—"),
+    },
+  ]
+  if (featuredParam) {
+    columns.push({
+      id: "featured",
+      header: featuredParam.name,
+      type: "number",
+      width: "w-20",
+      render: (d) => ((d.nutrition as Record<string, number> | null)?.[featuredParam.id]) ?? "–",
+    })
+  }
+  columns.push(
+    {
+      id: "tags",
+      header: "Tags",
+      width: "w-40",
+      hideOnMobile: true,
+      render: (d) => (
+        <div className="flex flex-wrap gap-1">
+          {d.tagIds.split(",").filter(Boolean).map((id) => {
+            const tag = tagMap.get(id)
+            return tag ? (
+              <span key={id} className="rounded px-1.5 py-0.5 text-[11px] font-medium"
+                style={{ color: tag.color, backgroundColor: tag.bgColor }}>
+                {tag.name}
+              </span>
+            ) : null
+          })}
+        </div>
+      ),
+    },
+    {
+      id: "actions",
+      header: "",
+      type: "actions",
+      width: "w-20",
+      render: (d) => (
+        <>
+          <button onClick={() => setEditId(d.id)} aria-label="Edit"
+            className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground">
+            <Pencil className="size-3.5" />
+          </button>
+          <button onClick={() => setConfirmDeleteId(d.id)} disabled={delPending} aria-label="Delete"
+            className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20">
+            <Trash2 className="size-3.5" />
+          </button>
+        </>
+      ),
+    },
+  )
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <input
-          type="search"
-          placeholder="Search dishes…"
-          defaultValue={q}
-          onChange={(e) => navigate(e.target.value)}
-          className="h-9 max-w-xs rounded-lg border border-border px-3 text-sm text-foreground outline-none focus:border-brand focus:ring-1 focus:ring-brand"
-        />
-        {!showForm && !editId && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:brightness-95"
-          >
+      {!showForm && !editId && (
+        <div className="flex justify-end">
+          <Button onClick={() => setShowForm(true)}>
             <Plus className="size-4" aria-hidden />
             New dish
-          </button>
-        )}
-      </div>
+          </Button>
+        </div>
+      )}
+
+      <AdminFilters basePath={pathname} query={q} showStatus={false} placeholder="Search dishes…" />
 
       {showForm && (
         <DishForm venueId={venueId} nutritionParams={nutritionParams} venueTags={venueTags} currency={currency} onDone={() => setShowForm(false)} />
@@ -384,105 +450,27 @@ export function DishList({
           title={q ? "No dishes match the search." : "No dishes yet."}
         />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted text-xs font-medium text-muted-foreground">
-                <th className="px-4 py-3 text-left">Dish</th>
-                <th className="px-4 py-3 text-right">Price</th>
-                {featuredParam && <th className="px-4 py-3 text-right">{featuredParam.name}</th>}
-                <th className="px-4 py-3 text-left">Tags</th>
-                <th className="w-20 px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {dishes.map((d) =>
-                editId === d.id ? (
-                  <tr key={d.id}>
-                    <td colSpan={5} className="px-4 py-3">
-                      <DishForm
-                        dish={d}
-                        venueId={venueId}
-                        nutritionParams={nutritionParams}
-                        venueTags={venueTags}
-                        currency={currency}
-                        onDone={() => setEditId(null)}
-                      />
-                    </td>
-                  </tr>
-                ) : (
-                  <tr key={d.id} className="hover:bg-muted">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="size-10 shrink-0 overflow-hidden rounded-lg bg-muted">
-                          {d.photo
-                            ? <SafeImg src={`${d.photo}?w=80`} alt="" className="h-full w-full object-cover" width={40} height={40} loading="lazy" />
-                            : <div className="flex h-full w-full items-center justify-center"><UtensilsCrossed className="size-4 text-muted-foreground" /></div>}
-                        </div>
-                        <div>
-                          <p className="font-medium text-foreground">{d.name}</p>
-                          {d.description && <p className="text-xs text-muted-foreground">{d.description}</p>}
-                          {(d.modifierGroups?.length ?? 0) > 0 && (
-                            <p className="mt-0.5 text-[11px] text-muted-foreground">
-                              {d.modifierGroups!.map((g) => g.name).join(" · ")}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">
-                      {d.price != null ? formatPrice(d.price, currency) : <span className="text-muted-foreground">—</span>}
-                    </td>
-                    {featuredParam && (
-                      <td className="px-4 py-3 text-right text-muted-foreground">
-                        {((d.nutrition as Record<string, number> | null)?.[featuredParam.id]) ?? "–"}
-                      </td>
-                    )}
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-1">
-                        {d.tagIds.split(",").filter(Boolean).map((id) => {
-                          const tag = tagMap.get(id)
-                          return tag ? (
-                            <span key={id} className="rounded px-1.5 py-0.5 text-[11px] font-medium"
-                              style={{ color: tag.color, backgroundColor: tag.bgColor }}>
-                              {tag.name}
-                            </span>
-                          ) : null
-                        })}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => setEditId(d.id)} aria-label="Edit"
-                          className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-muted-foreground">
-                          <Pencil className="size-3.5" />
-                        </button>
-                        <button onClick={() => setConfirmDeleteId(d.id)} disabled={delPending} aria-label="Delete"
-                          className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20">
-                          <Trash2 className="size-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              )}
-            </tbody>
-          </table>
-        </div>
+        <AdminTable
+          columns={columns}
+          rows={dishes}
+          rowKey={(d) => d.id}
+          renderRow={(d) =>
+            editId === d.id ? (
+              <DishForm
+                dish={d}
+                venueId={venueId}
+                nutritionParams={nutritionParams}
+                venueTags={venueTags}
+                currency={currency}
+                onDone={() => setEditId(null)}
+              />
+            ) : undefined
+          }
+        />
       )}
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-end gap-2">
-          <button disabled={page <= 1} onClick={() => navigate(undefined, page - 1)}
-            className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40">
-            Previous
-          </button>
-          <span className="text-xs text-muted-foreground">{page} / {totalPages}</span>
-          <button disabled={page >= totalPages} onClick={() => navigate(undefined, page + 1)}
-            className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40">
-            Next
-          </button>
-        </div>
+        <TablePagination basePath={pathname} page={page} totalPages={totalPages} params={{ q, tab: "dishes" }} />
       )}
 
       <ConfirmDialog

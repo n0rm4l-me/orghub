@@ -7,6 +7,7 @@ import { saveWeekMenuEntries, publishWeekMenu, unpublishWeekMenu, saveClosedDays
 import { useAction } from "@/lib/use-action"
 import { ok, type ActionResult } from "@/lib/actions/types"
 import { toast } from "@/components/ui/toaster"
+import { Button } from "@/components/ui/button"
 import { WeekMenuCell } from "@/components/dining/week-menu-cell"
 import type { DayOfWeek } from "@prisma/client"
 import type { NutritionParam, VenueTag } from "@/lib/dining-types"
@@ -202,14 +203,10 @@ export function WeekMenuGrid({
             {publishPending ? <Loader2 className="size-3.5 animate-spin" /> : publishedAt ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
             {publishedAt ? "Unpublish" : "Publish"}
           </button>
-          <button
-            onClick={handleSave}
-            disabled={savePending}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:brightness-95 disabled:opacity-60"
-          >
+          <Button onClick={handleSave} disabled={savePending}>
             {savePending && <Loader2 className="size-3.5 animate-spin" />}
             Save
-          </button>
+          </Button>
         </div>
       </div>
 

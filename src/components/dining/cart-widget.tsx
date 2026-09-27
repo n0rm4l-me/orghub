@@ -12,8 +12,17 @@ export function CartWidget({ currency }: { currency: string }) {
   const { items, setQty, clear, count, subtotal } = useCart()
 
   useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : ""
-    return () => { document.body.style.overflow = "" }
+    if (!open) return
+    // Locking scroll removes the scrollbar, which shrinks the viewport and
+    // shifts everything sideways by its width. Pad the same amount back in
+    // so the page holds still instead of jumping when the cart opens/closes.
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+    document.body.style.overflow = "hidden"
+    document.body.style.paddingRight = `${scrollbarWidth}px`
+    return () => {
+      document.body.style.overflow = ""
+      document.body.style.paddingRight = ""
+    }
   }, [open])
 
   return (

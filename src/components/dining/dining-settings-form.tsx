@@ -4,6 +4,7 @@ import { useRef } from "react"
 import { Loader2 } from "lucide-react"
 import { saveDiningSettings } from "@/lib/actions/settings"
 import { useAction } from "@/lib/use-action"
+import { Button } from "@/components/ui/button"
 
 const CURRENCIES = [
   { code: "USD", label: "US Dollar ($)" },
@@ -68,14 +69,10 @@ export function DiningSettingsForm({ currency }: Props) {
         </div>
 
         <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={pending}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:brightness-95 disabled:opacity-60"
-          >
+          <Button type="submit" disabled={pending}>
             {pending && <Loader2 className="size-3.5 animate-spin" />}
             Save
-          </button>
+          </Button>
         </div>
       </form>
     </div>

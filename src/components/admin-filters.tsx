@@ -1,7 +1,7 @@
 "use client"
 
-import { useRouter } from "next/navigation"
-import { useEffect, useRef, useState, useTransition } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useCallback, useEffect, useRef, useState, useTransition } from "react"
 import { Search, X, Loader2 } from "lucide-react"
 
 interface StatusOption {
@@ -45,6 +45,7 @@ export function AdminFilters({
 }: Props) {
   const resolvedOptions = statusOptions ?? DEFAULT_STATUS_OPTIONS
   const router = useRouter()
+  const sp = useSearchParams()
   const [value, setValue] = useState(query)
   const [seenQuery, setSeenQuery] = useState(query)
   const [isPending, startTransition] = useTransition()
@@ -59,23 +60,28 @@ export function AdminFilters({
     if (query !== value.trim()) setValue(query)
   }
 
+  // Preserves any other param already on the URL (e.g. a tabbed page's
+  // ?tab=) instead of rebuilding from scratch; q/status/page are the only
+  // ones this component owns, and a new search always resets page to 1.
+  const buildParams = useCallback((nextValue: string, nextStatus?: string) => {
+    const search = new URLSearchParams(sp.toString())
+    if (nextValue.trim()) search.set("q", nextValue.trim()); else search.delete("q")
+    if (nextStatus) search.set("status", nextStatus); else search.delete("status")
+    search.delete("page")
+    return search
+  }, [sp])
+
   useEffect(() => {
     if (value.trim() === query) return
     const timer = setTimeout(() => {
-      const search = new URLSearchParams()
-      if (value.trim()) search.set("q", value.trim())
-      if (status) search.set("status", status)
-      const qs = search.toString()
+      const qs = buildParams(value, status).toString()
       startTransition(() => router.replace(qs ? `${basePath}?${qs}` : basePath))
     }, DEBOUNCE_MS)
     return () => clearTimeout(timer)
-  }, [value, query, status, basePath, router])
+  }, [value, query, status, basePath, router, buildParams])
 
   const statusHref = (next?: string) => {
-    const search = new URLSearchParams()
-    if (value.trim()) search.set("q", value.trim())
-    if (next) search.set("status", next)
-    const qs = search.toString()
+    const qs = buildParams(value, next).toString()
     return qs ? `${basePath}?${qs}` : basePath
   }
 

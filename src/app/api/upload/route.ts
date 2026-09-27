@@ -6,7 +6,8 @@ import { db } from "@/lib/db"
 import { uploadToStorage } from "@/lib/storage"
 import { logAudit } from "@/lib/audit"
 
-const MAX_BYTES = 10 * 1024 * 1024  // 10 MB
+const MAX_BYTES = 10 * 1024 * 1024  // 10 MB, enforced on the stored (post-downscale) bytes
+const MAX_RAW_BYTES = 25 * 1024 * 1024  // upload-time ceiling, before a resizable photo gets shrunk
 // No SVG: served inline with no sanitization, an uploaded <script> executes
 // on direct navigation to its /uploads URL under the app's own origin.
 const ALLOWED_TYPES: Record<string, string> = {
@@ -97,13 +98,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 })
   }
 
-  if (file.size > MAX_BYTES) {
-    return NextResponse.json({ error: "File too large (max 10 MB)" }, { status: 400 })
-  }
-
   const ext = ALLOWED_TYPES[file.type]
   if (!ext) {
     return NextResponse.json({ error: "Unsupported file type" }, { status: 400 })
+  }
+
+  // A phone photo routinely lands well above MAX_BYTES straight off the camera
+  // (12+ MP JPEGs commonly run 10-15 MB) but downscale() shrinks anything over
+  // MAX_EDGE anyway, so reject on raw size only for non-resizable types (gif,
+  // pdf) where no shrinking ever happens; resizable types get the real check
+  // after downscale, against what actually gets stored.
+  if (file.size > MAX_RAW_BYTES || (!RESIZABLE.has(file.type) && file.size > MAX_BYTES)) {
+    return NextResponse.json({ error: "File too large (max 10 MB)" }, { status: 400 })
   }
 
   const ALLOWED_FOLDERS = new Set(["media", "dining", "avatars", "logos", "articles", "pages"])
@@ -113,6 +119,10 @@ export async function POST(req: Request) {
   const uuid = randomUUID()
   const key = `${folder}/${uuid}.${ext}`
   const { buffer, width, height } = await downscale(Buffer.from(await file.arrayBuffer()), file.type)
+
+  if (buffer.length > MAX_BYTES) {
+    return NextResponse.json({ error: "File too large (max 10 MB)" }, { status: 400 })
+  }
 
   let url: string
   try {

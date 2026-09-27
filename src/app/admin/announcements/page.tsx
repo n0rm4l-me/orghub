@@ -4,6 +4,7 @@ import { Plus, Megaphone, Pencil } from "lucide-react"
 import { requireRole } from "@/lib/rbac"
 import { toggleAnnouncementActive, deleteAnnouncement } from "@/lib/actions/announcements"
 import { PageHeader } from "@/components/ui/page-header"
+import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { StatusToggle } from "@/components/ui/status-toggle"
 import { DeleteButton } from "@/components/ui/delete-button"
@@ -156,14 +157,10 @@ export default async function AnnouncementsPage() {
         title="Announcements"
         description={`${active} active · ${announcements.length - active} inactive`}
         action={
-          <Link
-            href="/admin/announcements/new"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3.5 py-2 text-sm
-              font-medium text-white transition hover:brightness-95 active:brightness-90"
-          >
+          <Button render={<Link href="/admin/announcements/new" />}>
             <Plus className="size-4" aria-hidden />
             New announcement
-          </Link>
+          </Button>
         }
       />
 

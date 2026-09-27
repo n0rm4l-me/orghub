@@ -5,6 +5,7 @@ import { requireRole } from "@/lib/rbac"
 import { scopedLocationId } from "@/lib/dining-scope"
 import { PageHeader } from "@/components/ui/page-header"
 import { EmptyState } from "@/components/ui/empty-state"
+import { Button } from "@/components/ui/button"
 import { LocationForm } from "@/components/dining/location-form"
 import { AddVenueDialog } from "@/components/dining/add-venue-dialog"
 
@@ -44,10 +45,10 @@ export default async function DiningPage() {
         action={
           user.role === "ADMIN" ? (
             <LocationForm trigger={
-              <button className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:brightness-95">
+              <Button>
                 <Plus className="size-4" aria-hidden />
                 Add location
-              </button>
+              </Button>
             } />
           ) : undefined
         }

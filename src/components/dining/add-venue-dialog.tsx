@@ -6,6 +6,7 @@ import { Plus, Loader2, Building2, Coffee, ChefHat } from "lucide-react"
 import { createVenue } from "@/lib/actions/dining"
 import { useAction } from "@/lib/use-action"
 import { inputClass } from "@/components/ui/field"
+import { Button } from "@/components/ui/button"
 
 type VenueType = "CAFETERIA" | "CAFE" | "RESTAURANT"
 
@@ -38,13 +39,10 @@ export function AddVenueDialog({ locationId }: { locationId: string }) {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted"
-      >
+      <Button variant="outline" onClick={() => setOpen(true)}>
         <Plus className="size-3.5" aria-hidden />
         Add venue
-      </button>
+      </Button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 backdrop-blur-[2px] p-4" onClick={handleClose}>
@@ -86,15 +84,13 @@ export function AddVenueDialog({ locationId }: { locationId: string }) {
               </div>
 
               <div className="flex justify-end gap-2 pt-1">
-                <button type="button" onClick={handleClose}
-                  className="inline-flex items-center rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted">
+                <Button type="button" variant="outline" onClick={handleClose}>
                   Cancel
-                </button>
-                <button type="submit" disabled={pending}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-medium text-white hover:brightness-95 disabled:opacity-60">
+                </Button>
+                <Button type="submit" disabled={pending}>
                   {pending && <Loader2 className="size-3 animate-spin" />}
                   Create
-                </button>
+                </Button>
               </div>
             </form>
           </div>

@@ -1,11 +1,13 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { Utensils, CalendarDays, Newspaper, Settings, Pencil, Search } from "lucide-react"
+import { Utensils, CalendarDays, Newspaper, Settings, Pencil } from "lucide-react"
 import { db } from "@/lib/db"
 import { requireRole } from "@/lib/rbac"
 import { getSettings } from "@/lib/settings"
 import { locationFilter } from "@/lib/dining-scope"
 import { PageHeader } from "@/components/ui/page-header"
+import { AdminFilters } from "@/components/admin-filters"
+import { AdminTable, type AdminTableCol } from "@/components/ui/admin-table"
 import { VenueSettingsForm } from "@/components/dining/venue-settings-form"
 import { MealStructureEditor } from "@/components/dining/meal-structure-editor"
 import { VenueTagsEditor } from "@/components/dining/venue-tags-editor"
@@ -96,6 +98,61 @@ export default async function VenuePage({ params, searchParams }: Props) {
       })
     : null
 
+  type MenuRow = NonNullable<typeof menus>[number]
+  const menuColumns: AdminTableCol<MenuRow>[] = [
+    {
+      id: "name",
+      header: "Name",
+      render: (m) => (
+        <Link href={`/admin/dining/venues/${id}/menus/${m.id}`} className="font-medium text-foreground hover:text-brand hover:underline">
+          {m.name ?? <span className="text-muted-foreground">—</span>}
+        </Link>
+      ),
+    },
+    {
+      id: "type",
+      header: "Type",
+      width: "w-20",
+      render: (m) => (
+        <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${m.menuType === "FIXED" ? "bg-violet-50 text-violet-700" : "bg-sky-50 text-sky-700"}`}>
+          {m.menuType === "FIXED" ? "Fixed" : "Weekly"}
+        </span>
+      ),
+    },
+    {
+      id: "items",
+      header: "Items",
+      type: "number",
+      width: "w-16",
+      render: (m) => (m.menuType === "FIXED" ? m.fixedSections.reduce((s, sec) => s + sec._count.entries, 0) : m._count.entries),
+    },
+    {
+      id: "status",
+      header: "Status",
+      type: "center",
+      width: "w-28",
+      render: (m) => <MenuPublishToggle menuId={m.id} published={!!m.publishedAt} />,
+    },
+    {
+      id: "actions",
+      header: "",
+      type: "actions",
+      width: "w-16",
+      render: (m) => (
+        <>
+          <Link
+            href={`/admin/dining/venues/${id}/menus/${m.id}`}
+            className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+            title="Edit"
+          >
+            <Pencil className="size-3.5" />
+          </Link>
+          <MenuDeleteButton menuId={m.id} />
+        </>
+      ),
+    },
+  ]
+
   const topics = tab === "announcements"
     ? await db.monthlyTopic.findMany({
         where: { venueId: id },
@@ -170,74 +227,16 @@ export default async function VenuePage({ params, searchParams }: Props) {
 
       {tab === "menus" && menus !== null && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between gap-3">
-            <form method="GET" className="relative flex-1 max-w-xs">
-              <input type="hidden" name="tab" value="menus" />
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden />
-              <input
-                type="search"
-                name="q"
-                defaultValue={q ?? ""}
-                placeholder="Search menus…"
-                className="w-full rounded-lg border border-border bg-card py-1.5 pl-9 pr-3 text-sm text-foreground outline-none focus:border-brand focus:ring-1 focus:ring-brand"
-              />
-            </form>
+          <div className="flex justify-end">
             <WeekPickerCreate venueId={id} />
           </div>
+
+          <AdminFilters basePath={`/admin/dining/venues/${id}`} query={q} showStatus={false} placeholder="Search menus…" />
 
           {menus.length === 0 ? (
             <p className="text-sm text-muted-foreground">{q ? "No menus match your search." : "No menus yet."}</p>
           ) : (
-            <div className="overflow-hidden rounded-xl border border-border bg-card">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border bg-muted text-xs font-medium text-muted-foreground">
-                    <th className="px-5 py-3 text-left">Name</th>
-                    <th className="w-20 px-3 py-3 text-left">Type</th>
-                    <th className="w-16 px-3 py-3 text-center">Items</th>
-                    <th className="w-28 px-3 py-3 text-center">Status</th>
-                    <th className="w-16 px-3 py-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {menus.map((m) => {
-                    const isFixed = m.menuType === "FIXED"
-                    const count = isFixed
-                      ? m.fixedSections.reduce((s, sec) => s + sec._count.entries, 0)
-                      : m._count.entries
-                    return (
-                    <tr key={m.id} className="hover:bg-muted">
-                      <td className="px-5 py-3 font-medium text-foreground">
-                        <Link href={`/admin/dining/venues/${id}/menus/${m.id}`} className="hover:text-brand hover:underline">
-                          {m.name ?? <span className="text-muted-foreground">—</span>}
-                        </Link>
-                      </td>
-                      <td className="w-20 px-3 py-3">
-                        <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${isFixed ? "bg-violet-50 text-violet-700" : "bg-sky-50 text-sky-700"}`}>
-                          {isFixed ? "Fixed" : "Weekly"}
-                        </span>
-                      </td>
-                      <td className="w-16 px-3 py-3 text-center text-muted-foreground">{count}</td>
-                      <td className="w-28 px-3 py-3 text-center">
-                        <MenuPublishToggle menuId={m.id} published={!!m.publishedAt} />
-                      </td>
-                      <td className="w-16 px-3 py-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Link
-                            href={`/admin/dining/venues/${id}/menus/${m.id}`}
-                            className="inline-flex items-center justify-center rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                            title="Edit"
-                          >
-                            <Pencil className="size-3.5" />
-                          </Link>
-                          <MenuDeleteButton menuId={m.id} />
-                        </div>
-                      </td>
-                    </tr>
-                  )})}
-                </tbody>
-              </table>
-            </div>
+            <AdminTable columns={menuColumns} rows={menus} rowKey={(m) => m.id} rowAlign="middle" />
           )}
         </div>
       )}

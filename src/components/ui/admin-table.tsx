@@ -37,11 +37,16 @@ export function AdminTable<T,>({
   rows,
   rowKey,
   rowAlign = "top",
+  renderRow,
 }: {
   columns: AdminTableCol<T>[]
   rows: T[]
   rowKey: (row: T) => string
   rowAlign?: "top" | "middle"
+  /** Escape hatch for a row that needs to replace its own cells (e.g. an
+   *  inline edit form) instead of rendering through `columns`. Return
+   *  `undefined` for every other row so it renders normally. */
+  renderRow?: (row: T) => ReactNode | undefined
 }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-border bg-card text-card-foreground">
@@ -64,7 +69,16 @@ export function AdminTable<T,>({
           </tr>
         </thead>
         <tbody className={`divide-y divide-border ${rowAlign === "middle" ? "[&_td]:align-middle" : "[&_td]:align-top"}`}>
-          {rows.map((row) => (
+          {rows.map((row) => {
+            const custom = renderRow?.(row)
+            if (custom !== undefined) {
+              return (
+                <tr key={rowKey(row)}>
+                  <td colSpan={columns.length} className="px-4 py-3 sm:px-5">{custom}</td>
+                </tr>
+              )
+            }
+            return (
             <tr key={rowKey(row)} className="group transition-colors hover:bg-muted/60">
               {columns.map((col) => {
                 const type = col.type ?? "text"
@@ -81,7 +95,8 @@ export function AdminTable<T,>({
                 )
               })}
             </tr>
-          ))}
+            )
+          })}
         </tbody>
       </table>
     </div>

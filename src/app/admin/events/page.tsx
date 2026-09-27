@@ -7,6 +7,7 @@ import { togglePublish, deleteArticle } from "@/lib/actions/articles"
 import { StatusToggle } from "@/components/ui/status-toggle"
 import { DeleteButton } from "@/components/ui/delete-button"
 import { PageHeader } from "@/components/ui/page-header"
+import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { AdminFilters } from "@/components/admin-filters"
 import { TablePagination } from "@/components/ui/table-pagination"
@@ -187,14 +188,10 @@ export default async function AdminEventsPage({ searchParams }: Props) {
         title="Events"
         description={`${publishedCount} published · ${draftCount} draft${draftCount === 1 ? "" : "s"}`}
         action={
-          <Link
-            href="/admin/events/new"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3.5 py-2 text-sm
-              font-medium text-white transition hover:brightness-95 active:brightness-90"
-          >
+          <Button render={<Link href="/admin/events/new" />}>
             <Plus className="size-4" aria-hidden />
             New event
-          </Link>
+          </Button>
         }
       />
 

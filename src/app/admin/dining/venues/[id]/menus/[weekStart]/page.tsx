@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft } from "lucide-react"
+import { ChevronLeft } from "lucide-react"
 import { db } from "@/lib/db"
 import { requireRole } from "@/lib/rbac"
 import { getSettings } from "@/lib/settings"
@@ -61,8 +61,11 @@ export default async function WeekMenuEditorPage({ params }: Props) {
   return (
     <div className="max-w-5xl">
       <div className="mb-6">
-        <Link href={`/admin/dining/venues/${id}?tab=menus`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="size-4" aria-hidden />
+        <Link
+          href={`/admin/dining/venues/${id}?tab=menus`}
+          className="-ml-1 inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
+        >
+          <ChevronLeft className="size-4" aria-hidden />
           Menus
         </Link>
       </div>

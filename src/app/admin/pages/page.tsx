@@ -7,6 +7,7 @@ import { togglePagePublish, deletePage } from "@/lib/actions/pages"
 import { StatusToggle } from "@/components/ui/status-toggle"
 import { DeleteButton } from "@/components/ui/delete-button"
 import { PageHeader } from "@/components/ui/page-header"
+import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { AdminFilters } from "@/components/admin-filters"
 import { PageReorder } from "@/components/ui/page-reorder"
@@ -210,21 +211,13 @@ export default async function AdminPagesPage({ searchParams }: Props) {
         }`}
         action={
           <div className="flex items-center gap-2">
-            <Link
-              href="/admin/navigation"
-              className="inline-flex items-center rounded-lg border border-border bg-card px-3.5 py-2
-                text-sm font-medium text-foreground transition hover:bg-muted"
-            >
+            <Button variant="outline" render={<Link href="/admin/navigation" />}>
               Manage menu
-            </Link>
-            <Link
-              href="/admin/pages/new"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3.5 py-2 text-sm
-                font-medium text-white transition hover:brightness-95 active:brightness-90"
-            >
+            </Button>
+            <Button render={<Link href="/admin/pages/new" />}>
               <Plus className="size-4" aria-hidden />
               New page
-            </Link>
+            </Button>
           </div>
         }
       />

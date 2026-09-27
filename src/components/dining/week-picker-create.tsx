@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Plus, Loader2, X, CalendarDays, UtensilsCrossed } from "lucide-react"
 import { createWeekMenu } from "@/lib/actions/dining"
 import { useAction } from "@/lib/use-action"
+import { Button } from "@/components/ui/button"
 
 type MenuType = "WEEKLY" | "FIXED"
 
@@ -44,13 +45,10 @@ export function WeekPickerCreate({ venueId }: { venueId: string }) {
 
   return (
     <>
-      <button
-        onClick={() => { setName(""); setMenuType("WEEKLY"); setOpen(true) }}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:brightness-95"
-      >
+      <Button onClick={() => { setName(""); setMenuType("WEEKLY"); setOpen(true) }}>
         <Plus className="size-4" aria-hidden />
         Create menu
-      </button>
+      </Button>
 
       {open && (
         <div
@@ -125,23 +123,13 @@ export function WeekPickerCreate({ venueId }: { venueId: string }) {
 
               {/* Actions */}
               <div className="flex justify-end gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  disabled={pending}
-                  className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted disabled:opacity-60"
-                >
+                <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={pending}>
                   Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCreate}
-                  disabled={pending || !name.trim()}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:brightness-95 disabled:opacity-60"
-                >
+                </Button>
+                <Button type="button" onClick={handleCreate} disabled={pending || !name.trim()}>
                   {pending && <Loader2 className="size-4 animate-spin" />}
                   Create
-                </button>
+                </Button>
               </div>
             </div>
           </div>

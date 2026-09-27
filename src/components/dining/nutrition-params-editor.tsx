@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"
 import { Plus, Trash2, ChevronUp, ChevronDown, Loader2 } from "lucide-react"
 import { upsertNutritionParams } from "@/lib/actions/dining"
 import { useOrderedRows } from "@/lib/use-ordered-rows"
+import { Button } from "@/components/ui/button"
 
 type Param = { id?: string; name: string; unit: string; featured: boolean; order: number }
 
@@ -88,11 +89,10 @@ export function NutritionParamsEditor({
           <Plus className="size-4" aria-hidden />
           Add param
         </button>
-        <button type="button" onClick={handleSave} disabled={pending}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:brightness-95 disabled:opacity-60">
+        <Button type="button" onClick={handleSave} disabled={pending}>
           {pending && <Loader2 className="size-3.5 animate-spin" />}
           Save params
-        </button>
+        </Button>
       </div>
     </div>
   )

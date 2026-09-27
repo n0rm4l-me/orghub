@@ -255,6 +255,13 @@ are captured here so they don't recur.
   less bad than a permanent, always-visible gap. Don't re-add it without
   checking what's flush against the viewport edge in the section you're
   fixing.
+  Re-scoped 2026-09-27: `/admin` has its own fixed dark sidebar and a plain
+  `bg-background` content column, nothing full-bleed at the true viewport
+  edge, so the strip is invisible there. `html.admin-scrollbar-stable` in
+  `globals.css`, toggled by `admin-appearance-reset.tsx`, applies the same
+  rule scoped to admin only -- this fixed a real, reported shift when
+  navigating between a venue's Settings/Dishes/Menus/Announcements tabs
+  (each a different-height page). The portal itself is still unscoped.
 
 ## Primitives
 

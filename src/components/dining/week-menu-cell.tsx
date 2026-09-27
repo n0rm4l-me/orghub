@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Plus, X, Search, Loader2, Pencil } from "lucide-react"
 import { getDishes } from "@/lib/actions/dining"
+import { Button } from "@/components/ui/button"
 import { SafeImg } from "@/components/dining/safe-img"
 import type { NutritionParam, VenueTag } from "@/lib/dining-types"
 
@@ -156,20 +157,12 @@ export function WeekMenuCell({
               Clear
             </button>
             <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={close}
-                className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted"
-              >
+              <Button type="button" variant="outline" onClick={close}>
                 Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleSave}
-                className="rounded-lg bg-brand px-3 py-1.5 text-xs font-medium text-white hover:brightness-95"
-              >
+              </Button>
+              <Button type="button" onClick={handleSave}>
                 Save
-              </button>
+              </Button>
             </div>
           </div>
         </div>

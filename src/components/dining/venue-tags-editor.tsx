@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"
 import { Plus, Trash2, ChevronUp, ChevronDown, Loader2 } from "lucide-react"
 import { upsertVenueTags } from "@/lib/actions/dining"
 import { useOrderedRows } from "@/lib/use-ordered-rows"
+import { Button } from "@/components/ui/button"
 
 type Tag = { id?: string; name: string; color: string; bgColor: string; order: number }
 
@@ -105,11 +106,10 @@ export function VenueTagsEditor({
           <Plus className="size-4" aria-hidden />
           Add tag
         </button>
-        <button type="button" onClick={handleSave} disabled={pending}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:brightness-95 disabled:opacity-60">
+        <Button type="button" onClick={handleSave} disabled={pending}>
           {pending && <Loader2 className="size-3.5 animate-spin" />}
           Save tags
-        </button>
+        </Button>
       </div>
     </div>
   )

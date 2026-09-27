@@ -15,6 +15,7 @@ import {
 import { useAction } from "@/lib/use-action"
 import { ok, type ActionResult } from "@/lib/actions/types"
 import { toast } from "@/components/ui/toaster"
+import { Button } from "@/components/ui/button"
 import { SafeImg } from "@/components/dining/safe-img"
 import { MediaPickerField } from "@/components/media-picker"
 import type { NutritionParam, VenueTag } from "@/lib/dining-types"
@@ -506,20 +507,12 @@ function EntryEditor({
 
       {/* Actions */}
       <div className="flex justify-end gap-2 border-t border-border pt-3">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted"
-        >
+        <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
-        </button>
-        <button
-          type="button"
-          onClick={handleSave}
-          className="rounded-lg bg-brand px-4 py-1.5 text-sm font-medium text-white hover:brightness-95"
-        >
+        </Button>
+        <Button type="button" onClick={handleSave}>
           Save
-        </button>
+        </Button>
       </div>
     </div>
   )

@@ -9,6 +9,7 @@ import { MediaPickerField } from "@/components/media-picker"
 import { inputClass, compactLabelClass as lbl } from "@/components/ui/field"
 import { EmptyState } from "@/components/ui/empty-state"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { Button } from "@/components/ui/button"
 
 type Topic = { id: string; venueId: string; title: string; bannerImage: string | null; body: string | null; publishedAt: Date | null }
 
@@ -49,15 +50,13 @@ function TopicForm({ venueId, topic, onDone }: { venueId: string; topic?: Topic;
         <textarea name="body" rows={3} defaultValue={topic?.body ?? ""} placeholder="Theme description…" className={inputClass} />
       </div>
       <div className="flex justify-end gap-3">
-        <button type="button" onClick={onDone}
-          className="inline-flex items-center rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted">
+        <Button type="button" variant="outline" onClick={onDone}>
           Cancel
-        </button>
-        <button type="submit" disabled={pending}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:brightness-95 disabled:opacity-60">
+        </Button>
+        <Button type="submit" disabled={pending}>
           {pending && <Loader2 className="size-3.5 animate-spin" />}
           Save
-        </button>
+        </Button>
       </div>
     </form>
   )
@@ -84,13 +83,10 @@ export function TopicsList({ venueId, topics }: { venueId: string; topics: Topic
     <div className="space-y-4">
       {!showForm && !editId && (
         <div className="flex justify-end">
-          <button
-            onClick={() => setShowForm(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:brightness-95"
-          >
+          <Button onClick={() => setShowForm(true)}>
             <Plus className="size-4" aria-hidden />
             New announcement
-          </button>
+          </Button>
         </div>
       )}
 

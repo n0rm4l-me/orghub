@@ -6,6 +6,7 @@ import { Plus, Pencil, Trash2, Loader2 } from "lucide-react"
 import { createRedeemType, updateRedeemType, deleteRedeemType } from "@/lib/actions/kudos"
 import { toast } from "@/components/ui/toaster"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { Button } from "@/components/ui/button"
 import { compactLabelClass as lbl } from "@/components/ui/field"
 
 type RedeemType = {
@@ -56,18 +57,13 @@ function TypeForm({
         <input type="url" value={s.webhook} onChange={(e) => set("webhook", e.target.value)} placeholder="https://..." className={inputCls} />
       </div>
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => onSave(s)}
-          disabled={busy || !s.label.trim()}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-medium text-white transition hover:brightness-95 disabled:opacity-60"
-        >
+        <Button type="button" onClick={() => onSave(s)} disabled={busy || !s.label.trim()}>
           {busy && <Loader2 className="size-3 animate-spin" />}
           Save
-        </button>
-        <button type="button" onClick={onCancel} className="text-xs text-muted-foreground transition hover:text-foreground">
+        </Button>
+        <Button type="button" variant="ghost" onClick={onCancel}>
           Cancel
-        </button>
+        </Button>
       </div>
     </div>
   )

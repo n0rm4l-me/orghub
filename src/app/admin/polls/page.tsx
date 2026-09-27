@@ -3,6 +3,7 @@ import { Plus } from "lucide-react"
 import { db } from "@/lib/db"
 import { requireRole } from "@/lib/rbac"
 import { PageHeader } from "@/components/ui/page-header"
+import { Button } from "@/components/ui/button"
 import { PollList } from "@/components/poll-list"
 
 export const metadata = { title: "Polls" }
@@ -29,13 +30,10 @@ export default async function PollsAdminPage() {
       <PageHeader
         title="Polls"
         action={
-          <Link
-            href="/admin/polls/new"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3.5 py-2 text-sm font-medium text-white transition hover:brightness-95 active:brightness-90"
-          >
+          <Button render={<Link href="/admin/polls/new" />}>
             <Plus className="size-4" aria-hidden />
             New poll
-          </Link>
+          </Button>
         }
       />
       <PollList polls={polls} />

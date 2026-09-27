@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react"
 import { createLocation, updateLocation, deleteLocation } from "@/lib/actions/dining"
 import { useAction } from "@/lib/use-action"
 import { inputClass, compactLabelClass as lbl } from "@/components/ui/field"
+import { Button } from "@/components/ui/button"
 
 type Location = { id: string; name: string; timezone: string }
 
@@ -126,16 +127,13 @@ export function LocationForm({ location, trigger }: Props) {
               </div>
               <div className="flex items-center justify-between gap-3 pt-1">
                 <div className="flex gap-2">
-                  <button type="submit" disabled={pending}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-medium text-white hover:brightness-95 disabled:opacity-60"
-                  >
+                  <Button type="submit" disabled={pending}>
                     {pending && <Loader2 className="size-3 animate-spin" />}
                     {location ? "Save" : "Create"}
-                  </button>
-                  <button type="button" onClick={handleClose}
-                    className="inline-flex items-center rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted">
+                  </Button>
+                  <Button type="button" variant="outline" onClick={handleClose}>
                     Cancel
-                  </button>
+                  </Button>
                 </div>
                 {location && (
                   confirmingDelete ? (

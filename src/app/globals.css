@@ -209,6 +209,15 @@
 html.font-sm { font-size: 14px; }
 html.font-lg { font-size: 18px; }
 
+/* Admin-only: unlike the portal (sticky, full-bleed, brand-colored header --
+   see docs/design-guidelines.md), nothing in /admin sits flush against the
+   true viewport edge, so permanently reserving the scrollbar's width is
+   invisible there. Toggled by admin-appearance-reset.tsx. Fixes admin
+   page-to-page navigation (e.g. a venue's Settings/Dishes/Menus tabs, each a
+   different-height page) shifting content sideways when the scrollbar
+   appears or disappears between them. */
+html.admin-scrollbar-stable { scrollbar-gutter: stable; }
+
 /* Prevent iOS Safari from zooming in on focused inputs (triggers when font-size < 16px) */
 @media (hover: none) and (pointer: coarse) {
   input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]),

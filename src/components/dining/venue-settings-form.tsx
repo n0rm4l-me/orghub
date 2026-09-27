@@ -6,6 +6,7 @@ import { Loader2, Building2, Coffee, ChefHat, Trash2 } from "lucide-react"
 import { updateVenue, deleteVenue } from "@/lib/actions/dining"
 import { useAction } from "@/lib/use-action"
 import { inputClass, compactLabelClass as lbl } from "@/components/ui/field"
+import { Button } from "@/components/ui/button"
 
 type Venue = {
   id: string
@@ -110,14 +111,10 @@ export function VenueSettingsForm({ venue }: { venue: Venue }) {
             <Trash2 className="size-3.5" />
             Delete venue
           </button>
-          <button
-            type="submit"
-            disabled={pending}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:brightness-95 disabled:opacity-60"
-          >
+          <Button type="submit" disabled={pending}>
             {pending && <Loader2 className="size-3.5 animate-spin" />}
             Save
-          </button>
+          </Button>
         </div>
 
         {deleteOpen && (

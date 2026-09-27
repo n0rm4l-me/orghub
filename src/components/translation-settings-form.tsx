@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Loader2, Check } from "lucide-react"
 import { saveTranslationSettings } from "@/lib/actions/translation-settings"
 import { useAction } from "@/lib/use-action"
+import { Button } from "@/components/ui/button"
 
 const PROVIDERS = [
   { value: "mymemory", label: "MyMemory", hint: "Free (requires MYMEMORY_EMAIL for 10k words/day)" },
@@ -136,15 +137,10 @@ export function TranslationSettingsForm({ provider: initProvider, languages: ini
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            type="submit"
-            disabled={pending}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm
-              font-medium text-white transition hover:bg-brand/90 disabled:opacity-60"
-          >
+          <Button type="submit" disabled={pending}>
             {pending ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
             Save
-          </button>
+          </Button>
           {savedAt && (
             <span className="text-xs text-muted-foreground">Saved {savedAt}</span>
           )}

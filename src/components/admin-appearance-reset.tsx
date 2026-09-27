@@ -13,6 +13,13 @@ import { useLayoutEffect } from "react"
 export function AdminAppearanceReset() {
   useLayoutEffect(() => {
     document.documentElement.classList.remove("dark", "font-sm", "font-lg")
+    // Admin's "tabs" are ?tab= links that reload the page with different
+    // content heights, so the scrollbar appears/disappears between them and
+    // shifts everything sideways by its width. Reserving the gutter fixes
+    // that; see the html.admin-scrollbar-stable rule in globals.css for why
+    // this is safe here but not in the portal.
+    document.documentElement.classList.add("admin-scrollbar-stable")
+    return () => document.documentElement.classList.remove("admin-scrollbar-stable")
   }, [])
   return null
 }

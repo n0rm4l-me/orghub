@@ -6,6 +6,7 @@ import { Loader2, Building2, Coffee, ChefHat } from "lucide-react"
 import { createVenue } from "@/lib/actions/dining"
 import { useAction } from "@/lib/use-action"
 import { inputClass, compactLabelClass as lbl } from "@/components/ui/field"
+import { Button } from "@/components/ui/button"
 
 type Location = { id: string; name: string }
 type VenueType = "CAFETERIA" | "CAFE" | "RESTAURANT"
@@ -96,15 +97,13 @@ export function NewVenueForm({ locations, defaultLocationId }: { locations: Loca
       </div>
 
       <div className="flex justify-end gap-3">
-        <button type="button" onClick={() => router.push("/admin/dining")}
-          className="inline-flex items-center rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted">
+        <Button type="button" variant="outline" onClick={() => router.push("/admin/dining")}>
           Cancel
-        </button>
-        <button type="submit" disabled={pending}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:brightness-95 disabled:opacity-60">
+        </Button>
+        <Button type="submit" disabled={pending}>
           {pending && <Loader2 className="size-3.5 animate-spin" />}
           Create
-        </button>
+        </Button>
       </div>
     </form>
   )

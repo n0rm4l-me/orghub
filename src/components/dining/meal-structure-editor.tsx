@@ -6,6 +6,7 @@ import { Plus, Trash2, ChevronUp, ChevronDown, Loader2 } from "lucide-react"
 import { upsertSlotsAndCategories } from "@/lib/actions/dining"
 import { useAction } from "@/lib/use-action"
 import { toast } from "@/components/ui/toaster"
+import { Button } from "@/components/ui/button"
 
 type CatRow = { id?: string; name: string }
 type SlotRow = { id?: string; name: string; timeStart: string; timeEnd: string; cats: CatRow[] }
@@ -210,11 +211,10 @@ export function MealStructureEditor({
           <Plus className="size-4" aria-hidden />
           Add slot
         </button>
-        <button type="button" onClick={handleSave} disabled={pending}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:brightness-95 disabled:opacity-60">
+        <Button type="button" onClick={handleSave} disabled={pending}>
           {pending && <Loader2 className="size-3.5 animate-spin" />}
           Save
-        </button>
+        </Button>
       </div>
     </div>
   )
