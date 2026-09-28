@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { usePathname } from "next/navigation"
 import { X } from "lucide-react"
 
 type Announcement = {
@@ -36,7 +37,15 @@ function addDismissed(id: string) {
 
 export function AnnouncementBannerClient({ announcement }: { announcement: Announcement }) {
   const [visible, setVisible] = useState(() => !getDismissed().has(announcement.id))
+  const pathname = usePathname()
 
+  // usePathname() re-renders on every navigation even if this component's
+  // own instance somehow survives one (seen live: a client-side transition
+  // from the portal into /admin, which has no loading.tsx, left this banner
+  // on screen until a hard refresh). Belt-and-suspenders: this component
+  // should never render on admin regardless of whether its portal-only
+  // parent layout actually unmounted.
+  if (pathname?.startsWith("/admin")) return null
   if (!visible) return null
 
   const theme = COLORS[announcement.color] ?? COLORS.brand
