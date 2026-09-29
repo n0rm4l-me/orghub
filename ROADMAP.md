@@ -136,6 +136,24 @@ module-enabled flag; the comment-reply notification call is now
   a scoped-out feature, not a correctness bug. Building the real order flow
   is a legitimate future roadmap item on its own, not a quick fix.
 
+- **ADDED 2026-09-29. `STORE` venue type**, for a retail/snack-shop venue
+  (asked for in the context of the Rakuten demo). Reuses the Café/
+  Restaurant fixed-menu architecture as-is (`venueType` is a plain string
+  column, not a DB enum, so this needed no schema change): items, price,
+  modifiers, cart. Touched five places that each keep their own copy of
+  the venue-type list: the three type pickers
+  ([add-venue-dialog.tsx](src/components/dining/add-venue-dialog.tsx),
+  [new-venue-form.tsx](src/components/dining/new-venue-form.tsx),
+  [venue-settings-form.tsx](src/components/dining/venue-settings-form.tsx))
+  and the two icon/badge lookup maps
+  ([admin/dining/page.tsx](src/app/admin/dining/page.tsx),
+  [(portal)/dining/page.tsx](<src/app/(portal)/dining/page.tsx>)).
+  Explicitly discussed and deferred building real checkout for this
+  (the item directly above): a store makes "can't actually buy anything"
+  more noticeable than a café does, but the user chose to add the venue
+  type now and leave checkout as its own separate decision, not bundle it
+  in here.
+
 - **RESOLVED 2026-09-25. Read-only by design, not an unfinished screen.**
   [src/app/admin/auth-providers/page.tsx](src/app/admin/auth-providers/page.tsx)
   already says so explicitly in its own `PageHeader` description
