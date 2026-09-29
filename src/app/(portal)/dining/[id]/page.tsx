@@ -126,15 +126,24 @@ export default async function DiningVenuePage({ params, searchParams }: Props) {
 
   type Entry = NonNullable<typeof menu>["entries"][number]
 
-  /** Resolves an entry's own values with the linked dish as fallback. */
+  /**
+   * Resolves an entry's display fields, preferring the linked dish when one
+   * is set. name/description/photo only ever reach an entry by copying a
+   * Dish at pick time (see week-menu-cell.tsx's handlePickDish) -- there is
+   * no editor UI that lets them diverge from the dish afterward -- so a
+   * linked entry should always mirror the dish's current values, not the
+   * snapshot taken whenever it was picked. Falls back to the entry's own
+   * copy only for entries with no dishId at all (created directly with
+   * free text, no catalog dish behind them).
+   */
   function resolveEntry(entry: Entry) {
-    const nutrition = ((entry.nutrition ?? entry.dish?.nutrition) ?? null) as Record<string, number> | null
+    const nutrition = ((entry.dish?.nutrition ?? entry.nutrition) ?? null) as Record<string, number> | null
     const featuredVal = featuredParam && nutrition ? nutrition[featuredParam.id] : null
     return {
-      name: entry.name ?? entry.dish?.name ?? null,
-      description: entry.description ?? entry.dish?.description ?? null,
-      photo: entry.photo ?? entry.dish?.photo ?? null,
-      tagIds: (entry.tagIds || entry.dish?.tagIds || "").split(",").filter(Boolean),
+      name: entry.dish?.name ?? entry.name ?? null,
+      description: entry.dish?.description ?? entry.description ?? null,
+      photo: entry.dish?.photo ?? entry.photo ?? null,
+      tagIds: (entry.dish?.tagIds || entry.tagIds || "").split(",").filter(Boolean),
       featuredVal,
       featured: featuredVal != null ? `${featuredVal} ${featuredParam!.unit}` : null,
       macroLine: nonFeaturedParams
@@ -239,6 +248,12 @@ export default async function DiningVenuePage({ params, searchParams }: Props) {
             name: s.name,
             entries: s.entries.map((e) => ({
               id: e.id,
+              // Unlike the weekly grid's WeekMenuCell, FixedMenuEditor's
+              // EntryEditor has real name/description/photo inputs that a
+              // dish-pick only pre-fills when empty (see pickDish there), so
+              // an admin can genuinely diverge a fixed entry from its dish.
+              // Entry stays authoritative here; dish is only a fallback for
+              // whichever of the three the admin never typed over.
               name: e.name ?? e.dish?.name ?? null,
               description: e.description ?? e.dish?.description ?? null,
               photo: e.photo ?? e.dish?.photo ?? null,

@@ -86,6 +86,11 @@ export default async function WeekMenuEditorPage({ params }: Props) {
             entries: s.entries.map((e) => ({
               id: e.id,
               dishId: e.dishId,
+              // FixedMenuEditor's EntryEditor has real name/description/photo
+              // inputs that a dish-pick only pre-fills when empty, so a
+              // fixed entry can genuinely diverge from its dish (unlike a
+              // weekly entry, which never can -- see the comment on
+              // resolveEntry in the portal page). Entry stays authoritative.
               name: e.name ?? e.dish?.name ?? null,
               description: e.description ?? e.dish?.description ?? null,
               photo: e.photo ?? e.dish?.photo ?? null,

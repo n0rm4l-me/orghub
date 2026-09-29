@@ -69,9 +69,9 @@ function buildInitialState(entries: RawEntry[]): State {
       // dish was picked, so an edit to the Dish itself never retroactively
       // reached already-saved entries. The dish stays the live source of
       // truth here too, same as the portal's own resolveEntry.
-      name: e.name ?? e.dish?.name ?? null,
-      description: e.description ?? e.dish?.description ?? null,
-      photo: e.photo ?? e.dish?.photo ?? null,
+      name: e.dish?.name ?? e.name ?? null,
+      description: e.dish?.description ?? e.description ?? null,
+      photo: e.dish?.photo ?? e.photo ?? null,
       nutrition: e.nutrition as Record<string, number | null> | null,
       tagIds: e.tagIds, note: e.note,
     })
