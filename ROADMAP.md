@@ -903,6 +903,28 @@ Everything else, roughly ordered by blast radius:
 
 Smaller items, independent of the design-unification phases above:
 
+- **FIXED 2026-09-29, found by the user live on staging.** The site-wide
+  [announcement banner](src/components/announcement-banner.tsx) stayed on
+  screen after navigating from the portal into `/admin` (fully-loaded
+  admin content underneath it, banner on top), until a hard refresh. Root
+  cause not fully pinned down: `admin/layout.tsx` never imports the
+  banner and `/admin` has no `loading.tsx`, so nothing in this app's own
+  code renders it there on purpose; most likely Next.js holding the old
+  page on screen through the dynamic-route transition (per
+  `node_modules/next/dist/docs/01-app/02-guides/prefetching.md`: a
+  dynamic route with no `loading.js` gets a full server roundtrip on
+  click, and nothing here forces the old tree to unmount first) and the
+  banner's own component instance surviving that longer than expected,
+  confirmed by the user's own repro (hard refresh / fresh tab: gone;
+  client-side nav: stuck). Rather than keep chasing the exact
+  router-internal mechanism, made
+  [announcement-banner-client.tsx](src/components/announcement-banner-client.tsx)
+  check `usePathname()` itself and bail out on `/admin` -- that hook
+  re-renders on every navigation regardless of whether this component's
+  own instance happens to persist past one, so it's correct independent
+  of whatever Next.js is actually doing under the hood. If this class of
+  bug shows up again elsewhere (portal chrome bleeding into admin after a
+  client-side nav, not on a fresh load), suspect the same mechanism.
 - **FIXED 2026-09-27, found by the user live on staging.** Editing a
   [Dish](src/lib/actions/dining.ts)'s name in the admin catalog didn't
   change how it showed up in any menu that already referenced it.
