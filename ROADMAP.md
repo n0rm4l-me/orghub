@@ -943,29 +943,47 @@ Smaller items, independent of the design-unification phases above:
   of whatever Next.js is actually doing under the hood. If this class of
   bug shows up again elsewhere (portal chrome bleeding into admin after a
   client-side nav, not on a fresh load), suspect the same mechanism.
-- **FIXED 2026-09-27, found by the user live on staging.** Editing a
+- **FIXED 2026-09-27, found by the user live on staging; corrected
+  2026-09-29, same complaint recurred for a different reason.** Editing a
   [Dish](src/lib/actions/dining.ts)'s name in the admin catalog didn't
   change how it showed up in any menu that already referenced it.
   `WeekMenuEntry`/`FixedMenuEntry` copy a dish's `name`/`description`/
-  `photo` into their own columns at the moment it's picked in the editor
-  ([week-menu-cell.tsx](src/components/dining/week-menu-cell.tsx):
-  `setDraft({ dishId: d.id, name: d.name, ... })`), so a later edit to the
-  `Dish` row itself never reached entries that already copied the old
-  value. `photo` already had a "fall back to the linked dish when the
-  entry's own copy is empty" resolver in most of the four render paths
-  (weekly/fixed, admin/portal); `name` and `description` did not, in any
-  of them, including one Prisma `select` that omitted
-  `dish.name`/`dish.description` entirely so the fallback had nothing to
-  read even where the JS side was ready for it. Added the same
-  `entry.name ?? entry.dish?.name` pattern everywhere `photo` already had
-  it, four call sites: [(portal)/dining/[id]/page.tsx](<src/app/(portal)/dining/[id]/page.tsx>)'s
-  `resolveEntry` (weekly) and its fixed-menu mapping,
-  [week-menu-grid.tsx](src/components/dining/week-menu-grid.tsx)'s
-  `buildInitialState`, and the admin week-menu-editor page's fixed-section
-  mapping. Deliberately didn't change the underlying copy-on-pick
-  architecture (an entry can still hold its own text that diverges from
-  the dish, e.g. a day-specific note) -- an entry only falls back to the
-  dish when its own field is empty, same contract `photo` already had.
+  `photo` into their own columns at the moment it's picked in the editor,
+  so a later edit to the `Dish` row itself never reached entries that
+  already copied the old value.
+  The 09-27 fix added an `entry.name ?? entry.dish?.name`-shaped fallback
+  (entry's own copy wins, dish only fills in when the entry's copy is
+  empty) at all four render call sites. That's the right contract for a
+  *fixed*-menu entry: [fixed-menu-editor.tsx](src/components/dining/fixed-menu-editor.tsx)'s
+  `EntryEditor` has real `name`/`description`/`photo` text inputs, and its
+  `pickDish` only pre-fills whichever of them are still empty (`if
+  (!name) setName(d.name)`), so an admin can genuinely type a custom name
+  that a linked dish should never silently overwrite. It's the *wrong*
+  contract for a *weekly*-menu entry: [week-menu-cell.tsx](src/components/dining/week-menu-cell.tsx)
+  has no such inputs at all -- `handlePickDish` is the only way
+  name/description/photo ever get set on a weekly entry, and they always
+  arrive as an exact copy of the dish at that moment, with zero editor UI
+  to diverge them afterward (the one genuinely free-text per-entry field
+  is `note`, a separate column). So for weekly entries the 09-27 fix
+  reproduced the same bug it had just fixed: editing "Rapid Shot" (a
+  dish shared by all five weekdays of a breakfast smoothie row, one Dish
+  row per [orghub-cafeteria-menu2.ts]'s `dishIdFor()` cache) changed
+  nothing on the portal, because every one of its entries already had its
+  own non-null `name` copy from creation, which the fallback's "entry
+  wins" order never lets the dish override.
+  Split the precedence by which editor actually owns the entry: weekly
+  call sites (`resolveEntry` in
+  [(portal)/dining/[id]/page.tsx](<src/app/(portal)/dining/[id]/page.tsx>),
+  `buildInitialState` in
+  [week-menu-grid.tsx](src/components/dining/week-menu-grid.tsx)) now use
+  `entry.dish?.name ?? entry.name` (dish wins whenever one is linked);
+  fixed-menu call sites (the other mapping in the same portal page, and
+  the admin week-menu-editor page's fixed-section mapping) keep the
+  original `entry.name ?? entry.dish?.name` (entry wins, since it can be
+  a real, intentional override there). Same split applies to
+  `description`/`photo`; `nutrition`/`tagIds` were left as they already
+  were on each path, not audited for the same asymmetry since neither was
+  reported broken.
 - **FIXED 2026-09-27, found by the user live on staging.** Opening the
   dining cart ([cart-widget.tsx](src/components/dining/cart-widget.tsx))
   shifted the whole page sideways. Root cause: the open/close effect set
