@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Loader2, Building2, Coffee, ChefHat, Trash2 } from "lucide-react"
+import { Loader2, Building2, Coffee, ChefHat, ShoppingBag, Trash2 } from "lucide-react"
 import { updateVenue, deleteVenue } from "@/lib/actions/dining"
 import { useAction } from "@/lib/use-action"
 import { inputClass, compactLabelClass as lbl } from "@/components/ui/field"
@@ -14,7 +14,7 @@ type Venue = {
   venueType: string
 }
 
-type VenueType = "CAFETERIA" | "CAFE" | "RESTAURANT"
+type VenueType = "CAFETERIA" | "CAFE" | "RESTAURANT" | "STORE"
 
 const VENUE_TYPES: {
   key: VenueType
@@ -39,6 +39,12 @@ const VENUE_TYPES: {
     label: "Restaurant",
     description: "Full à la carte, sections, premium UX",
     icon: ChefHat,
+  },
+  {
+    key: "STORE",
+    label: "Store",
+    description: "Fixed menu, retail-style items, no seating",
+    icon: ShoppingBag,
   },
 ]
 
@@ -77,7 +83,7 @@ export function VenueSettingsForm({ venue }: { venue: Venue }) {
         {/* Venue type */}
         <div>
           <p className={lbl}>Venue type</p>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {VENUE_TYPES.map((t) => {
               const Icon = t.icon
               const active = venueType === t.key

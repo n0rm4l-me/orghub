@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Plus, MapPin, Building2, Coffee, ChefHat, Utensils } from "lucide-react"
+import { Plus, MapPin, Building2, Coffee, ChefHat, ShoppingBag, Utensils } from "lucide-react"
 import { db } from "@/lib/db"
 import { requireRole } from "@/lib/rbac"
 import { scopedLocationId } from "@/lib/dining-scope"
@@ -15,6 +15,7 @@ const VENUE_TYPE_META: Record<string, { icon: React.ElementType; label: string; 
   CAFETERIA:  { icon: Building2, label: "Cafeteria",  badgeCls: "bg-sky-50 text-sky-700",     iconCls: "text-sky-400"    },
   CAFE:       { icon: Coffee,    label: "Café",        badgeCls: "bg-amber-50 text-amber-700", iconCls: "text-amber-400"  },
   RESTAURANT: { icon: ChefHat,   label: "Restaurant",  badgeCls: "bg-rose-50 text-rose-700",   iconCls: "text-rose-400"   },
+  STORE:      { icon: ShoppingBag, label: "Store",     badgeCls: "bg-emerald-50 text-emerald-700", iconCls: "text-emerald-400" },
 }
 
 function venueTypeMeta(t?: string | null) {

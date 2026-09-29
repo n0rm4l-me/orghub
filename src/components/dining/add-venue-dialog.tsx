@@ -2,18 +2,19 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Loader2, Building2, Coffee, ChefHat } from "lucide-react"
+import { Plus, Loader2, Building2, Coffee, ChefHat, ShoppingBag } from "lucide-react"
 import { createVenue } from "@/lib/actions/dining"
 import { useAction } from "@/lib/use-action"
 import { inputClass } from "@/components/ui/field"
 import { Button } from "@/components/ui/button"
 
-type VenueType = "CAFETERIA" | "CAFE" | "RESTAURANT"
+type VenueType = "CAFETERIA" | "CAFE" | "RESTAURANT" | "STORE"
 
 const VENUE_TYPES: { key: VenueType; label: string; description: string; icon: React.ElementType }[] = [
   { key: "CAFETERIA",  label: "Cafeteria",  description: "Weekly rotation, meal slots", icon: Building2 },
   { key: "CAFE",       label: "Café",        description: "Fixed menu, modifiers, prices", icon: Coffee   },
   { key: "RESTAURANT", label: "Restaurant",  description: "À la carte, sections",         icon: ChefHat  },
+  { key: "STORE",      label: "Store",       description: "Fixed menu, retail-style items", icon: ShoppingBag },
 ]
 
 export function AddVenueDialog({ locationId }: { locationId: string }) {
@@ -57,7 +58,7 @@ export function AddVenueDialog({ locationId }: { locationId: string }) {
 
               <div>
                 <p className="mb-1.5 text-xs font-medium text-foreground">Venue type</p>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   {VENUE_TYPES.map((t) => {
                     const Icon = t.icon
                     const active = venueType === t.key

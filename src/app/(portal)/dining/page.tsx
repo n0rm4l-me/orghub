@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
-import { Building2, Coffee, ChefHat, Utensils } from "lucide-react"
+import { Building2, Coffee, ChefHat, ShoppingBag, Utensils } from "lucide-react"
 import { db } from "@/lib/db"
 import { getSettings } from "@/lib/settings"
 import { parseModules } from "@/lib/modules"
@@ -13,6 +13,7 @@ const VENUE_TYPE_ICON: Record<string, React.ElementType> = {
   CAFETERIA:  Building2,
   CAFE:       Coffee,
   RESTAURANT: ChefHat,
+  STORE:      ShoppingBag,
 }
 
 export default async function DiningIndexPage() {
