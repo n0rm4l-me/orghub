@@ -3,6 +3,47 @@ import { getFromStorage, uploadToStorage } from "@/lib/storage"
 
 const CACHE_HEADERS = { "Content-Type": "", "Cache-Control": "public, max-age=31536000, immutable" }
 
+// A pathological source file can make sharp hang rather than throw (seen
+// live: one specific upload stalled every ?w= request indefinitely, with
+// the un-resized original serving fine since that path never touches
+// sharp). No await below is otherwise bounded, so a single bad file would
+// tie up a request -- and its connection -- forever. Anything past this
+// falls through to the existing catch and serves the original.
+const RESIZE_TIMEOUT_MS = 5000
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`Timed out after ${ms}ms`)), ms)
+    promise.then(
+      (v) => { clearTimeout(timer); resolve(v) },
+      (e) => { clearTimeout(timer); reject(e) },
+    )
+  })
+}
+
+/** Returns null when the source is already narrower than `w` (nothing to do). */
+async function resize(buffer: Buffer, w: number, derivedKey: string): Promise<{ buffer: Buffer; contentType: string } | null> {
+  const sharp = (await import("sharp")).default
+  const img = sharp(buffer, { failOn: "none" })
+  const meta = await img.metadata()
+  if (!meta.width || meta.width <= w) return null
+
+  if (meta.hasAlpha) {
+    // Re-encoding to JPEG below would silently flatten transparency (a
+    // resized logo/icon PNG would gain a black or white background
+    // depending on the viewer). Resize but keep the source's own format
+    // instead. Deliberately not written to the _derived/ cache: every
+    // cache-hit response above hardcodes Content-Type: image/jpeg, so a
+    // non-JPEG entry there would serve with the wrong header next time.
+    const out = await img.rotate().resize({ width: w }).toFormat(meta.format ?? "png").toBuffer()
+    return { buffer: out, contentType: `image/${meta.format ?? "png"}` }
+  }
+
+  const out = await img.rotate().resize({ width: w }).jpeg({ quality: 80, mozjpeg: true }).toBuffer()
+  uploadToStorage(derivedKey, out, "image/jpeg").catch(() => {})
+  return { buffer: out, contentType: "image/jpeg" }
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> },
@@ -41,28 +82,14 @@ export async function GET(
 
   if (hasResize && /^image\//i.test(contentType)) {
     try {
-      const sharp = (await import("sharp")).default
-      const img = sharp(body, { failOn: "none" })
-      const meta = await img.metadata()
-      if (meta.width && meta.width > w) {
-        if (meta.hasAlpha) {
-          // Re-encoding to JPEG below would silently flatten transparency
-          // (a resized logo/icon PNG would gain a black or white background
-          // depending on the viewer). Resize but keep the source's own
-          // format instead. Deliberately not written to the _derived/ cache:
-          // every cache-hit response above hardcodes Content-Type:
-          // image/jpeg, so a non-JPEG entry there would serve with the
-          // wrong header on the next request.
-          body = await img.rotate().resize({ width: w }).toFormat(meta.format ?? "png").toBuffer()
-        } else {
-          body = await img.rotate().resize({ width: w }).jpeg({ quality: 80, mozjpeg: true }).toBuffer()
-          contentType = "image/jpeg"
-          const derivedKey = `_derived/w${w}/${pathStr}`
-          uploadToStorage(derivedKey, body, "image/jpeg").catch(() => {})
-        }
+      const derivedKey = `_derived/w${w}/${pathStr}`
+      const resized = await withTimeout(resize(body, w, derivedKey), RESIZE_TIMEOUT_MS)
+      if (resized) {
+        body = resized.buffer
+        contentType = resized.contentType
       }
     } catch {
-      // sharp unavailable or failed: serve original
+      // sharp unavailable, failed, or timed out: serve original
     }
   }
 
