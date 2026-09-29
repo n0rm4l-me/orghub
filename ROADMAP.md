@@ -921,6 +921,28 @@ Everything else, roughly ordered by blast radius:
 
 Smaller items, independent of the design-unification phases above:
 
+- **FIXED 2026-09-29, found by the user live on staging, confirmed via the
+  browser inspector.** One dish's photo permanently showed a loading
+  skeleton in the admin catalog list (`?w=80`, resized through
+  [sharp](src/app/uploads/[...path]/route.ts)) while the exact same photo
+  rendered fine on the portal (no `?w=`, served raw, sharp never runs on
+  that path). The screenshot's dev-tools popup showed the element was
+  still literally [Skeleton](src/components/ui/skeleton.tsx)'s own
+  `animate-pulse` div, meaning the `<img>` sibling never fired `onLoad`
+  *or* `onError` -- which only happens when the browser's request itself
+  never completes. Nothing in the route awaited a bounded operation, so a
+  source file that makes sharp hang instead of throw (root cause of the
+  hang itself not fully diagnosed -- corrupt/pathological input is the
+  leading guess, but confirming it would mean finding and inspecting that
+  exact upload) would tie up the request, and its connection, forever;
+  the existing try/catch could never help since a hang isn't a rejection.
+  Wrapped the resize in a 5s timeout that falls through to the same
+  "serve the original" path the catch already takes on a genuine sharp
+  error, and split `resize()` into its own function returning the buffer
+  and its content type together, so a timeout (or the no-resize-needed
+  case) can never serve mismatched bytes and headers. If this recurs for
+  a *different* file, that would confirm it's not one bad upload but
+  something about the resize path itself, worth a closer look.
 - **FIXED 2026-09-29, found by the user live on staging.** The site-wide
   [announcement banner](src/components/announcement-banner.tsx) stayed on
   screen after navigating from the portal into `/admin` (fully-loaded
