@@ -355,7 +355,7 @@ export function DishList({
         <div className="flex items-center gap-3">
           <div className="size-10 shrink-0 overflow-hidden rounded-lg bg-muted">
             {d.photo
-              ? <SafeImg src={`${d.photo}?w=80`} alt="" className="h-full w-full object-cover" width={40} height={40} loading="lazy" />
+              ? <SafeImg src={`${d.photo}?w=80`} alt="" className="h-full w-full object-cover" width={40} height={40} />
               : <div className="flex h-full w-full items-center justify-center"><UtensilsCrossed className="size-4 text-muted-foreground" /></div>}
           </div>
           <div className="min-w-0">
