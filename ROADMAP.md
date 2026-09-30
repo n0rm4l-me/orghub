@@ -921,6 +921,26 @@ Everything else, roughly ordered by blast radius:
 
 Smaller items, independent of the design-unification phases above:
 
+- **FIXED 2026-09-30, found by the user ("felt slow, seemed full-size").**
+  Seven [SafeImg](src/components/dining/safe-img.tsx) call sites requested
+  the dish/logo photo with no `?w=` at all, so
+  [the uploads route](<src/app/uploads/[...path]/route.ts>) served the
+  full original file into a 32-128px slot instead of a resized
+  derivative -- most visibly
+  [mobile-week-menu.tsx](src/components/dining/mobile-week-menu.tsx), the
+  portal's own weekly-menu thumbnail and the exact place the slowness was
+  noticed. Added `?w=` at 2x each slot's CSS size, matching what the
+  sibling call sites in the same files already did correctly (e.g.
+  `week-menu-cell.tsx`'s two SafeImg calls -- one had `?w=72`, the other
+  didn't). Also looked at genuine blur-up (a tiny blurred placeholder that
+  sharpens in, vs. `SafeImg`'s current plain gray
+  [Skeleton](src/components/ui/skeleton.tsx)) since the user asked about
+  it by name: doable without a schema change (fetch the same image again
+  at `?w=16` as an immediate CSS-blurred placeholder while the real size
+  loads), but touches a component used in ~15 places and needs live
+  visual QA this session couldn't do (no local DB). Recommended, not
+  built -- the actual reported slowness was the missing `?w=` sizing
+  above, not the lack of a blur transition.
 - **FIXED 2026-09-30, found by the user live on staging, one day after the
   admin-leak fix below.** The announcement banner's own dismiss button
   "just didn't work" -- clicking it did nothing visible. The click
