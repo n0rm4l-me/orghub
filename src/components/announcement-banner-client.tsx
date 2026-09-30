@@ -82,9 +82,13 @@ export function AnnouncementBannerClient({ announcement }: { announcement: Annou
   // own instance somehow survives one (seen live: a client-side transition
   // from the portal into /admin, which has no loading.tsx, left this banner
   // on screen until a hard refresh). Belt-and-suspenders: this component
-  // should never render on admin regardless of whether its portal-only
-  // parent layout actually unmounted.
-  if (pathname?.startsWith("/admin")) return null
+  // should never render outside the portal regardless of whether its
+  // portal-only parent layout actually unmounted. /admin was the first
+  // report; /login is the same leak at a different destination -- every
+  // non-portal top-level segment belongs here, not just the one that got
+  // reported first.
+  const NON_PORTAL_PREFIXES = ["/admin", "/login", "/no-access"]
+  if (NON_PORTAL_PREFIXES.some((p) => pathname?.startsWith(p))) return null
   if (!visible) return null
 
   const theme = COLORS[announcement.color] ?? COLORS.brand
