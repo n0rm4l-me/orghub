@@ -921,6 +921,33 @@ Everything else, roughly ordered by blast radius:
 
 Smaller items, independent of the design-unification phases above:
 
+- **BEST-GUESS FIX, NOT CONFIRMED, 2026-09-30, found by the user live on
+  staging.** Every dish photo in the admin catalog list rendered as a
+  permanent loading skeleton -- not one dish like the sharp-hang bug
+  below, all of them at once. Ruled out everything server- and
+  network-side first, live with the user at each step: an authenticated
+  `curl` session (same cookie the browser would send) fetched the exact
+  image URL fast and correctly; the admin page's own HTML carried the
+  correct `Cache-Control: private, no-cache, no-store`; a full browser
+  restart and a fresh incognito window changed nothing; navigating
+  straight to the image URL (not through the admin table) worked fine in
+  the user's own browser. That leaves the one thing consistently
+  different between the working portal photos and the three broken
+  admin call sites ([dish-list.tsx](src/components/dining/dish-list.tsx),
+  [week-menu-cell.tsx](src/components/dining/week-menu-cell.tsx) x2): all
+  three had `loading="lazy"`, the portal call sites never did.
+  [AdminTable](src/components/ui/admin-table.tsx) wraps its rows in
+  `table-fixed` + `overflow-x-auto` (introduced in the admin consistency
+  pass), a plausible way for the browser's native lazy-loading viewport
+  heuristic to misjudge visibility inside a scrollable, fixed-layout
+  table. Removed `loading="lazy"` from all three call sites -- none of
+  these lists are long enough (a handful of small thumbnails, not an
+  infinite feed) for lazy-loading to matter, so removing it costs nothing
+  even if the theory turns out wrong. **Not proven**: jsdom has no real
+  viewport/lazy-loading implementation, so no unit test could confirm or
+  rule out this specific mechanism either way. This is the best
+  remaining explanation after exhausting every other one, not a
+  confirmed root cause -- needs the user to check again live.
 - **FIXED 2026-09-30, found by the user ("felt slow, seemed full-size").**
   Seven [SafeImg](src/components/dining/safe-img.tsx) call sites requested
   the dish/logo photo with no `?w=` at all, so
@@ -941,28 +968,41 @@ Smaller items, independent of the design-unification phases above:
   visual QA this session couldn't do (no local DB). Recommended, not
   built -- the actual reported slowness was the missing `?w=` sizing
   above, not the lack of a blur transition.
-- **FIXED 2026-09-30, found by the user live on staging, one day after the
-  admin-leak fix below.** The announcement banner's own dismiss button
-  "just didn't work" -- clicking it did nothing visible. The click
-  handler itself was never broken (`setVisible(false)` fires correctly);
-  the theory, not independently confirmed but consistent with the
-  09-29 admin-leak bug directly below (same class of Next.js behavior,
-  reported the very next day, same component): a client-side navigation
-  to a route with no `loading.tsx` can leave the previous page's
-  component instance mounted rather than unmounting it. If that happens
-  across two portal pages navigated in quick succession, two instances of
-  this banner can end up mounted at once; dismissing one only ever
-  touched that one instance's own `visible` state, leaving a second,
-  already-stale instance sitting on screen looking exactly like a dead
-  button. [announcement-banner-client.tsx](src/components/announcement-banner-client.tsx)
-  now has every mounted instance register its setter in a shared per-id
-  listener map on mount (cleaned up on unmount); dismissing calls every
-  registered setter for that announcement id, not just the one that was
-  clicked. Not independently reproduced before shipping -- same
-  local-dev-can't-reach-the-DB limitation as everything else this
-  session -- so if the button still doesn't respond after this, the
-  stale-instance theory is wrong and this needs a different fix, not a
-  bigger version of the same one.
+- **FIXED 2026-09-30, found by the user live on staging; corrected the
+  same day after they reported it still broken and pushed back on
+  trusting another unverified fix.** The announcement banner's own
+  dismiss button "just didn't work" -- clicking it did nothing visible.
+  First theory, consistent with the 09-29 admin-leak bug directly below
+  (same component, reported the day before): a client-side navigation to
+  a route with no `loading.tsx` leaving a previous page's banner instance
+  mounted, so two instances end up live at once and dismissing one leaves
+  the other looking dead. Shipped a fix for that (every mounted instance
+  registers its setter in a shared per-id listener map; dismissing calls
+  every registered setter for that id) -- real and still in the code, but
+  the user hit the exact same symptom immediately after, live, and
+  explicitly called the validation method into question rather than
+  accepting another guess. Re-diagnosed from the actual code instead of
+  reasoning about it: `dismiss()` called `addDismissed(id)` (which calls
+  `localStorage.setItem` with no try/catch) *before* looping over the
+  listener map to fire `setVisible(false)`. Anything that makes `setItem`
+  throw -- private-browsing storage caps, storage blocked by browser
+  settings, quota -- aborts the whole handler before any listener runs,
+  so the click does literally nothing, matching the report exactly and
+  explaining why the multi-instance fix didn't help: the bug was never
+  about which instances got notified, it was that notification never
+  happened at all.
+  [announcement-banner-client.tsx](src/components/announcement-banner-client.tsx)
+  now wraps `addDismissed`'s body in try/catch (persistence becomes
+  best-effort -- a storage failure means the banner comes back on the
+  next load, not that dismissing silently fails) and `dismiss()` calls
+  every `setVisible(false)` *before* `addDismissed`, so a storage failure
+  can never gate the visible effect. Proved causation instead of just
+  asserting it:
+  [announcement-banner-client.test.tsx](src/__tests__/announcement-banner-client.test.tsx)
+  adds a test that mocks `setItem` to throw, confirmed (via `git stash`)
+  to fail against the pre-fix code in exactly the reported way and pass
+  against the fix, alongside four more tests covering render/dismiss/
+  persist/multi-instance behavior the first fix already got right.
 - **FIXED 2026-09-29, found by the user live on staging, confirmed via the
   browser inspector.** One dish's photo permanently showed a loading
   skeleton in the admin catalog list (`?w=80`, resized through
