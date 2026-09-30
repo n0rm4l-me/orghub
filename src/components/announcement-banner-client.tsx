@@ -30,9 +30,18 @@ function getDismissed(): Set<string> {
 }
 
 function addDismissed(id: string) {
-  const set = getDismissed()
-  set.add(id)
-  localStorage.setItem(STORAGE_KEY, JSON.stringify([...set]))
+  // Best-effort: some browsers/settings throw on setItem (private-browsing
+  // storage caps, storage disabled by policy, quota). Remembering the
+  // dismissal is a nice-to-have; letting that failure block the visible
+  // dismiss itself (see dismiss() below, which calls this first) is not.
+  try {
+    const set = getDismissed()
+    set.add(id)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...set]))
+  } catch {
+    // Not persisted: the banner will come back on the next load. Still
+    // better than the click appearing to do nothing at all.
+  }
 }
 
 // A client-side navigation into a page whose route has no loading.tsx can
@@ -47,8 +56,11 @@ function addDismissed(id: string) {
 const listeners = new Map<string, Set<(v: boolean) => void>>()
 
 function dismiss(id: string) {
-  addDismissed(id)
+  // Hide first: the visible effect must never depend on persistence
+  // succeeding. addDismissed can't throw (see its own try/catch), but the
+  // order itself is the actual guarantee, not that catch.
   for (const setVisible of listeners.get(id) ?? []) setVisible(false)
+  addDismissed(id)
 }
 
 export function AnnouncementBannerClient({ announcement }: { announcement: Announcement }) {

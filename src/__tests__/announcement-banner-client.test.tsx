@@ -79,6 +79,26 @@ describe("AnnouncementBannerClient", () => {
     unmount(second.container, second.root)
   })
 
+  it("clicking dismiss still hides the banner when localStorage.setItem throws", () => {
+    // The real-world case this exists for: private-browsing storage caps,
+    // storage disabled by policy, quota exceeded -- anything that makes
+    // setItem throw. The visible dismiss must not depend on that
+    // succeeding, only on being attempted.
+    const setItemSpy = vi.spyOn(window.localStorage, "setItem").mockImplementation(() => {
+      throw new DOMException("QuotaExceededError")
+    })
+    try {
+      const { container, root } = mount(<AnnouncementBannerClient announcement={announcement} />)
+      const button = container.querySelector<HTMLButtonElement>('button[aria-label="Dismiss announcement"]')
+      expect(button).not.toBeNull()
+      act(() => button!.click())
+      expect(container.querySelector('[role="status"]')).toBeNull()
+      unmount(container, root)
+    } finally {
+      setItemSpy.mockRestore()
+    }
+  })
+
   it("dismissing one mounted instance also hides a second instance mounted at the same time", () => {
     const a = mount(<AnnouncementBannerClient announcement={announcement} />)
     const b = mount(<AnnouncementBannerClient announcement={announcement} />)
