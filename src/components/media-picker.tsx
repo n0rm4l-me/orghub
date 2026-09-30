@@ -198,7 +198,7 @@ export function MediaPickerField({ value, onChange, tone, folder }: { value: str
   if (value) {
     return (
       <div className="flex items-center gap-2">
-        <SafeImg src={value} alt=""
+        <SafeImg src={`${value}?w=160`} alt=""
           className={`h-9 w-[80px] rounded border object-contain p-1 ${tone === "dark" ? "border-gray-700 bg-gray-800" : "border-border bg-card"}`}
           placeholderClassName={`h-9 w-[80px] rounded border ${tone === "dark" ? "border-gray-700 bg-gray-800" : "border-border bg-muted"}`} />
         <button type="button" onClick={() => onChange("")}

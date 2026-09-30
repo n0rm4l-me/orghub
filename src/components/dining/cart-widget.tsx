@@ -95,7 +95,7 @@ export function CartWidget({ currency }: { currency: string }) {
                 <div key={item.id} className="flex items-center gap-3 px-5 py-3">
                   <div className="size-12 shrink-0 overflow-hidden rounded-lg bg-muted">
                     {item.photo ? (
-                      <SafeImg src={item.photo} alt={item.name} className="h-full w-full object-cover" />
+                      <SafeImg src={`${item.photo}?w=96`} alt={item.name} className="h-full w-full object-cover" />
                     ) : null}
                   </div>
 

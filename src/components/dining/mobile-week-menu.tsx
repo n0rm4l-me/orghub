@@ -83,7 +83,7 @@ export function MobileWeekMenu({ days }: { days: MobileDay[] }) {
               {row.entry ? (
                 <div className="flex gap-3">
                   <div className="size-16 shrink-0 overflow-hidden rounded-lg bg-muted">
-                    <SafeImg src={row.entry.photo} alt="" className="size-full object-cover" />
+                    <SafeImg src={row.entry.photo ? `${row.entry.photo}?w=128` : row.entry.photo} alt="" className="size-full object-cover" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium leading-snug text-foreground">

@@ -129,7 +129,7 @@ function DishSearch({ venueId, currency = "JPY", onPick }: { venueId: string; cu
             >
               <div className="size-9 shrink-0 overflow-hidden rounded-md bg-muted">
                 {d.photo
-                  ? <SafeImg src={d.photo} alt={d.name} className="h-full w-full object-cover" />
+                  ? <SafeImg src={`${d.photo}?w=72`} alt={d.name} className="h-full w-full object-cover" />
                   : <div className="h-full w-full" />}
               </div>
               <div className="min-w-0 flex-1">
@@ -387,7 +387,7 @@ function EntryEditor({
         <div className="mb-3 flex items-center gap-2 rounded-lg bg-brand/5 px-3 py-1.5">
           {photo && (
             <div className="size-8 shrink-0 overflow-hidden rounded-md">
-              <SafeImg src={photo} alt={name} className="h-full w-full object-cover" />
+              <SafeImg src={`${photo}?w=64`} alt={name} className="h-full w-full object-cover" />
             </div>
           )}
           <span className="min-w-0 flex-1 truncate text-sm font-medium text-brand">{name}</span>
@@ -559,7 +559,7 @@ function EntryRow({
       </div>
       <div className="size-12 shrink-0 overflow-hidden rounded-lg bg-muted">
         {resolvedPhoto
-          ? <SafeImg src={resolvedPhoto} alt={resolvedName} className="h-full w-full object-cover" />
+          ? <SafeImg src={`${resolvedPhoto}?w=96`} alt={resolvedName} className="h-full w-full object-cover" />
           : <div className="flex h-full w-full items-center justify-center"><UtensilsCrossed className="size-4 text-muted-foreground" /></div>}
       </div>
       <div className="min-w-0 flex-1">

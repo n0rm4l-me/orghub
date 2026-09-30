@@ -125,7 +125,7 @@ export function WeekMenuCell({
           {(draft.dishId || draft.name) && (
             <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
               <div className="size-14 shrink-0 overflow-hidden rounded-lg bg-border">
-                <SafeImg src={draft.photo} alt="" className="size-full object-cover" />
+                <SafeImg src={draft.photo ? `${draft.photo}?w=112` : draft.photo} alt="" className="size-full object-cover" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground">{draft.name}</p>
