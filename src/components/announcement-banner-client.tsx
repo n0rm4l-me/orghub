@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 import { X } from "lucide-react"
 
@@ -35,9 +35,36 @@ function addDismissed(id: string) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify([...set]))
 }
 
+// A client-side navigation into a page whose route has no loading.tsx can
+// leave a previous instance of this component mounted (seen live with the
+// same mechanism on /admin: Next.js holding the old page through the
+// transition -- see admin-appearance-reset.tsx). If that happens on two
+// portal pages back to back, two instances of this banner can end up
+// mounted at once; dismissing one via its own setVisible would leave the
+// other sitting there looking like the button did nothing. Every mounted
+// instance registers its setter here, so dismissing any one dismisses all
+// of them for that announcement id, not just the one that was clicked.
+const listeners = new Map<string, Set<(v: boolean) => void>>()
+
+function dismiss(id: string) {
+  addDismissed(id)
+  for (const setVisible of listeners.get(id) ?? []) setVisible(false)
+}
+
 export function AnnouncementBannerClient({ announcement }: { announcement: Announcement }) {
   const [visible, setVisible] = useState(() => !getDismissed().has(announcement.id))
   const pathname = usePathname()
+
+  useEffect(() => {
+    const id = announcement.id
+    const set = listeners.get(id) ?? new Set()
+    set.add(setVisible)
+    listeners.set(id, set)
+    return () => {
+      set.delete(setVisible)
+      if (set.size === 0) listeners.delete(id)
+    }
+  }, [announcement.id])
 
   // usePathname() re-renders on every navigation even if this component's
   // own instance somehow survives one (seen live: a client-side transition
@@ -72,7 +99,7 @@ export function AnnouncementBannerClient({ announcement }: { announcement: Annou
         </p>
         <button
           type="button"
-          onClick={() => { addDismissed(announcement.id); setVisible(false) }}
+          onClick={() => dismiss(announcement.id)}
           aria-label="Dismiss announcement"
           className={`shrink-0 rounded-md p-1 transition ${theme.close}`}
         >
