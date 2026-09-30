@@ -921,6 +921,28 @@ Everything else, roughly ordered by blast radius:
 
 Smaller items, independent of the design-unification phases above:
 
+- **FIXED 2026-09-30, found by the user live on staging, one day after the
+  admin-leak fix below.** The announcement banner's own dismiss button
+  "just didn't work" -- clicking it did nothing visible. The click
+  handler itself was never broken (`setVisible(false)` fires correctly);
+  the theory, not independently confirmed but consistent with the
+  09-29 admin-leak bug directly below (same class of Next.js behavior,
+  reported the very next day, same component): a client-side navigation
+  to a route with no `loading.tsx` can leave the previous page's
+  component instance mounted rather than unmounting it. If that happens
+  across two portal pages navigated in quick succession, two instances of
+  this banner can end up mounted at once; dismissing one only ever
+  touched that one instance's own `visible` state, leaving a second,
+  already-stale instance sitting on screen looking exactly like a dead
+  button. [announcement-banner-client.tsx](src/components/announcement-banner-client.tsx)
+  now has every mounted instance register its setter in a shared per-id
+  listener map on mount (cleaned up on unmount); dismissing calls every
+  registered setter for that announcement id, not just the one that was
+  clicked. Not independently reproduced before shipping -- same
+  local-dev-can't-reach-the-DB limitation as everything else this
+  session -- so if the button still doesn't respond after this, the
+  stale-instance theory is wrong and this needs a different fix, not a
+  bigger version of the same one.
 - **FIXED 2026-09-29, found by the user live on staging, confirmed via the
   browser inspector.** One dish's photo permanently showed a loading
   skeleton in the admin catalog list (`?w=80`, resized through
